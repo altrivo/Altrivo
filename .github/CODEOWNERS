@@ -1,0 +1,22 @@
+# Default — Team Lead reviews everything
+* @TeamLead
+
+# Design system — A1 must review
+/components/         @A1
+/styles/             @A1
+
+# Escrow & Finance — A2 owns
+/app/(admin)/escrow/ @A2
+/app/(admin)/finance/ @A2
+/services/escrow*    @A2
+
+# Logistics & Domains — A3 owns
+/app/(admin)/logistics/ @A3
+/app/(admin)/domains/   @A3
+/services/courier*      @A3
+/services/domain*       @A3
+
+# Security & AI — A4 owns
+/lib/vault*          @A4
+/services/ai*        @A4
+/app/(admin)/security/ @A4

@@ -1,0 +1,569 @@
+[
+  {
+    "id": "T-V1-001",
+    "area": "Auth UI",
+    "title": "Vendor Signup Page — Full UI",
+    "ok": false,
+    "files": [
+      "app/auth/signup/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-002",
+    "area": "Auth UI",
+    "title": "Vendor Login Page + Forgot Password Flow",
+    "ok": true,
+    "files": [
+      "app/auth/login/page.tsx",
+      "components/auth/ForgotPasswordModal.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-003",
+    "area": "Onboarding UI",
+    "title": "4-Step Onboarding Wizard",
+    "ok": true,
+    "files": [
+      "app/onboarding/page.tsx",
+      "components/onboarding/Step1BusinessInfo.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-004",
+    "area": "Onboarding UI",
+    "title": "Onboarding Progress Persistence UI",
+    "ok": true,
+    "files": [
+      "components/dashboard/SetupChecklistWidget.tsx",
+      "components/dashboard/OnboardingBanner.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-005",
+    "area": "Profile UI",
+    "title": "Business Profile Settings Page",
+    "ok": true,
+    "files": [
+      "app/(vendor)/settings/page.tsx",
+      "components/settings/BusinessInfoTab.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-006",
+    "area": "Subscription UI",
+    "title": "Subscription Plans Page",
+    "ok": true,
+    "files": [
+      "app/billing/page.tsx",
+      "components/billing/BillingHistoryTable.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-007",
+    "area": "Subscription UI",
+    "title": "PKR Wallet Top-Up Flow",
+    "ok": true,
+    "files": [
+      "app/(vendor)/wallet/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-008",
+    "area": "Auth Backend",
+    "title": "Supabase Auth Setup — Vendors Table",
+    "ok": true,
+    "files": [
+      "supabase/migrations/20260810120000_create_vendors_table.sql"
+    ]
+  },
+  {
+    "id": "T-V1-009",
+    "area": "Auth Backend",
+    "title": "OAuth Integration (Google + Facebook)",
+    "ok": false,
+    "files": [
+      "app/auth/login/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-010",
+    "area": "Auth Backend",
+    "title": "Phone OTP Verification via WhatsApp API",
+    "ok": true,
+    "files": [
+      "app/auth/signup/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-011",
+    "area": "Auth Backend",
+    "title": "Password Reset Flow — Token & Email Trigger",
+    "ok": true,
+    "files": [
+      "app/auth/reset-password/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-012",
+    "area": "Onboarding Backend",
+    "title": "Onboarding State Machine + APIs",
+    "ok": true,
+    "files": [
+      "lib/onboarding.ts"
+    ]
+  },
+  {
+    "id": "T-V1-013",
+    "area": "Profile Backend",
+    "title": "Team Members & Role-Based Access — Backend",
+    "ok": true,
+    "files": [
+      "components/settings/TeamMembersTab.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-014",
+    "area": "Subscription Backend",
+    "title": "Subscription Plans + Recurring Deduction Logic",
+    "ok": true,
+    "files": [
+      "app/billing/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-015",
+    "area": "Subscription Backend",
+    "title": "Invoice PDF Generation",
+    "ok": true,
+    "files": [
+      "components/billing/BillingHistoryTable.tsx"
+    ]
+  },
+  {
+    "id": "T-V1-016",
+    "area": "Testing",
+    "title": "V1 E2E Test Suite — Auth + Onboarding + Profile",
+    "ok": true,
+    "files": [
+      "jest.config.js"
+    ]
+  },
+  {
+    "id": "T-V2-001",
+    "area": "Dashboard Shell",
+    "title": "Vendor Dashboard Layout — Sidebar + Navbar",
+    "ok": true,
+    "files": [
+      "components/layout/VendorDashboardShell.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-002",
+    "area": "Dashboard Home",
+    "title": "Dashboard Home — KPI Cards Row",
+    "ok": true,
+    "files": [
+      "components/dashboard/KPICardRow.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-003",
+    "area": "Dashboard Home",
+    "title": "Recent Orders + Quick Actions Widgets",
+    "ok": true,
+    "files": [
+      "components/dashboard/RecentOrdersTable.tsx",
+      "components/dashboard/QuickActionsWidget.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-004",
+    "area": "Analytics UI",
+    "title": "Full Analytics Page — Filters, Charts & Insights",
+    "ok": true,
+    "files": [
+      "app/(vendor)/analytics/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-005",
+    "area": "Analytics UI",
+    "title": "Live Site Activity Widget (Real-Time)",
+    "ok": true,
+    "files": [
+      "components/shared/LiveSiteActivityWidget.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-006",
+    "area": "Storefront UI",
+    "title": "Public Storefront Layout Shell (SSR)",
+    "ok": true,
+    "files": [
+      "app/(storefront)/layout.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-007",
+    "area": "Storefront UI",
+    "title": "Storefront Homepage — Hero, Featured Products, Categories",
+    "ok": true,
+    "files": [
+      "app/(storefront)/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-008",
+    "area": "Storefront UI",
+    "title": "Storefront Category Landing Pages + Search Results",
+    "ok": true,
+    "files": [
+      "app/(storefront)/category/[slug]/page.tsx",
+      "app/(storefront)/search/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-009",
+    "area": "Theme UI",
+    "title": "AI Theme Rebranding Prompt Interface",
+    "ok": true,
+    "files": [
+      "app/(vendor)/storefront/theme/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-010",
+    "area": "Theme UI",
+    "title": "Storefront Preview Modal (Live in Dashboard)",
+    "ok": true,
+    "files": [
+      "__tests__/storefront-preview-modal.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-011",
+    "area": "Analytics Backend",
+    "title": "Analytics Data Model + Aggregation Views",
+    "ok": true,
+    "files": [
+      "app/api/analytics/route.ts"
+    ]
+  },
+  {
+    "id": "T-V2-012",
+    "area": "Analytics Backend",
+    "title": "Analytics API Endpoints (5 Routes)",
+    "ok": true,
+    "files": [
+      "app/api/analytics/route.ts"
+    ]
+  },
+  {
+    "id": "T-V2-013",
+    "area": "Analytics Backend",
+    "title": "Client-Side Tracking Script (Storefront Beacon)",
+    "ok": true,
+    "files": [
+      "app/api/track/route.ts"
+    ]
+  },
+  {
+    "id": "T-V2-014",
+    "area": "Storefront Backend",
+    "title": "Multi-Tenant Storefront Routing",
+    "ok": true,
+    "files": [
+      "middleware.ts"
+    ]
+  },
+  {
+    "id": "T-V2-015",
+    "area": "Storefront Backend",
+    "title": "SEO Meta Tags + Sitemap.xml + Robots.txt Generation",
+    "ok": true,
+    "files": [
+      "__tests__/seo-sitemap-robots.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-016",
+    "area": "Theme Backend",
+    "title": "AI Theme Rebranding Service",
+    "ok": true,
+    "files": [
+      "app/api/theme/rebrand/route.ts"
+    ]
+  },
+  {
+    "id": "T-V2-017",
+    "area": "Theme Backend",
+    "title": "Theme Token Injection at SSR + Cache Layer",
+    "ok": true,
+    "files": [
+      "__tests__/theme-token-ssr-cache.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V2-018",
+    "area": "Storefront Backend",
+    "title": "Storefront Search Backend (Postgres Full-Text)",
+    "ok": true,
+    "files": [
+      "app/api/storefront/search/route.ts"
+    ]
+  },
+  {
+    "id": "T-V2-019",
+    "area": "Testing",
+    "title": "V2 Test Suite — Analytics + Storefront + Theme",
+    "ok": true,
+    "files": [
+      "__tests__/theme-token-ssr-cache.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-001",
+    "area": "Products UI",
+    "title": "Product Listing Page — Table View + Filters",
+    "ok": true,
+    "files": [
+      "app/(vendor)/products/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-002",
+    "area": "Products UI",
+    "title": "Add / Edit Product Form — Multi-Tab Layout",
+    "ok": true,
+    "files": [
+      "components/products/ProductForm.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-003",
+    "area": "Products UI",
+    "title": "Product Image Uploader (Drag-and-Drop)",
+    "ok": true,
+    "files": [
+      "components/products/ProductImageUploader.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-004",
+    "area": "Products UI",
+    "title": "AI Image Generation Modal",
+    "ok": true,
+    "files": [
+      "components/products/AiImageGeneratorModal.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-005",
+    "area": "Products UI",
+    "title": "AI Copywriting UI (Title + Description)",
+    "ok": true,
+    "files": [
+      "components/products/__tests__/AiCopywritingPopover.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-006",
+    "area": "Products UI",
+    "title": "Variants Matrix Builder — UI",
+    "ok": true,
+    "files": [
+      "components/products/tabs/TabVariants.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-007",
+    "area": "Inventory UI",
+    "title": "Smart Inventory Screen with Inline Pop-Up",
+    "ok": true,
+    "files": [
+      "components/inventory/InlineEditPopover.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-008",
+    "area": "Inventory UI",
+    "title": "Bulk Inventory Actions + CSV Import/Export",
+    "ok": true,
+    "files": [
+      "components/inventory/CsvImportModal.tsx",
+      "components/inventory/BulkActionsBar.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-009",
+    "area": "Products Backend",
+    "title": "Products Data Model + CRUD API",
+    "ok": true,
+    "files": [
+      "services/products-backend-service.ts"
+    ]
+  },
+  {
+    "id": "T-V3-010",
+    "area": "Products Backend",
+    "title": "Cloudinary Signed Upload Integration",
+    "ok": true,
+    "files": [
+      "app/api/cloudinary/sign/route.ts"
+    ]
+  },
+  {
+    "id": "T-V3-011",
+    "area": "AI Backend",
+    "title": "AI Image Generation Backend Service",
+    "ok": true,
+    "files": [
+      "app/api/ai/generate-images/route.ts"
+    ]
+  },
+  {
+    "id": "T-V3-012",
+    "area": "AI Backend",
+    "title": "AI Copywriting Backend Service",
+    "ok": true,
+    "files": [
+      "components/products/__tests__/AiCopywritingPopover.test.tsx"
+    ]
+  },
+  {
+    "id": "T-V3-013",
+    "area": "Inventory Backend",
+    "title": "Inventory Update API",
+    "ok": true,
+    "files": [
+      "app/api/inventory/[id]/route.ts"
+    ]
+  },
+  {
+    "id": "T-V3-014",
+    "area": "Inventory Backend",
+    "title": "Low-Stock Alert Engine",
+    "ok": true,
+    "files": [
+      "services/low-stock-alert-engine.ts"
+    ]
+  },
+  {
+    "id": "T-V3-015",
+    "area": "Products Backend",
+    "title": "Categories & Tags Backend",
+    "ok": true,
+    "files": [
+      "services/categories-backend-service.ts"
+    ]
+  },
+  {
+    "id": "T-V3-016",
+    "area": "Products Backend",
+    "title": "Bulk CSV Import + Export Backend",
+    "ok": true,
+    "files": [
+      "app/api/products/export-csv/route.ts",
+      "app/api/products/import-csv/route.ts"
+    ]
+  },
+  {
+    "id": "T-V3-017",
+    "area": "Testing",
+    "title": "V3 Test Suite — Products + AI Tools + Inventory",
+    "ok": true,
+    "files": [
+      "services/__tests__/low-stock-alert-engine.test.ts"
+    ]
+  },
+  {
+    "id": "T-V4-001",
+    "area": "Orders UI",
+    "title": "Vendor Order Management Log",
+    "ok": true,
+    "files": [
+      "app/(vendor)/orders/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-002",
+    "area": "Orders UI",
+    "title": "Order Detail View + Actions",
+    "ok": true,
+    "files": [
+      "components/orders/OrderDetailsModal.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-003",
+    "area": "Storefront UI",
+    "title": "Product Detail Page (PDP)",
+    "ok": true,
+    "files": [
+      "app/(storefront)/product/[id]/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-004",
+    "area": "Storefront UI",
+    "title": "Cart Drawer + Full Cart Page",
+    "ok": true,
+    "files": [
+      "app/cart/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-005",
+    "area": "Storefront UI",
+    "title": "Checkout Flow — Multi-Step UI",
+    "ok": true,
+    "files": [
+      "app/shop/checkout/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-006",
+    "area": "Storefront UI",
+    "title": "Thank-You / Order Confirmation Page",
+    "ok": true,
+    "files": [
+      "app/checkout/success/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-007",
+    "area": "Marketing UI",
+    "title": "Meta Ads Campaign List + Detail Page",
+    "ok": true,
+    "files": [
+      "app/(vendor)/campaigns/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-008",
+    "area": "Marketing UI",
+    "title": "One-Click Ad Launch Wizard",
+    "ok": true,
+    "files": [
+      "app/campaigns/new/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-009",
+    "area": "Marketing UI",
+    "title": "Email Marketing Dashboard",
+    "ok": true,
+    "files": [
+      "app/email/page.tsx"
+    ]
+  },
+  {
+    "id": "T-V4-010",
+    "area": "Wallet UI",
+    "title": "Wallet Dashboard + VCC Card View",
+    "ok": false,
+    "files": [
+      "app/(vendor)/wallet/page.tsx"
+    ]
+  }
+]

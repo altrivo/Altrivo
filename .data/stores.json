@@ -1,0 +1,2652 @@
+[
+  {
+    "id": "store_1787895612065_swxtk",
+    "vendor_id": "vendor_dev_123",
+    "name": "ChronoCraft Luxury",
+    "slug": "chronocraft-luxury",
+    "niche": "watches",
+    "description": "Precision luxury timepieces and bespoke chronographs",
+    "logo_url": null,
+    "layout_config": {
+      "storeName": "ChronoCraft Luxury",
+      "categories": [
+        {
+          "name": "Automatic Chronographs",
+          "href": "/category/automatic-chronographs"
+        },
+        {
+          "name": "Classic Leather Dress",
+          "href": "/category/classic-leather-dress"
+        },
+        {
+          "name": "18K Gold Plated Editions",
+          "href": "/category/18k-gold-plated-editions"
+        },
+        {
+          "name": "Sports & Diver 200M",
+          "href": "/category/sports-&-diver-200m"
+        }
+      ],
+      "socialLinks": [
+        {
+          "name": "Instagram",
+          "href": "https://instagram.com",
+          "icon": "instagram"
+        },
+        {
+          "name": "WhatsApp Store",
+          "href": "https://wa.me/923001234567",
+          "icon": "whatsapp"
+        },
+        {
+          "name": "Facebook",
+          "href": "https://facebook.com",
+          "icon": "facebook"
+        }
+      ],
+      "theme": {
+        "colors": {
+          "primary": "#171717",
+          "secondary": "#D4AF37",
+          "background": "#FFFFFF",
+          "text": "#0A0A0A"
+        },
+        "typography": {
+          "heading": "Playfair Display",
+          "body": "Inter"
+        }
+      },
+      "sections": [
+        {
+          "id": "hero-section-1",
+          "type": "HeroBento",
+          "props": {
+            "title": "Precision Engineering & Timeless Horology",
+            "subtitle": "Precision luxury timepieces and bespoke chronographs",
+            "ctaText": "Explore Timepieces",
+            "ctaLink": "/shop",
+            "secondaryCtaText": "View Chronographs",
+            "secondaryCtaLink": "/shop",
+            "imageUrl": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80",
+            "imageAlignment": "right"
+          }
+        },
+        {
+          "id": "custom_1787895605007",
+          "type": "CustomComponent",
+          "props": {
+            "badge": "FEATURED",
+            "title": "Handcrafted Luxury Heritage",
+            "subtitle": "Every product is meticulously crafted with high grade materials.",
+            "ctaText": "Discover Now",
+            "ctaLink": "/shop",
+            "secondaryCtaText": "Learn More",
+            "secondaryCtaLink": "#story",
+            "imageUrl": "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000&auto=format&fit=crop",
+            "imagePosition": "background",
+            "imageAlignment": "background",
+            "bgTheme": "gold",
+            "buttonTheme": "emerald"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "columns": 4,
+            "layout": "cards3d",
+            "items": [
+              {
+                "icon": "shield-check",
+                "title": "Sapphire Crystal Glass",
+                "description": "Scratch-resistant anti-reflective coating"
+              },
+              {
+                "icon": "award",
+                "title": "Japanese Movement",
+                "description": "Precision Miyota automatic caliber accuracy"
+              },
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Tracked express courier dispatch nationwide"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "2-Year Warranty",
+                "description": "Comprehensive movement and repair guarantee"
+              }
+            ]
+          }
+        },
+        {
+          "id": "categories-showcase-1",
+          "type": "CategoryCarouselDrag",
+          "props": {
+            "title": "Explore ChronoCraft Luxury Collections",
+            "layout": "card",
+            "categories": [
+              {
+                "title": "Automatic Chronographs",
+                "count": "18 models",
+                "icon": "star",
+                "href": "#catalog",
+                "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80"
+              },
+              {
+                "title": "Classic Leather Dress",
+                "count": "24 models",
+                "icon": "trending-up",
+                "href": "#catalog",
+                "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80"
+              },
+              {
+                "title": "18K Gold Plated Editions",
+                "count": "12 models",
+                "icon": "award",
+                "href": "#catalog",
+                "image": "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80"
+              },
+              {
+                "title": "Sports & Diver 200M",
+                "count": "15 models",
+                "icon": "tag",
+                "href": "#catalog",
+                "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80"
+              }
+            ]
+          }
+        },
+        {
+          "id": "products-catalog-1",
+          "type": "ProductGridStaggered",
+          "props": {
+            "title": "Featured Masterpieces",
+            "columns": 3,
+            "products": [
+              {
+                "id": "prod_0001",
+                "name": "Royal Oxford Calfskin Shoes",
+                "price": "₨ 7,800",
+                "originalPrice": "₨ 9,500",
+                "discount": "Best Seller",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0002",
+                "name": "Artisan Suede Penny Loafers",
+                "price": "₨ 6,700",
+                "originalPrice": "₨ 8,200",
+                "discount": "18% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0003",
+                "name": "Classic Chelsea Leather Boots",
+                "price": "₨ 8,900",
+                "originalPrice": "₨ 11,000",
+                "discount": "Staff Pick",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0004",
+                "name": "Double Monk Strap Dress Shoes",
+                "price": "₨ 8,400",
+                "originalPrice": "₨ 9,900",
+                "discount": "15% OFF",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0005",
+                "name": "CloudLite Performance Runners",
+                "price": "₨ 5,200",
+                "originalPrice": "₨ 6,500",
+                "discount": "Popular",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0006",
+                "name": "Vintage Brogue Wingtip Shoes",
+                "price": "₨ 7,600",
+                "originalPrice": "₨ 9,200",
+                "discount": "Heritage",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0007",
+                "name": "Urban Minimalist White Sneakers",
+                "price": "₨ 4,900",
+                "originalPrice": "₨ 6,200",
+                "discount": "Top Seller",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0008",
+                "name": "Tuscan Leather Driving Moccasins",
+                "price": "₨ 5,900",
+                "originalPrice": "₨ 7,400",
+                "discount": "20% OFF",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0009",
+                "name": "Derby Plain-Toe Dress Shoes",
+                "price": "₨ 7,200",
+                "originalPrice": "₨ 8,800",
+                "discount": "Classic",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1582898950624-954f9d0cba3c?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0010",
+                "name": "Chukka Suede Desert Boots",
+                "price": "₨ 6,900",
+                "originalPrice": "₨ 8,500",
+                "discount": "18% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0011",
+                "name": "Executive Full-Grain Briefcase",
+                "price": "₨ 12,500",
+                "originalPrice": "₨ 15,000",
+                "discount": "Premium",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0012",
+                "name": "Grand Voyager Leather Duffle Bag",
+                "price": "₨ 14,500",
+                "originalPrice": "₨ 18,000",
+                "discount": "Best Seller",
+                "rating": 5,
+                "image": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0013",
+                "name": "Slim RFID Bifold Leather Wallet",
+                "price": "₨ 2,400",
+                "originalPrice": "₨ 3,200",
+                "discount": "25% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0014",
+                "name": "Classic Reversible Leather Belt",
+                "price": "₨ 2,800",
+                "originalPrice": "₨ 3,500",
+                "discount": "20% OFF",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0015",
+                "name": "Heritage Leather Messenger Bag",
+                "price": "₨ 9,800",
+                "originalPrice": "₨ 12,000",
+                "discount": "18% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0016",
+                "name": "Tailored Oxford Button-Down Shirt",
+                "price": "₨ 3,400",
+                "originalPrice": "₨ 4,200",
+                "discount": "Popular",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0017",
+                "name": "Pure Merino Wool Knit Sweater",
+                "price": "₨ 5,800",
+                "originalPrice": "₨ 7,200",
+                "discount": "Winter Warmth",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0018",
+                "name": "Bespoke Linen Summer Blazer",
+                "price": "₨ 11,200",
+                "originalPrice": "₨ 14,000",
+                "discount": "Luxury",
+                "rating": 5,
+                "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0019",
+                "name": "Signature Pique Cotton Polo",
+                "price": "₨ 2,400",
+                "originalPrice": "₨ 3,000",
+                "discount": "20% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0020",
+                "name": "Pleated Slim Wool Trousers",
+                "price": "₨ 4,600",
+                "originalPrice": "₨ 5,800",
+                "discount": "20% OFF",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0021",
+                "name": "Heritage Chronograph Steel Watch",
+                "price": "₨ 16,500",
+                "originalPrice": "₨ 19,900",
+                "discount": "Premium",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0022",
+                "name": "Polarized Aviator Sunglasses",
+                "price": "₨ 3,800",
+                "originalPrice": "₨ 4,800",
+                "discount": "20% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0023",
+                "name": "Jacquard Mulberry Silk Necktie",
+                "price": "₨ 1,800",
+                "originalPrice": "₨ 2,400",
+                "discount": "25% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0024",
+                "name": "Solid Brass Geometric Cufflinks",
+                "price": "₨ 1,600",
+                "originalPrice": "₨ 2,200",
+                "discount": "Trending",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0025",
+                "name": "Handmade Ceramic Minimalist Vase",
+                "price": "₨ 3,200",
+                "originalPrice": "₨ 4,000",
+                "discount": "Artisan Made",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0026",
+                "name": "Aromatic Soy Wax Scented Candle",
+                "price": "₨ 1,400",
+                "originalPrice": "₨ 1,800",
+                "discount": "22% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0027",
+                "name": "Hand-Carved Walnut Serving Board",
+                "price": "₨ 2,900",
+                "originalPrice": "₨ 3,800",
+                "discount": "Handmade",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0028",
+                "name": "Vintage Brass Table Lamp",
+                "price": "₨ 6,800",
+                "originalPrice": "₨ 8,500",
+                "discount": "20% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0029",
+                "name": "Handwoven Jute Floor Rug (4x6 ft)",
+                "price": "₨ 4,800",
+                "originalPrice": "₨ 6,000",
+                "discount": "Eco Friendly",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0030",
+                "name": "Copper Hammered Water Carafe Set",
+                "price": "₨ 3,600",
+                "originalPrice": "₨ 4,500",
+                "discount": "20% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0031",
+                "name": "Slip-On Suede Mule Slippers",
+                "price": "₨ 4,200",
+                "originalPrice": "₨ 5,200",
+                "discount": "Comfort",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0032",
+                "name": "Trekking Waterproof Hiking Boots",
+                "price": "₨ 9,400",
+                "originalPrice": "₨ 11,500",
+                "discount": "Waterproof",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+                "tag": "Footwear",
+                "inStock": true
+              },
+              {
+                "id": "prod_0033",
+                "name": "Artisan Leather Passport Cover",
+                "price": "₨ 1,800",
+                "originalPrice": "₨ 2,200",
+                "discount": "18% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0034",
+                "name": "Full-Grain Leather Laptop Sleeve",
+                "price": "₨ 3,600",
+                "originalPrice": "₨ 4,500",
+                "discount": "20% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0035",
+                "name": "Artisan Leather Keychain Clip",
+                "price": "₨ 850",
+                "originalPrice": "₨ 1,200",
+                "discount": "30% OFF",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0036",
+                "name": "Raw Denim Selvedge Jeans",
+                "price": "₨ 4,900",
+                "originalPrice": "₨ 6,200",
+                "discount": "Selvedge",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0037",
+                "name": "Classic Suede Leather Jacket",
+                "price": "₨ 18,500",
+                "originalPrice": "₨ 22,000",
+                "discount": "Masterpiece",
+                "rating": 5,
+                "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0038",
+                "name": "Heavyweight Cotton Oversized Tee",
+                "price": "₨ 1,800",
+                "originalPrice": "₨ 2,300",
+                "discount": "22% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0039",
+                "name": "Cashmere Wool Winter Scarf",
+                "price": "₨ 3,200",
+                "originalPrice": "₨ 4,000",
+                "discount": "20% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0040",
+                "name": "Full-Grain Leather Cardholder",
+                "price": "₨ 1,500",
+                "originalPrice": "₨ 1,900",
+                "discount": "21% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0041",
+                "name": "Minimalist Automatic Mechanical Watch",
+                "price": "₨ 19,500",
+                "originalPrice": "₨ 24,000",
+                "discount": "Automatic",
+                "rating": 5,
+                "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0042",
+                "name": "Titanium Framed Round Eyeglasses",
+                "price": "₨ 4,200",
+                "originalPrice": "₨ 5,200",
+                "discount": "19% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0043",
+                "name": "Handmade Ceramic Espresso Cups (Set of 4)",
+                "price": "₨ 2,400",
+                "originalPrice": "₨ 3,000",
+                "discount": "Set of 4",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0044",
+                "name": "Organic Bamboo Cutting Board Set",
+                "price": "₨ 2,600",
+                "originalPrice": "₨ 3,400",
+                "discount": "24% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0045",
+                "name": "Artisan Leather Coaster Set (Pack of 6)",
+                "price": "₨ 1,200",
+                "originalPrice": "₨ 1,600",
+                "discount": "Pack of 6",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              },
+              {
+                "id": "prod_0046",
+                "name": "Linen & Cotton Throw Blanket",
+                "price": "₨ 3,800",
+                "originalPrice": "₨ 4,800",
+                "discount": "21% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0047",
+                "name": "Classic Silk Pocket Square",
+                "price": "₨ 950",
+                "originalPrice": "₨ 1,300",
+                "discount": "Hand-rolled",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+                "tag": "Accessories",
+                "inStock": true
+              },
+              {
+                "id": "prod_0048",
+                "name": "Minimalist Wooden Desk Organizer",
+                "price": "₨ 2,200",
+                "originalPrice": "₨ 2,800",
+                "discount": "21% OFF",
+                "rating": 4.8,
+                "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+                "tag": "Home Decor",
+                "inStock": true
+              },
+              {
+                "id": "prod_0049",
+                "name": "AeroForm Running Athletic Shorts",
+                "price": "₨ 2,100",
+                "originalPrice": "₨ 2,700",
+                "discount": "QuickDry",
+                "rating": 4.7,
+                "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+                "tag": "Apparel",
+                "inStock": true
+              },
+              {
+                "id": "prod_0050",
+                "name": "Signature Handcrafted Leather Journal",
+                "price": "₨ 1,900",
+                "originalPrice": "₨ 2,500",
+                "discount": "24% OFF",
+                "rating": 4.9,
+                "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+                "tag": "Leather Goods",
+                "inStock": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "brand-story-1",
+          "type": "BrandStoryZigZag",
+          "props": {
+            "title": "The Art of Precision Horology",
+            "paragraphs": [
+              "Each timepiece is individually assembled and tested for 72 hours in dust-free horological chambers.",
+              "We blend surgical-grade 316L stainless steel with sapphire crystal to build watches meant to be passed down generations."
+            ],
+            "imageUrl": "https://images.unsplash.com/photo-1513094735237-8f2714d57c13?auto=format&fit=crop&w=1200&q=80"
+          }
+        },
+        {
+          "id": "testimonials-slider-1",
+          "type": "TestimonialSliderMultiCard",
+          "props": {
+            "title": "What Our Buyers Say",
+            "layout": "carousel",
+            "testimonials": [
+              {
+                "id": "1",
+                "name": "Dr. Daniyal Ahmed (Islamabad)",
+                "text": "The bezel finish and sweep of the second hand is stunning. Looks like a 2-lakh watch!",
+                "rating": 5,
+                "role": "Verified Buyer"
+              },
+              {
+                "id": "2",
+                "name": "Shahmeer Khan (Lahore)",
+                "text": "Delivered in luxury velvet box with warranty card. Outstanding quality.",
+                "rating": 5,
+                "role": "Verified Buyer"
+              }
+            ]
+          }
+        },
+        {
+          "id": "newsletter-signup-1",
+          "type": "NewsletterSignupProgressive",
+          "props": {
+            "title": "Join The Chrono VIP Collectors Club",
+            "subtitle": "Receive private invitations to limited batch drops and 10% OFF your first luxury timepiece.",
+            "buttonText": "Join VIP Club",
+            "layout": "box"
+          }
+        }
+      ],
+      "products": [
+        {
+          "id": "prod_0001",
+          "name": "Royal Oxford Calfskin Shoes",
+          "price": "₨ 7,800",
+          "originalPrice": "₨ 9,500",
+          "discount": "Best Seller",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0002",
+          "name": "Artisan Suede Penny Loafers",
+          "price": "₨ 6,700",
+          "originalPrice": "₨ 8,200",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0003",
+          "name": "Classic Chelsea Leather Boots",
+          "price": "₨ 8,900",
+          "originalPrice": "₨ 11,000",
+          "discount": "Staff Pick",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0004",
+          "name": "Double Monk Strap Dress Shoes",
+          "price": "₨ 8,400",
+          "originalPrice": "₨ 9,900",
+          "discount": "15% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0005",
+          "name": "CloudLite Performance Runners",
+          "price": "₨ 5,200",
+          "originalPrice": "₨ 6,500",
+          "discount": "Popular",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0006",
+          "name": "Vintage Brogue Wingtip Shoes",
+          "price": "₨ 7,600",
+          "originalPrice": "₨ 9,200",
+          "discount": "Heritage",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0007",
+          "name": "Urban Minimalist White Sneakers",
+          "price": "₨ 4,900",
+          "originalPrice": "₨ 6,200",
+          "discount": "Top Seller",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0008",
+          "name": "Tuscan Leather Driving Moccasins",
+          "price": "₨ 5,900",
+          "originalPrice": "₨ 7,400",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0009",
+          "name": "Derby Plain-Toe Dress Shoes",
+          "price": "₨ 7,200",
+          "originalPrice": "₨ 8,800",
+          "discount": "Classic",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1582898950624-954f9d0cba3c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0010",
+          "name": "Chukka Suede Desert Boots",
+          "price": "₨ 6,900",
+          "originalPrice": "₨ 8,500",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0011",
+          "name": "Executive Full-Grain Briefcase",
+          "price": "₨ 12,500",
+          "originalPrice": "₨ 15,000",
+          "discount": "Premium",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0012",
+          "name": "Grand Voyager Leather Duffle Bag",
+          "price": "₨ 14,500",
+          "originalPrice": "₨ 18,000",
+          "discount": "Best Seller",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0013",
+          "name": "Slim RFID Bifold Leather Wallet",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,200",
+          "discount": "25% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0014",
+          "name": "Classic Reversible Leather Belt",
+          "price": "₨ 2,800",
+          "originalPrice": "₨ 3,500",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0015",
+          "name": "Heritage Leather Messenger Bag",
+          "price": "₨ 9,800",
+          "originalPrice": "₨ 12,000",
+          "discount": "18% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0016",
+          "name": "Tailored Oxford Button-Down Shirt",
+          "price": "₨ 3,400",
+          "originalPrice": "₨ 4,200",
+          "discount": "Popular",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0017",
+          "name": "Pure Merino Wool Knit Sweater",
+          "price": "₨ 5,800",
+          "originalPrice": "₨ 7,200",
+          "discount": "Winter Warmth",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0018",
+          "name": "Bespoke Linen Summer Blazer",
+          "price": "₨ 11,200",
+          "originalPrice": "₨ 14,000",
+          "discount": "Luxury",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0019",
+          "name": "Signature Pique Cotton Polo",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,000",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0020",
+          "name": "Pleated Slim Wool Trousers",
+          "price": "₨ 4,600",
+          "originalPrice": "₨ 5,800",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0021",
+          "name": "Heritage Chronograph Steel Watch",
+          "price": "₨ 16,500",
+          "originalPrice": "₨ 19,900",
+          "discount": "Premium",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0022",
+          "name": "Polarized Aviator Sunglasses",
+          "price": "₨ 3,800",
+          "originalPrice": "₨ 4,800",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0023",
+          "name": "Jacquard Mulberry Silk Necktie",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,400",
+          "discount": "25% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0024",
+          "name": "Solid Brass Geometric Cufflinks",
+          "price": "₨ 1,600",
+          "originalPrice": "₨ 2,200",
+          "discount": "Trending",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0025",
+          "name": "Handmade Ceramic Minimalist Vase",
+          "price": "₨ 3,200",
+          "originalPrice": "₨ 4,000",
+          "discount": "Artisan Made",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0026",
+          "name": "Aromatic Soy Wax Scented Candle",
+          "price": "₨ 1,400",
+          "originalPrice": "₨ 1,800",
+          "discount": "22% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0027",
+          "name": "Hand-Carved Walnut Serving Board",
+          "price": "₨ 2,900",
+          "originalPrice": "₨ 3,800",
+          "discount": "Handmade",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0028",
+          "name": "Vintage Brass Table Lamp",
+          "price": "₨ 6,800",
+          "originalPrice": "₨ 8,500",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0029",
+          "name": "Handwoven Jute Floor Rug (4x6 ft)",
+          "price": "₨ 4,800",
+          "originalPrice": "₨ 6,000",
+          "discount": "Eco Friendly",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0030",
+          "name": "Copper Hammered Water Carafe Set",
+          "price": "₨ 3,600",
+          "originalPrice": "₨ 4,500",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0031",
+          "name": "Slip-On Suede Mule Slippers",
+          "price": "₨ 4,200",
+          "originalPrice": "₨ 5,200",
+          "discount": "Comfort",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0032",
+          "name": "Trekking Waterproof Hiking Boots",
+          "price": "₨ 9,400",
+          "originalPrice": "₨ 11,500",
+          "discount": "Waterproof",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0033",
+          "name": "Artisan Leather Passport Cover",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,200",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0034",
+          "name": "Full-Grain Leather Laptop Sleeve",
+          "price": "₨ 3,600",
+          "originalPrice": "₨ 4,500",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0035",
+          "name": "Artisan Leather Keychain Clip",
+          "price": "₨ 850",
+          "originalPrice": "₨ 1,200",
+          "discount": "30% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0036",
+          "name": "Raw Denim Selvedge Jeans",
+          "price": "₨ 4,900",
+          "originalPrice": "₨ 6,200",
+          "discount": "Selvedge",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0037",
+          "name": "Classic Suede Leather Jacket",
+          "price": "₨ 18,500",
+          "originalPrice": "₨ 22,000",
+          "discount": "Masterpiece",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0038",
+          "name": "Heavyweight Cotton Oversized Tee",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,300",
+          "discount": "22% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0039",
+          "name": "Cashmere Wool Winter Scarf",
+          "price": "₨ 3,200",
+          "originalPrice": "₨ 4,000",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0040",
+          "name": "Full-Grain Leather Cardholder",
+          "price": "₨ 1,500",
+          "originalPrice": "₨ 1,900",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0041",
+          "name": "Minimalist Automatic Mechanical Watch",
+          "price": "₨ 19,500",
+          "originalPrice": "₨ 24,000",
+          "discount": "Automatic",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0042",
+          "name": "Titanium Framed Round Eyeglasses",
+          "price": "₨ 4,200",
+          "originalPrice": "₨ 5,200",
+          "discount": "19% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0043",
+          "name": "Handmade Ceramic Espresso Cups (Set of 4)",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,000",
+          "discount": "Set of 4",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0044",
+          "name": "Organic Bamboo Cutting Board Set",
+          "price": "₨ 2,600",
+          "originalPrice": "₨ 3,400",
+          "discount": "24% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0045",
+          "name": "Artisan Leather Coaster Set (Pack of 6)",
+          "price": "₨ 1,200",
+          "originalPrice": "₨ 1,600",
+          "discount": "Pack of 6",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0046",
+          "name": "Linen & Cotton Throw Blanket",
+          "price": "₨ 3,800",
+          "originalPrice": "₨ 4,800",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0047",
+          "name": "Classic Silk Pocket Square",
+          "price": "₨ 950",
+          "originalPrice": "₨ 1,300",
+          "discount": "Hand-rolled",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0048",
+          "name": "Minimalist Wooden Desk Organizer",
+          "price": "₨ 2,200",
+          "originalPrice": "₨ 2,800",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0049",
+          "name": "AeroForm Running Athletic Shorts",
+          "price": "₨ 2,100",
+          "originalPrice": "₨ 2,700",
+          "discount": "QuickDry",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0050",
+          "name": "Signature Handcrafted Leather Journal",
+          "price": "₨ 1,900",
+          "originalPrice": "₨ 2,500",
+          "discount": "24% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        }
+      ]
+    },
+    "seo_config": {
+      "title": "ChronoCraft Luxury | Luxury Watches & Chronographs",
+      "description": "Precision luxury timepieces and bespoke chronographs",
+      "keywords": [
+        "watches",
+        "buy online",
+        "shop",
+        "worldwide",
+        "chronocraft luxury"
+      ]
+    },
+    "commerce_config": {
+      "products": [
+        {
+          "id": "prod_0001",
+          "name": "Royal Oxford Calfskin Shoes",
+          "price": "₨ 7,800",
+          "originalPrice": "₨ 9,500",
+          "discount": "Best Seller",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0002",
+          "name": "Artisan Suede Penny Loafers",
+          "price": "₨ 6,700",
+          "originalPrice": "₨ 8,200",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0003",
+          "name": "Classic Chelsea Leather Boots",
+          "price": "₨ 8,900",
+          "originalPrice": "₨ 11,000",
+          "discount": "Staff Pick",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0004",
+          "name": "Double Monk Strap Dress Shoes",
+          "price": "₨ 8,400",
+          "originalPrice": "₨ 9,900",
+          "discount": "15% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0005",
+          "name": "CloudLite Performance Runners",
+          "price": "₨ 5,200",
+          "originalPrice": "₨ 6,500",
+          "discount": "Popular",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0006",
+          "name": "Vintage Brogue Wingtip Shoes",
+          "price": "₨ 7,600",
+          "originalPrice": "₨ 9,200",
+          "discount": "Heritage",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0007",
+          "name": "Urban Minimalist White Sneakers",
+          "price": "₨ 4,900",
+          "originalPrice": "₨ 6,200",
+          "discount": "Top Seller",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0008",
+          "name": "Tuscan Leather Driving Moccasins",
+          "price": "₨ 5,900",
+          "originalPrice": "₨ 7,400",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0009",
+          "name": "Derby Plain-Toe Dress Shoes",
+          "price": "₨ 7,200",
+          "originalPrice": "₨ 8,800",
+          "discount": "Classic",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1582898950624-954f9d0cba3c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0010",
+          "name": "Chukka Suede Desert Boots",
+          "price": "₨ 6,900",
+          "originalPrice": "₨ 8,500",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0011",
+          "name": "Executive Full-Grain Briefcase",
+          "price": "₨ 12,500",
+          "originalPrice": "₨ 15,000",
+          "discount": "Premium",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0012",
+          "name": "Grand Voyager Leather Duffle Bag",
+          "price": "₨ 14,500",
+          "originalPrice": "₨ 18,000",
+          "discount": "Best Seller",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0013",
+          "name": "Slim RFID Bifold Leather Wallet",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,200",
+          "discount": "25% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0014",
+          "name": "Classic Reversible Leather Belt",
+          "price": "₨ 2,800",
+          "originalPrice": "₨ 3,500",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0015",
+          "name": "Heritage Leather Messenger Bag",
+          "price": "₨ 9,800",
+          "originalPrice": "₨ 12,000",
+          "discount": "18% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0016",
+          "name": "Tailored Oxford Button-Down Shirt",
+          "price": "₨ 3,400",
+          "originalPrice": "₨ 4,200",
+          "discount": "Popular",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0017",
+          "name": "Pure Merino Wool Knit Sweater",
+          "price": "₨ 5,800",
+          "originalPrice": "₨ 7,200",
+          "discount": "Winter Warmth",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0018",
+          "name": "Bespoke Linen Summer Blazer",
+          "price": "₨ 11,200",
+          "originalPrice": "₨ 14,000",
+          "discount": "Luxury",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0019",
+          "name": "Signature Pique Cotton Polo",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,000",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0020",
+          "name": "Pleated Slim Wool Trousers",
+          "price": "₨ 4,600",
+          "originalPrice": "₨ 5,800",
+          "discount": "20% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0021",
+          "name": "Heritage Chronograph Steel Watch",
+          "price": "₨ 16,500",
+          "originalPrice": "₨ 19,900",
+          "discount": "Premium",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0022",
+          "name": "Polarized Aviator Sunglasses",
+          "price": "₨ 3,800",
+          "originalPrice": "₨ 4,800",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0023",
+          "name": "Jacquard Mulberry Silk Necktie",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,400",
+          "discount": "25% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0024",
+          "name": "Solid Brass Geometric Cufflinks",
+          "price": "₨ 1,600",
+          "originalPrice": "₨ 2,200",
+          "discount": "Trending",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0025",
+          "name": "Handmade Ceramic Minimalist Vase",
+          "price": "₨ 3,200",
+          "originalPrice": "₨ 4,000",
+          "discount": "Artisan Made",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0026",
+          "name": "Aromatic Soy Wax Scented Candle",
+          "price": "₨ 1,400",
+          "originalPrice": "₨ 1,800",
+          "discount": "22% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0027",
+          "name": "Hand-Carved Walnut Serving Board",
+          "price": "₨ 2,900",
+          "originalPrice": "₨ 3,800",
+          "discount": "Handmade",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0028",
+          "name": "Vintage Brass Table Lamp",
+          "price": "₨ 6,800",
+          "originalPrice": "₨ 8,500",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0029",
+          "name": "Handwoven Jute Floor Rug (4x6 ft)",
+          "price": "₨ 4,800",
+          "originalPrice": "₨ 6,000",
+          "discount": "Eco Friendly",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0030",
+          "name": "Copper Hammered Water Carafe Set",
+          "price": "₨ 3,600",
+          "originalPrice": "₨ 4,500",
+          "discount": "20% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0031",
+          "name": "Slip-On Suede Mule Slippers",
+          "price": "₨ 4,200",
+          "originalPrice": "₨ 5,200",
+          "discount": "Comfort",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0032",
+          "name": "Trekking Waterproof Hiking Boots",
+          "price": "₨ 9,400",
+          "originalPrice": "₨ 11,500",
+          "discount": "Waterproof",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "tag": "Footwear",
+          "inStock": true
+        },
+        {
+          "id": "prod_0033",
+          "name": "Artisan Leather Passport Cover",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,200",
+          "discount": "18% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0034",
+          "name": "Full-Grain Leather Laptop Sleeve",
+          "price": "₨ 3,600",
+          "originalPrice": "₨ 4,500",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0035",
+          "name": "Artisan Leather Keychain Clip",
+          "price": "₨ 850",
+          "originalPrice": "₨ 1,200",
+          "discount": "30% OFF",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0036",
+          "name": "Raw Denim Selvedge Jeans",
+          "price": "₨ 4,900",
+          "originalPrice": "₨ 6,200",
+          "discount": "Selvedge",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0037",
+          "name": "Classic Suede Leather Jacket",
+          "price": "₨ 18,500",
+          "originalPrice": "₨ 22,000",
+          "discount": "Masterpiece",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0038",
+          "name": "Heavyweight Cotton Oversized Tee",
+          "price": "₨ 1,800",
+          "originalPrice": "₨ 2,300",
+          "discount": "22% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0039",
+          "name": "Cashmere Wool Winter Scarf",
+          "price": "₨ 3,200",
+          "originalPrice": "₨ 4,000",
+          "discount": "20% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0040",
+          "name": "Full-Grain Leather Cardholder",
+          "price": "₨ 1,500",
+          "originalPrice": "₨ 1,900",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0041",
+          "name": "Minimalist Automatic Mechanical Watch",
+          "price": "₨ 19,500",
+          "originalPrice": "₨ 24,000",
+          "discount": "Automatic",
+          "rating": 5,
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0042",
+          "name": "Titanium Framed Round Eyeglasses",
+          "price": "₨ 4,200",
+          "originalPrice": "₨ 5,200",
+          "discount": "19% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0043",
+          "name": "Handmade Ceramic Espresso Cups (Set of 4)",
+          "price": "₨ 2,400",
+          "originalPrice": "₨ 3,000",
+          "discount": "Set of 4",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0044",
+          "name": "Organic Bamboo Cutting Board Set",
+          "price": "₨ 2,600",
+          "originalPrice": "₨ 3,400",
+          "discount": "24% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0045",
+          "name": "Artisan Leather Coaster Set (Pack of 6)",
+          "price": "₨ 1,200",
+          "originalPrice": "₨ 1,600",
+          "discount": "Pack of 6",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        },
+        {
+          "id": "prod_0046",
+          "name": "Linen & Cotton Throw Blanket",
+          "price": "₨ 3,800",
+          "originalPrice": "₨ 4,800",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0047",
+          "name": "Classic Silk Pocket Square",
+          "price": "₨ 950",
+          "originalPrice": "₨ 1,300",
+          "discount": "Hand-rolled",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
+          "tag": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": "prod_0048",
+          "name": "Minimalist Wooden Desk Organizer",
+          "price": "₨ 2,200",
+          "originalPrice": "₨ 2,800",
+          "discount": "21% OFF",
+          "rating": 4.8,
+          "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
+          "tag": "Home Decor",
+          "inStock": true
+        },
+        {
+          "id": "prod_0049",
+          "name": "AeroForm Running Athletic Shorts",
+          "price": "₨ 2,100",
+          "originalPrice": "₨ 2,700",
+          "discount": "QuickDry",
+          "rating": 4.7,
+          "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
+          "tag": "Apparel",
+          "inStock": true
+        },
+        {
+          "id": "prod_0050",
+          "name": "Signature Handcrafted Leather Journal",
+          "price": "₨ 1,900",
+          "originalPrice": "₨ 2,500",
+          "discount": "24% OFF",
+          "rating": 4.9,
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "tag": "Leather Goods",
+          "inStock": true
+        }
+      ]
+    },
+    "is_published": true,
+    "is_generating": false,
+    "custom_domain": null,
+    "subdomain": "chronocraft-luxury",
+    "created_at": "2026-08-28T05:40:12.065Z",
+    "updated_at": "2026-08-29T09:51:38.017Z"
+  },
+  {
+    "id": "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+    "vendor_id": "374c6044-19d9-49db-a508-dccf3c1f6f2f",
+    "name": "Footwear",
+    "slug": "stepcraft-premium",
+    "niche": "shoes",
+    "description": null,
+    "logo_url": null,
+    "layout_config": {
+      "theme": {
+        "colors": {
+          "text": "#0A0A0A",
+          "primary": "#171717",
+          "secondary": "#D4AF37",
+          "background": "#FFFFFF"
+        },
+        "typography": {
+          "body": "Inter",
+          "heading": "Playfair Display"
+        }
+      },
+      "products": [
+        {
+          "id": "s1",
+          "tag": "Bestseller",
+          "name": "Royal Oxford Calfskin Shoes",
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 7,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 9,500"
+        },
+        {
+          "id": "s2",
+          "tag": "Trending",
+          "name": "Handcrafted Suede Loafers",
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 6,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 7,800"
+        },
+        {
+          "id": "s3",
+          "tag": "Traditional",
+          "name": "Peshawari Chappal - Pure Leather",
+          "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 5,200",
+          "rating": 5,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 6,500"
+        },
+        {
+          "id": "s4",
+          "tag": "Limited Drop",
+          "name": "Urban Streetwear Sneakers",
+          "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 8,900",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 11,000"
+        },
+        {
+          "id": "prod_0001",
+          "tag": "Footwear",
+          "name": "Royal Oxford Calfskin Shoes",
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 7,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Best Seller",
+          "originalPrice": "₨ 9,500"
+        },
+        {
+          "id": "prod_0002",
+          "tag": "Footwear",
+          "name": "Artisan Suede Penny Loafers",
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 6,700",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 8,200"
+        },
+        {
+          "id": "prod_0003",
+          "tag": "Footwear",
+          "name": "Classic Chelsea Leather Boots",
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 8,900",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Staff Pick",
+          "originalPrice": "₨ 11,000"
+        },
+        {
+          "id": "prod_0004",
+          "tag": "Footwear",
+          "name": "Double Monk Strap Dress Shoes",
+          "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 8,400",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "15% OFF",
+          "originalPrice": "₨ 9,900"
+        },
+        {
+          "id": "prod_0005",
+          "tag": "Footwear",
+          "name": "CloudLite Performance Runners",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 5,200",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "Popular",
+          "originalPrice": "₨ 6,500"
+        },
+        {
+          "id": "prod_0006",
+          "tag": "Footwear",
+          "name": "Vintage Brogue Wingtip Shoes",
+          "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 7,600",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Heritage",
+          "originalPrice": "₨ 9,200"
+        },
+        {
+          "id": "prod_0015",
+          "tag": "Leather Goods",
+          "name": "Heritage Leather Messenger Bag",
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 9,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 12,000"
+        },
+        {
+          "id": "prod_0014",
+          "tag": "Leather Goods",
+          "name": "Classic Reversible Leather Belt",
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 2,800",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 3,500"
+        },
+        {
+          "id": "prod_0016",
+          "tag": "Apparel",
+          "name": "Tailored Oxford Button-Down Shirt",
+          "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 3,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "Popular",
+          "originalPrice": "₨ 4,200"
+        },
+        {
+          "id": "prod_0013",
+          "tag": "Leather Goods",
+          "name": "Slim RFID Bifold Leather Wallet",
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 2,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "25% OFF",
+          "originalPrice": "₨ 3,200"
+        },
+        {
+          "id": "prod_0020",
+          "tag": "Apparel",
+          "name": "Pleated Slim Wool Trousers",
+          "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 4,600",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 5,800"
+        },
+        {
+          "id": "prod_0021",
+          "tag": "Accessories",
+          "name": "Heritage Chronograph Steel Watch",
+          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 16,500",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Premium",
+          "originalPrice": "₨ 19,900"
+        }
+      ],
+      "sections": [
+        {
+          "id": "promo-banner-1",
+          "type": "PromoBanner",
+          "props": {
+            "text": "🎉 Free Express Delivery on orders over ₨ 5,000 across Pakistan! Use code 'ROYAL10' for 10% OFF.",
+            "layout": "ribbon"
+          }
+        },
+        {
+          "id": "hero-split-1",
+          "type": "HeroSplitImage",
+          "props": {
+            "title": "Walk With Royal Distinction",
+            "ctaLink": "/shop",
+            "ctaText": "Shop Collection",
+            "imageUrl": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80",
+            "subtitle": "100% pure full-grain calfskin leather shoes. Handcrafted in Pakistan with ergonomic cushioning for all-day comfort.",
+            "imageAlignment": "right",
+            "secondaryCtaLink": "/about",
+            "secondaryCtaText": "Explore Heritage"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Pay at your doorstep anywhere in Pakistan via TCS / Leopard"
+              },
+              {
+                "icon": "shield-check",
+                "title": "A2 Escrow Protection",
+                "description": "100% buyer protection guarantee until delivery confirmation"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "7-Day Easy Exchange",
+                "description": "Hassle-free size replacement with zero extra charges"
+              },
+              {
+                "icon": "award",
+                "title": "Pure Full-Grain Leather",
+                "description": "Hand-inspected natural leather crafted by master shoemakers"
+              }
+            ],
+            "columns": 4
+          }
+        },
+        {
+          "id": "category-carousel-1",
+          "type": "CategoryCarouselCenterEmphasis",
+          "props": {
+            "title": "Explore Shoe Collections",
+            "layout": "card",
+            "categories": [
+              {
+                "href": "/category/formal",
+                "count": "24 items",
+                "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&q=80",
+                "title": "Oxford & Formals"
+              },
+              {
+                "href": "/category/loafers",
+                "count": "18 items",
+                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
+                "title": "Casual Loafers"
+              },
+              {
+                "href": "/category/sneakers",
+                "count": "32 items",
+                "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+                "title": "Sneakers & Street"
+              },
+              {
+                "href": "/category/traditional",
+                "count": "12 items",
+                "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
+                "title": "Peshawari Chappal"
+              }
+            ]
+          }
+        },
+        {
+          "id": "product-grid-1",
+          "type": "ProductGridFeatured",
+          "props": {
+            "title": "Featured Masterpieces",
+            "columns": 3,
+            "products": [
+              {
+                "id": "s1",
+                "tag": "Bestseller",
+                "name": "Royal Oxford Calfskin Shoes",
+                "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
+                "price": "₨ 7,800",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "18% OFF",
+                "originalPrice": "₨ 9,500"
+              },
+              {
+                "id": "s2",
+                "tag": "Trending",
+                "name": "Handcrafted Suede Loafers",
+                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
+                "price": "₨ 6,400",
+                "rating": 4.8,
+                "inStock": true,
+                "discount": "18% OFF",
+                "originalPrice": "₨ 7,800"
+              },
+              {
+                "id": "s3",
+                "tag": "Traditional",
+                "name": "Peshawari Chappal - Pure Leather",
+                "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
+                "price": "₨ 5,200",
+                "rating": 5,
+                "inStock": true,
+                "discount": "20% OFF",
+                "originalPrice": "₨ 6,500"
+              },
+              {
+                "id": "s4",
+                "tag": "Limited Drop",
+                "name": "Urban Streetwear Sneakers",
+                "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+                "price": "₨ 8,900",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "20% OFF",
+                "originalPrice": "₨ 11,000"
+              },
+              {
+                "id": "prod_0001",
+                "tag": "Footwear",
+                "name": "Royal Oxford Calfskin Shoes",
+                "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 7,800",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "Best Seller",
+                "originalPrice": "₨ 9,500"
+              },
+              {
+                "id": "prod_0002",
+                "tag": "Footwear",
+                "name": "Artisan Suede Penny Loafers",
+                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 6,700",
+                "rating": 4.8,
+                "inStock": true,
+                "discount": "18% OFF",
+                "originalPrice": "₨ 8,200"
+              },
+              {
+                "id": "prod_0003",
+                "tag": "Footwear",
+                "name": "Classic Chelsea Leather Boots",
+                "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 8,900",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "Staff Pick",
+                "originalPrice": "₨ 11,000"
+              },
+              {
+                "id": "prod_0004",
+                "tag": "Footwear",
+                "name": "Double Monk Strap Dress Shoes",
+                "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 8,400",
+                "rating": 4.7,
+                "inStock": true,
+                "discount": "15% OFF",
+                "originalPrice": "₨ 9,900"
+              },
+              {
+                "id": "prod_0005",
+                "tag": "Footwear",
+                "name": "CloudLite Performance Runners",
+                "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 5,200",
+                "rating": 4.8,
+                "inStock": true,
+                "discount": "Popular",
+                "originalPrice": "₨ 6,500"
+              },
+              {
+                "id": "prod_0006",
+                "tag": "Footwear",
+                "name": "Vintage Brogue Wingtip Shoes",
+                "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 7,600",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "Heritage",
+                "originalPrice": "₨ 9,200"
+              },
+              {
+                "id": "prod_0015",
+                "tag": "Leather Goods",
+                "name": "Heritage Leather Messenger Bag",
+                "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 9,800",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "18% OFF",
+                "originalPrice": "₨ 12,000"
+              },
+              {
+                "id": "prod_0014",
+                "tag": "Leather Goods",
+                "name": "Classic Reversible Leather Belt",
+                "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 2,800",
+                "rating": 4.7,
+                "inStock": true,
+                "discount": "20% OFF",
+                "originalPrice": "₨ 3,500"
+              },
+              {
+                "id": "prod_0016",
+                "tag": "Apparel",
+                "name": "Tailored Oxford Button-Down Shirt",
+                "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 3,400",
+                "rating": 4.8,
+                "inStock": true,
+                "discount": "Popular",
+                "originalPrice": "₨ 4,200"
+              },
+              {
+                "id": "prod_0013",
+                "tag": "Leather Goods",
+                "name": "Slim RFID Bifold Leather Wallet",
+                "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 2,400",
+                "rating": 4.8,
+                "inStock": true,
+                "discount": "25% OFF",
+                "originalPrice": "₨ 3,200"
+              },
+              {
+                "id": "prod_0020",
+                "tag": "Apparel",
+                "name": "Pleated Slim Wool Trousers",
+                "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 4,600",
+                "rating": 4.7,
+                "inStock": true,
+                "discount": "20% OFF",
+                "originalPrice": "₨ 5,800"
+              },
+              {
+                "id": "prod_0021",
+                "tag": "Accessories",
+                "name": "Heritage Chronograph Steel Watch",
+                "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+                "price": "₨ 16,500",
+                "rating": 4.9,
+                "inStock": true,
+                "discount": "Premium",
+                "originalPrice": "₨ 19,900"
+              }
+            ]
+          }
+        },
+        {
+          "id": "brand-story-1",
+          "type": "BrandStory",
+          "props": {
+            "title": "The Legacy of Master Cobblers",
+            "imageUrl": "https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80",
+            "paragraphs": [
+              "Every pair of StepCraft shoes begins with hand-selected hides of top-tier full-grain leather. Our craftsmen spend over 36 hours stitching, shaping, and polishing each silhouette to perfection.",
+              "We reject synthetic shortcuts. From Goodyear welted soles to soft breathable leather linings, every detail is engineered to ensure timeless luxury that molds to your feet."
+            ]
+          }
+        },
+        {
+          "id": "testimonial-slider-1",
+          "type": "TestimonialSlider",
+          "props": {
+            "title": "What Pakistani Gentlemen Say",
+            "layout": "carousel",
+            "testimonials": [
+              {
+                "id": "1",
+                "name": "Hamza Tariq (Lahore)",
+                "role": "Verified Buyer",
+                "text": "Ordered the Black Oxford for my brother's wedding. The leather quality is unmatched, honestly beats foreign designer brands!",
+                "rating": 5
+              },
+              {
+                "id": "2",
+                "name": "Dr. Bilal Khan (Islamabad)",
+                "role": "Verified Buyer",
+                "text": "Cash on delivery was fast (delivered in 2 days). The arch support is so comfortable for daily hospital rounds.",
+                "rating": 5
+              },
+              {
+                "id": "3",
+                "name": "Zainab Malik (Karachi)",
+                "role": "Verified Buyer",
+                "text": "Bought Peshawari chappal for my husband on Eid. Excellent stitching and premium packaging.",
+                "rating": 5
+              }
+            ]
+          }
+        },
+        {
+          "id": "newsletter-signup-1",
+          "type": "NewsletterSignupProgressive",
+          "props": {
+            "title": "Join The StepCraft Inner Circle",
+            "layout": "box",
+            "subtitle": "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
+            "buttonText": "Claim 10% Discount"
+          }
+        }
+      ],
+      "storeName": "Footwear",
+      "categories": [
+        {
+          "href": "/category/formal-shoes",
+          "name": "Oxford & Formal"
+        },
+        {
+          "href": "/category/casual-loafers",
+          "name": "Casual Loafers"
+        },
+        {
+          "href": "/category/sneakers",
+          "name": "Sneakers & Street"
+        },
+        {
+          "href": "/category/peshawari",
+          "name": "Traditional Peshawari"
+        },
+        {
+          "href": "/category/boots",
+          "name": "Chelsea Boots"
+        }
+      ],
+      "socialLinks": [
+        {
+          "href": "https://instagram.com",
+          "icon": "instagram",
+          "name": "Instagram"
+        },
+        {
+          "href": "https://wa.me/923001234567",
+          "icon": "whatsapp",
+          "name": "WhatsApp Store"
+        }
+      ]
+    },
+    "seo_config": {
+      "title": "StepCraft Luxury Footwear | Handcrafted Shoes",
+      "keywords": [
+        "shoes",
+        "leather shoes",
+        "handmade footwear",
+        "oxford shoes",
+        "loafer",
+        "Pakistan"
+      ],
+      "description": "Discover Pakistan's finest handmade leather shoes. Nationwide Cash on Delivery & 100% Escrow Protection."
+    },
+    "commerce_config": {
+      "products": [
+        {
+          "id": "s1",
+          "tag": "Bestseller",
+          "name": "Royal Oxford Calfskin Shoes",
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 7,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 9,500"
+        },
+        {
+          "id": "s2",
+          "tag": "Trending",
+          "name": "Handcrafted Suede Loafers",
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 6,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 7,800"
+        },
+        {
+          "id": "s3",
+          "tag": "Traditional",
+          "name": "Peshawari Chappal - Pure Leather",
+          "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 5,200",
+          "rating": 5,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 6,500"
+        },
+        {
+          "id": "s4",
+          "tag": "Limited Drop",
+          "name": "Urban Streetwear Sneakers",
+          "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+          "price": "₨ 8,900",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 11,000"
+        },
+        {
+          "id": "prod_0001",
+          "tag": "Footwear",
+          "name": "Royal Oxford Calfskin Shoes",
+          "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 7,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Best Seller",
+          "originalPrice": "₨ 9,500"
+        },
+        {
+          "id": "prod_0002",
+          "tag": "Footwear",
+          "name": "Artisan Suede Penny Loafers",
+          "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 6,700",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 8,200"
+        },
+        {
+          "id": "prod_0003",
+          "tag": "Footwear",
+          "name": "Classic Chelsea Leather Boots",
+          "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 8,900",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Staff Pick",
+          "originalPrice": "₨ 11,000"
+        },
+        {
+          "id": "prod_0004",
+          "tag": "Footwear",
+          "name": "Double Monk Strap Dress Shoes",
+          "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 8,400",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "15% OFF",
+          "originalPrice": "₨ 9,900"
+        },
+        {
+          "id": "prod_0005",
+          "tag": "Footwear",
+          "name": "CloudLite Performance Runners",
+          "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 5,200",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "Popular",
+          "originalPrice": "₨ 6,500"
+        },
+        {
+          "id": "prod_0006",
+          "tag": "Footwear",
+          "name": "Vintage Brogue Wingtip Shoes",
+          "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 7,600",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Heritage",
+          "originalPrice": "₨ 9,200"
+        },
+        {
+          "id": "prod_0015",
+          "tag": "Leather Goods",
+          "name": "Heritage Leather Messenger Bag",
+          "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 9,800",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "18% OFF",
+          "originalPrice": "₨ 12,000"
+        },
+        {
+          "id": "prod_0014",
+          "tag": "Leather Goods",
+          "name": "Classic Reversible Leather Belt",
+          "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 2,800",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 3,500"
+        },
+        {
+          "id": "prod_0016",
+          "tag": "Apparel",
+          "name": "Tailored Oxford Button-Down Shirt",
+          "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 3,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "Popular",
+          "originalPrice": "₨ 4,200"
+        },
+        {
+          "id": "prod_0013",
+          "tag": "Leather Goods",
+          "name": "Slim RFID Bifold Leather Wallet",
+          "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 2,400",
+          "rating": 4.8,
+          "inStock": true,
+          "discount": "25% OFF",
+          "originalPrice": "₨ 3,200"
+        },
+        {
+          "id": "prod_0020",
+          "tag": "Apparel",
+          "name": "Pleated Slim Wool Trousers",
+          "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 4,600",
+          "rating": 4.7,
+          "inStock": true,
+          "discount": "20% OFF",
+          "originalPrice": "₨ 5,800"
+        },
+        {
+          "id": "prod_0021",
+          "tag": "Accessories",
+          "name": "Heritage Chronograph Steel Watch",
+          "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+          "price": "₨ 16,500",
+          "rating": 4.9,
+          "inStock": true,
+          "discount": "Premium",
+          "originalPrice": "₨ 19,900"
+        }
+      ]
+    },
+    "is_published": true,
+    "is_generating": false,
+    "custom_domain": null,
+    "subdomain": "stepcraft-premium",
+    "created_at": "2026-08-27T10:49:14.906303+00:00",
+    "updated_at": "2026-08-29T08:56:01.972965+00:00"
+  }
+]

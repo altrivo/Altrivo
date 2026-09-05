@@ -1,0 +1,551 @@
+import { resolveDomainToVendor } from "./domainResolver";
+
+export interface HeroConfig {
+  badge: string;
+  headline: string;
+  subheadline: string;
+  ctaText: string;
+  ctaHref: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  imageUrl: string;
+  videoUrl?: string;
+}
+
+export interface StorefrontProduct {
+  id: string;
+  name: string;
+  price: string;
+  originalPrice: string;
+  rating: number;
+  reviewsCount: number;
+  category: string;
+  inStock: boolean;
+  badge: string;
+  image: string;
+  isBestSeller?: boolean;
+  isFeatured?: boolean;
+}
+
+export interface CategoryTile {
+  title: string;
+  count: string;
+  icon: string;
+  href: string;
+  image?: string;
+}
+
+export interface NewsletterConfig {
+  headline: string;
+  subheadline: string;
+  discountText: string;
+}
+
+export interface TrustFeature {
+  title: string;
+  description: string;
+  icon: "truck" | "rotate-ccw" | "shield-check" | "lock" | "headphones" | "award";
+}
+
+export interface VendorStoreConfig {
+  vendorId: string;
+  storeName: string;
+  subdomain: string;
+  domain?: string;
+  logoText: string;
+  logoUrl?: string;
+  tagline: string;
+  description: string;
+  primaryColor: string;
+  accentColor: string;
+  supportPhone?: string;
+  freeShippingThreshold?: string;
+  categories: { name: string; href: string }[];
+  socialLinks: { name: string; href: string; icon: string }[];
+  policies: { title: string; href: string }[];
+  hero: HeroConfig;
+  featuredProducts: StorefrontProduct[];
+  categoryTiles: CategoryTile[];
+  newsletter: NewsletterConfig;
+  trustFeatures: TrustFeature[];
+}
+
+const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
+  vendorId: "vendor-artrivo-01",
+  storeName: "Artrivo Marketplace Store",
+  subdomain: "artrivo",
+  logoText: "Artrivo Store",
+  tagline: "Handcrafted Luxury Home Decor & Artisanal Collectibles",
+  description: "Curating premium handcrafted items across Pakistan with verified escrow protection and instant home delivery.",
+  primaryColor: "#694873",
+  accentColor: "#F2DDE1",
+  supportPhone: "+92 300 1234567",
+  freeShippingThreshold: "₨ 5,000",
+  categories: [
+    { name: "All Products", href: "/shop" },
+    { name: "Ceramics & Decor", href: "/category/decor" },
+    { name: "Canvas Art", href: "/category/art" },
+    { name: "Lighting", href: "/category/lighting" },
+    { name: "Home Textiles", href: "/category/textiles" },
+    { name: "Stationery", href: "/category/stationery" },
+  ],
+  socialLinks: [
+    { name: "Instagram", href: "https://instagram.com/artrivo.store", icon: "instagram" },
+    { name: "WhatsApp Store", href: "https://wa.me/923001234567", icon: "whatsapp" },
+    { name: "Facebook", href: "https://facebook.com/artrivo.store", icon: "facebook" },
+    { name: "Pinterest", href: "https://pinterest.com/artrivo.store", icon: "pinterest" },
+  ],
+  policies: [
+    { title: "Privacy Policy", href: "/shop/policies/privacy" },
+    { title: "Terms of Service", href: "/shop/policies/terms" },
+    { title: "Refund & Returns", href: "/shop/policies/refund" },
+    { title: "Shipping & Delivery", href: "/shop/policies/shipping" },
+  ],
+  hero: {
+    badge: "Summer 2026 Collection Live",
+    headline: "Handcrafted Luxury Home Decor & Artisanal Collectibles",
+    subheadline: "Discover unique ceramic art, abstract canvas paintings, and handcrafted wooden lighting made by master artisans across Pakistan.",
+    ctaText: "Explore Collection",
+    ctaHref: "#catalog",
+    secondaryCtaText: "View Cart (3 items)",
+    secondaryCtaHref: "/shop/cart",
+    imageUrl: "/images/products/ceramic_vase.jpg",
+  },
+  featuredProducts: [
+    {
+      id: "prod-1",
+      name: "Ceramic Minimalist Vase (Handcrafted)",
+      price: "₨ 8,900",
+      originalPrice: "₨ 11,000",
+      rating: 4.9,
+      reviewsCount: 42,
+      category: "Decor",
+      inStock: true,
+      badge: "Best Seller",
+      image: "/images/products/ceramic_vase.jpg",
+      isBestSeller: true,
+      isFeatured: true,
+    },
+    {
+      id: "prod-2",
+      name: "Abstract Canvas Painting 'Golden Dawn'",
+      price: "₨ 34,000",
+      originalPrice: "₨ 40,000",
+      rating: 5.0,
+      reviewsCount: 28,
+      category: "Art",
+      inStock: true,
+      badge: "Featured",
+      image: "/images/products/abstract_canvas.jpg",
+      isFeatured: true,
+    },
+    {
+      id: "prod-3",
+      name: "Nordic Wooden Desk Lamp",
+      price: "₨ 12,500",
+      originalPrice: "₨ 15,000",
+      rating: 4.8,
+      reviewsCount: 19,
+      category: "Lighting",
+      inStock: true,
+      badge: "Low Stock",
+      image: "/images/products/wooden_lamp.jpg",
+      isBestSeller: true,
+    },
+    {
+      id: "prod-4",
+      name: "Handcrafted Genuine Leather Journal",
+      price: "₨ 4,800",
+      originalPrice: "₨ 6,000",
+      rating: 4.9,
+      reviewsCount: 64,
+      category: "Stationery",
+      inStock: true,
+      badge: "New",
+      image: "/images/products/leather_journal.jpg",
+      isFeatured: true,
+    },
+  ],
+  categoryTiles: [
+    { title: "Ceramics & Decor", count: "42 items", icon: "🏺", href: "/category/decor", image: "/images/products/ceramic_vase.jpg" },
+    { title: "Canvas Paintings", count: "28 items", icon: "🎨", href: "/category/art", image: "/images/products/abstract_canvas.jpg" },
+    { title: "Artisan Lighting", count: "16 items", icon: "💡", href: "/category/lighting", image: "/images/products/wooden_lamp.jpg" },
+    { title: "Home Textiles", count: "34 items", icon: "🧶", href: "/category/textiles", image: "/images/products/leather_journal.jpg" },
+  ],
+  newsletter: {
+    headline: "Stay Updated with Seasonal Drops",
+    subheadline: "Subscribe to receive private discount codes, artisan behind-the-scenes stories, and priority access to new releases.",
+    discountText: "🎉 Get 10% OFF your first order upon subscribing!",
+  },
+  trustFeatures: [
+    { title: "Escrow Secured Checkout", description: "100% buyer protection until delivery confirmation", icon: "lock" },
+    { title: "Cash on Delivery", description: "Nationwide COD option available across Pakistan", icon: "truck" },
+    { title: "Fast 2-4 Days Express", description: "TCS & Courier priority express dispatch", icon: "rotate-ccw" },
+    { title: "Verified Quality Guarantee", description: "Directly hand-inspected by master artisans", icon: "shield-check" },
+  ],
+};
+
+const POTTERY_VENDOR_CONFIG: VendorStoreConfig = {
+  ...DEFAULT_VENDOR_CONFIG,
+  vendorId: "vendor-pottery-02",
+  storeName: "Clay & Heritage Pottery",
+  subdomain: "pottery",
+  logoText: "Clay & Heritage",
+  tagline: "Traditional Handcrafted Ceramics & Terracotta Works",
+  primaryColor: "#8C4A32",
+  accentColor: "#F5EBE6",
+  hero: {
+    ...DEFAULT_VENDOR_CONFIG.hero,
+    headline: "Traditional Terracotta & Hand-Thrown Clay Ceramics",
+    subheadline: "Authenic handmade pottery fired in traditional kilns by heritage master craftsmen.",
+    imageUrl: "/images/products/ceramic_vase.jpg",
+  },
+};
+
+const CANVAS_VENDOR_CONFIG: VendorStoreConfig = {
+  ...DEFAULT_VENDOR_CONFIG,
+  vendorId: "vendor-canvas-03",
+  storeName: "Golden Dawn Canvas Studio",
+  subdomain: "canvas",
+  logoText: "Golden Dawn Studio",
+  tagline: "Contemporary Oil & Acrylic Original Canvas Art",
+  primaryColor: "#2C4A5E",
+  accentColor: "#E4EEF5",
+  hero: {
+    ...DEFAULT_VENDOR_CONFIG.hero,
+    headline: "Original Oil & Gold Leaf Abstract Canvas Masterpieces",
+    subheadline: "Bespoke fine art paintings designed to transform modern living spaces.",
+    imageUrl: "/images/products/abstract_canvas.jpg",
+  },
+};
+
+// In-memory store config cache (60s TTL) for DB-resolved stores
+const STORE_CONFIG_CACHE: Record<string, { config: VendorStoreConfig; expiry: number }> = {};
+const STORE_CACHE_TTL = 60_000; // 60 seconds
+
+export async function getVendorStoreConfig(domainOrSubdomain?: string): Promise<VendorStoreConfig> {
+  if (!domainOrSubdomain) {
+    return DEFAULT_VENDOR_CONFIG;
+  }
+
+  const host = domainOrSubdomain.toLowerCase();
+
+  // Check in-memory cache first
+  const cached = STORE_CONFIG_CACHE[host];
+  if (cached && Date.now() < cached.expiry) {
+    return cached.config;
+  }
+
+  // Try to resolve from Supabase stores table (AI-generated stores)
+  try {
+    const dbConfig = await resolveStoreFromDatabase(host);
+    if (dbConfig) {
+      STORE_CONFIG_CACHE[host] = { config: dbConfig, expiry: Date.now() + STORE_CACHE_TTL };
+      return dbConfig;
+    }
+  } catch (err) {
+    // Database not available or table doesn't exist yet — fall through to presets
+    console.warn("[themeResolver] DB lookup failed, using preset:", (err as Error).message);
+  }
+
+  // Fall through to hardcoded presets for development/demo
+  const { vendorId } = resolveDomainToVendor(host);
+
+  if (vendorId === "vendor_brandxyz" || host.includes("canvas") || host.includes("art-studio")) {
+    return CANVAS_VENDOR_CONFIG;
+  }
+
+  if (vendorId === "vendor_crafts" || host.includes("pottery") || host.includes("clay")) {
+    return POTTERY_VENDOR_CONFIG;
+  }
+
+  return DEFAULT_VENDOR_CONFIG;
+}
+
+/**
+ * Resolve a hostname or slug to a VendorStoreConfig.
+ * Checks store-service (in-memory & Supabase), subdomain, custom_domain, and slug matches.
+ */
+export async function getStoreConfigBySlug(slug: string): Promise<VendorStoreConfig | null> {
+  try {
+    const { getStoreBySlug } = await import("@/lib/store/store-service");
+    const store = await getStoreBySlug(slug);
+    if (store && store.layout_config) {
+      return convertDbStoreToConfig(store);
+    }
+  } catch (err) {
+    console.warn("[themeResolver] Failed to resolve store by slug:", err);
+  }
+  return null;
+}
+
+/**
+ * Resolve a store ID to a VendorStoreConfig.
+ */
+export async function getStoreConfigById(id: string): Promise<VendorStoreConfig | null> {
+  try {
+    const { getStoreById } = await import("@/lib/store/store-service");
+    const store = await getStoreById(id);
+    if (store && store.layout_config) {
+      return convertDbStoreToConfig(store);
+    }
+  } catch (err) {
+    console.warn("[themeResolver] Failed to resolve store by id:", err);
+  }
+  return null;
+}
+
+/**
+ * Resolve a hostname to a VendorStoreConfig from store-service / Supabase stores.
+ * Checks subdomain, custom_domain, and slug matches for both drafts and published stores.
+ */
+async function resolveStoreFromDatabase(host: string): Promise<VendorStoreConfig | null> {
+  try {
+    const { getStoreByDomain, getStoreBySubdomain, getStoreBySlug, getVendorStores } = await import("@/lib/store/store-service");
+
+    // Extract potential subdomain (e.g. "stepcraft-shoes" from "stepcraft-shoes.digishop.ai" or "stepcraft-shoes.localhost:3000")
+    const subdomainMatch = host.match(/^([a-z0-9-]+)\./);
+    const potentialSubdomain = subdomainMatch ? subdomainMatch[1] : null;
+
+    // 1. Try exact custom domain match
+    const domainStore = await getStoreByDomain(host);
+    if (domainStore?.layout_config) {
+      return convertDbStoreToConfig(domainStore);
+    }
+
+    // 2. Try subdomain match
+    if (potentialSubdomain && potentialSubdomain !== "localhost" && potentialSubdomain !== "www") {
+      const subdomainStore = await getStoreBySubdomain(potentialSubdomain);
+      if (subdomainStore?.layout_config) {
+        return convertDbStoreToConfig(subdomainStore);
+      }
+
+      // Try slug match
+      const slugStore = await getStoreBySlug(potentialSubdomain);
+      if (slugStore?.layout_config) {
+        return convertDbStoreToConfig(slugStore);
+      }
+    }
+
+    // 3. In dev mode on localhost: if vendor has created a store, return their latest store
+    if (host.includes("localhost") || host === "") {
+      const allStores = await getVendorStores();
+      if (allStores.length > 0 && allStores[0].layout_config) {
+        return convertDbStoreToConfig(allStores[0]);
+      }
+    }
+  } catch (err) {
+    console.warn("[themeResolver] resolveStoreFromDatabase error:", err);
+  }
+
+  return null;
+}
+
+/**
+ * Convert a database store row into the VendorStoreConfig format
+ * that the StorefrontRenderer expects, preserving the full dynamic layout_config.
+ */
+function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConfig?: any } {
+  const layout = store.layout_config || {};
+  const seo = store.seo_config || {};
+  const commerce = store.commerce_config || {};
+
+  // Extract hero props if present
+  const heroSection = layout.sections?.find((s: any) => s.type?.startsWith("Hero")) || layout.sections?.[0];
+
+  const defaultProducts = [
+    {
+      id: "s1",
+      name: "Royal Oxford Calfskin Shoes",
+      price: "₨ 7,800",
+      originalPrice: "₨ 9,500",
+      discount: "18% OFF",
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
+      tag: "Bestseller",
+      inStock: true,
+    },
+    {
+      id: "s2",
+      name: "Handcrafted Suede Loafers",
+      price: "₨ 6,400",
+      originalPrice: "₨ 7,800",
+      discount: "18% OFF",
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
+      tag: "Trending",
+      inStock: true,
+    },
+    {
+      id: "s3",
+      name: "Peshawari Chappal - Pure Leather",
+      price: "₨ 5,200",
+      originalPrice: "₨ 6,500",
+      discount: "20% OFF",
+      rating: 5.0,
+      image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
+      tag: "Traditional",
+      inStock: true,
+    },
+    {
+      id: "s4",
+      name: "Urban Streetwear Sneakers",
+      price: "₨ 8,900",
+      originalPrice: "₨ 11,000",
+      discount: "20% OFF",
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+      tag: "Limited Drop",
+      inStock: true,
+    },
+  ];
+
+  const effectiveProducts =
+    layout.products && layout.products.length > 0
+      ? layout.products
+      : commerce.products && commerce.products.length > 0
+      ? commerce.products
+      : defaultProducts;
+
+  const categorySection = layout.sections?.find((s: any) => s.type?.includes("Category"));
+  const effectiveCategories = categorySection?.props?.categories || layout.categories || [];
+
+  return {
+    vendorId: store.vendor_id,
+    storeName: store.name || layout.storeName || "My Store",
+    subdomain: store.subdomain || store.slug,
+    domain: store.custom_domain || undefined,
+    logoText: store.name || layout.storeName || "My Store",
+    logoUrl: store.logo_url || undefined,
+    tagline: store.description || seo.description || "",
+    description: seo.description || store.description || "",
+    primaryColor: layout.theme?.colors?.primary || "#171717",
+    accentColor: layout.theme?.colors?.secondary || "#D4AF37",
+    supportPhone: undefined,
+    freeShippingThreshold: commerce.freeShippingThreshold ? `₨ ${commerce.freeShippingThreshold}` : "₨ 5,000",
+    categories: layout.categories || [{ name: "All Products", href: "/shop" }],
+    socialLinks: layout.socialLinks || [
+      { name: "Instagram", href: "https://instagram.com", icon: "instagram" },
+      { name: "WhatsApp Store", href: "https://wa.me/923001234567", icon: "whatsapp" },
+    ],
+    policies: [
+      { title: "Privacy Policy", href: "/shop/policies/privacy" },
+      { title: "Terms of Service", href: "/shop/policies/terms" },
+      { title: "Refund & Returns", href: "/shop/policies/refund" },
+      { title: "Shipping & Delivery", href: "/shop/policies/shipping" },
+    ],
+    hero: {
+      badge: "",
+      headline: heroSection?.props?.title || store.name,
+      subheadline: heroSection?.props?.subtitle || store.description || "",
+      ctaText: heroSection?.props?.ctaText || "Shop Now",
+      ctaHref: heroSection?.props?.ctaLink || "/shop",
+      imageUrl: heroSection?.props?.imageUrl || "/images/products/ceramic_vase.jpg",
+    },
+    featuredProducts: effectiveProducts,
+    categoryTiles: effectiveCategories,
+    newsletter: {
+      headline: "Stay Updated",
+      subheadline: "Subscribe for exclusive offers and new arrivals.",
+      discountText: "🎉 Get 10% OFF your first order!",
+    },
+    trustFeatures: [
+      { title: "Escrow Secured Checkout", description: "100% buyer protection until delivery", icon: "lock" },
+      { title: "Cash on Delivery", description: "COD available across Pakistan", icon: "truck" },
+      { title: "Fast Express Delivery", description: "2-4 days express dispatch", icon: "rotate-ccw" },
+      { title: "Quality Guarantee", description: "Hand-inspected quality assurance", icon: "shield-check" },
+    ],
+    _dbLayoutConfig: {
+      ...layout,
+      products: effectiveProducts,
+    },
+  };
+}
+
+export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLayoutConfig?: any }) {
+  // If this config came from the database and already has a full layout_config,
+  // return it directly — the StorefrontRenderer can consume it as-is.
+  if (config._dbLayoutConfig?.sections?.length > 0) {
+    return config._dbLayoutConfig;
+  }
+
+  return {
+    storeName: config.storeName,
+    categories: config.categories,
+    socialLinks: config.socialLinks,
+    theme: {
+      colors: {
+        primary: config.primaryColor,
+        secondary: config.accentColor,
+        background: "#ffffff",
+        text: "#1e293b",
+      },
+      typography: {
+        heading: "Plus Jakarta Sans",
+        body: "Inter",
+      },
+    },
+    sections: [
+      {
+        id: "hero-split-1",
+        type: "HeroSplitImage" as const,
+        props: {
+          title: config.hero.headline,
+          subtitle: config.hero.subheadline,
+          ctaText: config.hero.ctaText,
+          ctaLink: config.hero.ctaHref,
+          imageUrl: config.hero.imageUrl,
+          imageAlignment: "right" as const,
+        },
+      },
+      {
+        id: "promo-banner-1",
+        type: "PromoBanner" as const,
+        props: {
+          text: config.newsletter.discountText || "Exclusive drop live!",
+          layout: "ribbon" as const,
+        },
+      },
+      {
+        id: "feature-grid-1",
+        type: "FeatureGrid" as const,
+        props: {
+          columns: 3 as const,
+          items: config.trustFeatures.map((f) => ({
+            icon: f.icon,
+            title: f.title,
+            description: f.description,
+          })),
+        },
+      },
+      {
+        id: "category-carousel-1",
+        type: "CategoryCarousel" as const,
+        props: {
+          title: "Explore Collections",
+          layout: "card" as const,
+        },
+      },
+      {
+        id: "product-grid-1",
+        type: "ProductGridFeatured" as const,
+        props: {
+          title: "Featured Masterpieces",
+          columns: 3 as const,
+        },
+      },
+      {
+        id: "newsletter-signup-1",
+        type: "NewsletterSignup" as const,
+        props: {
+          title: config.newsletter.headline,
+          subtitle: config.newsletter.subheadline,
+          buttonText: "Subscribe",
+          layout: "box" as const,
+        },
+      },
+    ],
+  };
+}
+
+
