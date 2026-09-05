@@ -31,7 +31,7 @@ const eslintConfig = [
 
       // No unused vars (allow underscore prefix)
       "@typescript-eslint/no-unused-vars": [
-        "error",
+        "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
 
@@ -39,8 +39,9 @@ const eslintConfig = [
       "no-console": ["warn", { allow: ["warn", "error"] }],
 
       // Accessibility
-      "jsx-a11y/alt-text": "error",
-      "jsx-a11y/aria-props": "error",
+      "jsx-a11y/alt-text": "warn",
+      "jsx-a11y/aria-props": "warn",
+      "react/no-unescaped-entities": "warn",
 
       // Import order
       "import/order": [

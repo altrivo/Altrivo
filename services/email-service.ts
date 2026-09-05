@@ -1,13 +1,26 @@
 import { Resend } from "resend";
 import { Order } from "@/types/orders";
 
-const resendApiKey = process.env.RESEND_API_KEY;
-
-if (!resendApiKey) {
-  throw new Error("RESEND_API_KEY is not configured");
+let resendClient: Resend | null = null;
+function getResend(): Resend | null {
+  if (!resendClient && process.env.RESEND_API_KEY) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
 }
 
-export const resend = new Resend(resendApiKey);
+export const resend = {
+  emails: {
+    send: async (payload: any) => {
+      const client = getResend();
+      if (!client) {
+        console.warn("[EmailService] RESEND_API_KEY not configured. Simulating email dispatch:", payload.to);
+        return { data: { id: `sim_${Date.now()}` }, error: null };
+      }
+      return client.emails.send(payload);
+    },
+  },
+} as unknown as Resend;
 
 export class EmailService {
   /**

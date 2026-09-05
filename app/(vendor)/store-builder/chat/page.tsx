@@ -29,7 +29,7 @@ interface Version {
   timestamp: Date;
 }
 
-export default function StoreBuilderChatPage() {
+function StoreBuilderChatContent() {
   const searchParams = useSearchParams();
   const storeId = searchParams.get("storeId") || "default-store";
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -317,5 +317,22 @@ export default function StoreBuilderChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function StoreBuilderChatPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-500 font-medium">
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-primary-600" />
+            <span>Loading AI Store Editor...</span>
+          </div>
+        </div>
+      }
+    >
+      <StoreBuilderChatContent />
+    </React.Suspense>
   );
 }

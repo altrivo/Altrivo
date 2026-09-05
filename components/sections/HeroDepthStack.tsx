@@ -13,6 +13,86 @@ export interface HeroDepthStackProps {
   bgColor?: string; // Solid theme color or CSS variable
 }
 
+// Entrance variants for the card deck elements
+const getCardVariants = (targetRotate: number, targetX: number, targetY: number): Variants => {
+  return {
+    hidden: { 
+      opacity: 0, 
+      rotate: 0, 
+      x: 0, 
+      y: 0 
+    },
+    visible: {
+      opacity: 1,
+      rotate: targetRotate,
+      x: targetX,
+      y: targetY,
+      transition: {
+        duration: 0.6,
+        ease: [0.175, 0.885, 0.32, 1.1], // Slight bounce back
+      },
+    },
+  };
+};
+
+function HeroDepthCardLayer({
+  index,
+  layerContent,
+  springX,
+  springY,
+  shouldReduceMotion,
+  isTouchDevice,
+}: {
+  index: number;
+  layerContent: React.ReactNode;
+  springX: any;
+  springY: any;
+  shouldReduceMotion: boolean | null;
+  isTouchDevice: boolean;
+}) {
+  let rotateAngle = 0;
+  let xOffset = 0;
+  let yOffset = 0;
+
+  if (index === 0) {
+    rotateAngle = -6;
+    xOffset = -15;
+    yOffset = -15;
+  } else if (index === 1) {
+    rotateAngle = 4;
+    xOffset = 10;
+    yOffset = 5;
+  } else {
+    rotateAngle = -2;
+    xOffset = 5;
+    yOffset = 25;
+  }
+
+  const depthFactor = (index + 1) * 0.15;
+  const isStatic = shouldReduceMotion || isTouchDevice;
+
+  const translateX = useTransform(springX, [-1, 1], [-12 * depthFactor, 12 * depthFactor]);
+  const translateY = useTransform(springY, [-1, 1], [-12 * depthFactor, 12 * depthFactor]);
+  const rotateSpring = useTransform(springX, [-1, 1], [rotateAngle - 2, rotateAngle + 2]);
+
+  return (
+    <motion.div
+      variants={getCardVariants(rotateAngle, xOffset, yOffset)}
+      initial="hidden"
+      animate="visible"
+      style={{
+        x: isStatic ? xOffset : translateX,
+        y: isStatic ? yOffset : translateY,
+        rotate: isStatic ? rotateAngle : rotateSpring,
+        zIndex: index * 10,
+      }}
+      className="absolute inset-0 w-full h-full pointer-events-none select-none origin-center"
+    >
+      {layerContent}
+    </motion.div>
+  );
+}
+
 export default function HeroDepthStack({
   headline,
   subtext,
@@ -57,28 +137,6 @@ export default function HeroDepthStack({
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
-  };
-
-  // Entrance variants for the card deck elements
-  const getCardVariants = (targetRotate: number, targetX: number, targetY: number): Variants => {
-    return {
-      hidden: { 
-        opacity: 0, 
-        rotate: 0, 
-        x: 0, 
-        y: 0 
-      },
-      visible: {
-        opacity: 1,
-        rotate: targetRotate,
-        x: targetX,
-        y: targetY,
-        transition: {
-          duration: 0.6,
-          ease: [0.175, 0.885, 0.32, 1.1], // Slight bounce back
-        },
-      },
-    };
   };
 
   // Default mock cards if layers prop is empty
@@ -174,55 +232,17 @@ export default function HeroDepthStack({
         {/* Right Stacked Card Deck */}
         <div className="w-full flex items-center justify-center min-h-[340px] relative">
           <div className="w-[300px] h-[200px] relative">
-            {cardsToRender.map((layerContent, index) => {
-              // Rotation and layout placement logic per depth level
-              let rotateAngle = 0;
-              let xOffset = 0;
-              let yOffset = 0;
-
-              if (index === 0) {
-                // Back card
-                rotateAngle = -6;
-                xOffset = -15;
-                yOffset = -15;
-              } else if (index === 1) {
-                // Middle card
-                rotateAngle = 4;
-                xOffset = 10;
-                yOffset = 5;
-              } else {
-                // Front card
-                rotateAngle = -2;
-                xOffset = 5;
-                yOffset = 25;
-              }
-
-              // Transform multipliers for mouse spring tilt (deeper moves less)
-              const depthFactor = (index + 1) * 0.15; // 0.15, 0.3, 0.45
-              const isStatic = shouldReduceMotion || isTouchDevice;
-
-              const translateX = useTransform(springX, [-1, 1], [-12 * depthFactor, 12 * depthFactor]);
-              const translateY = useTransform(springY, [-1, 1], [-12 * depthFactor, 12 * depthFactor]);
-              const rotateSpring = useTransform(springX, [-1, 1], [rotateAngle - 2, rotateAngle + 2]);
-
-              return (
-                <motion.div
-                  key={index}
-                  variants={getCardVariants(rotateAngle, xOffset, yOffset)}
-                  initial="hidden"
-                  animate="visible"
-                  style={{
-                    x: isStatic ? xOffset : translateX,
-                    y: isStatic ? yOffset : translateY,
-                    rotate: isStatic ? rotateAngle : rotateSpring,
-                    zIndex: index * 10,
-                  }}
-                  className="absolute inset-0 w-full h-full pointer-events-none select-none origin-center"
-                >
-                  {layerContent}
-                </motion.div>
-              );
-            })}
+            {cardsToRender.map((layerContent, index) => (
+              <HeroDepthCardLayer
+                key={index}
+                index={index}
+                layerContent={layerContent}
+                springX={springX}
+                springY={springY}
+                shouldReduceMotion={shouldReduceMotion}
+                isTouchDevice={isTouchDevice}
+              />
+            ))}
           </div>
         </div>
 

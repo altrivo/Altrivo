@@ -281,8 +281,8 @@ export async function generateTemplatePreviews(
   plan: StoreBlueprintPlan
 ): Promise<GenerationResult> {
   const templates = pickTemplates(plan);
-  let totalTokens = 0;
-  let totalCost = 0;
+  const totalTokens = 0;
+  const totalCost = 0;
 
   const previews: TemplatePreview[] = templates.map((tmpl) => {
     const heading = extractFontFamily(tmpl.tokens.fontHeading);

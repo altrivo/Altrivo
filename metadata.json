@@ -1,0 +1,6 @@
+{
+  "name": "Altrivo",
+  "description": "Altrivo vendor management studio, 3D storefronts, and AI-powered ecommerce platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

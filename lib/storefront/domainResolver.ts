@@ -78,7 +78,11 @@ export function resolveDomainToVendor(hostname: string): {
     (d) => d.domain.toLowerCase() === cleanHost && d.verified
   );
 
-  const vendorId = match ? match.vendorId : cleanHost.includes("localhost") || cleanHost === "" ? "v-default" : null;
+  const vendorId = match
+    ? match.vendorId
+    : cleanHost.includes("localhost") || cleanHost.includes("run.app") || cleanHost === ""
+    ? "v-default"
+    : null;
 
   // Cache lookup result for 60 seconds
   DOMAIN_CACHE.set(cleanHost, {

@@ -17,9 +17,27 @@ export function middleware(req: NextRequest) {
   }
 
   // 2. Resolve subdomains or custom domains
-  // Primary system domains
-  const systemDomains = ["localhost:3000", "altrivo-admin.vercel.app", "altrivo.com"];
-  const isSystemDomain = systemDomains.some((d) => hostname.toLowerCase() === d);
+  // Primary system domains & portal paths
+  const hostLower = hostname.toLowerCase();
+  const isSystemDomain =
+    hostLower === "localhost:3000" ||
+    hostLower.startsWith("localhost") ||
+    hostLower.startsWith("127.0.0.1") ||
+    hostLower.includes("run.app") ||
+    hostLower.includes("google") ||
+    hostLower === "altrivo-admin.vercel.app" ||
+    hostLower === "altrivo.com" ||
+    pathname === "/" ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/orders") ||
+    pathname.startsWith("/inventory") ||
+    pathname.startsWith("/products") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/billing") ||
+    pathname.startsWith("/demo") ||
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/cart");
 
   if (isSystemDomain) {
     return NextResponse.next();

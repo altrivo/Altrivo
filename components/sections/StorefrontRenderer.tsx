@@ -251,7 +251,7 @@ export default function StorefrontRenderer({
             if (!Component) return null;
 
             // Injections: Feed real backend data lists to listing components
-            let dynamicProps = { ...section.props, storeSlug: storeIdentifier };
+            const dynamicProps = { ...section.props, storeSlug: storeIdentifier };
             if (
               section.type === "ProductGridFeatured" ||
               section.type.includes("ProductGrid") ||
