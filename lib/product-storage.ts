@@ -20,25 +20,35 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   return url.startsWith("data:") || url.startsWith("https://") || url.startsWith("http://");
 }
 
+function getStorageKey(): string {
+  if (typeof window === "undefined") return STORAGE_KEY;
+  try {
+    const vendorId = localStorage.getItem("active_vendor_id");
+    if (vendorId) {
+      return `artrivo_vendor_products_${vendorId}`;
+    }
+  } catch {}
+  return STORAGE_KEY;
+}
+
 export function getStoredProducts(): Product[] {
   if (typeof window === "undefined") {
-    return mockProducts;
+    return [];
   }
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey();
+    const vendorId = localStorage.getItem("active_vendor_id");
+    const raw = localStorage.getItem(key);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(mockProducts));
+      if (vendorId) {
+        return [];
+      }
+      localStorage.setItem(key, JSON.stringify(mockProducts));
       return mockProducts;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      // If legacy storage has >50 items or older pseudo-dummy format, reset to curated 50 items
-      if (parsed.length > 50 || (parsed.length > 0 && parsed[0]?.name?.includes("Widget"))) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mockProducts));
-        return mockProducts;
-      }
-
       if (parsed.length > 0) {
         return parsed.map((p: Product) => {
           const cleanThumbnail = isValidImageUrl(p.thumbnail)
@@ -58,11 +68,12 @@ export function getStoredProducts(): Product[] {
           };
         });
       }
+      return [];
     }
-    return mockProducts;
+    return vendorId ? [] : mockProducts;
   } catch (e) {
     console.error("Error reading stored products:", e);
-    return mockProducts;
+    return [];
   }
 }
 
@@ -73,7 +84,8 @@ export function saveStoredProducts(products: Product[]): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    const key = getStorageKey();
+    localStorage.setItem(key, JSON.stringify(products));
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
   } catch (e) {
     console.error("Error saving stored products:", e);

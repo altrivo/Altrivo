@@ -53,6 +53,56 @@ export default function NotificationsPage() {
     escrowAlerts: true,
   });
 
+  const [isSavingPrefs, setIsSavingPrefs] = useState(false);
+
+  const fetchPreferences = async () => {
+    try {
+      const res = await fetch("/api/notifications/preferences?userId=vendor_dev_123");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.preferences) {
+          setPrefs({
+            emailNewOrder: data.preferences.email_order_updates ?? true,
+            emailShipmentUpdate: data.preferences.email_shipping_updates ?? true,
+            emailDailyDigest: data.preferences.email_marketing ?? false,
+            inAppSound: data.preferences.in_app_orders ?? true,
+            smsAlerts: data.preferences.whatsapp_cod ?? true,
+            escrowAlerts: data.preferences.email_security ?? true,
+          });
+        }
+      }
+    } catch (e) {}
+  };
+
+  const handleSavePreferences = async () => {
+    setIsSavingPrefs(true);
+    try {
+      const res = await fetch("/api/notifications/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "vendor_dev_123",
+          preferences: {
+            email_order_updates: prefs.emailNewOrder,
+            email_shipping_updates: prefs.emailShipmentUpdate,
+            email_marketing: prefs.emailDailyDigest,
+            in_app_orders: prefs.inAppSound,
+            in_app_shipping: prefs.inAppSound,
+            whatsapp_cod: prefs.smsAlerts,
+            whatsapp_order_updates: prefs.smsAlerts,
+          },
+        }),
+      });
+      if (res.ok) {
+        showToast("Notification preferences updated successfully");
+      }
+    } catch (e) {
+      showToast("Failed to save preferences");
+    } finally {
+      setIsSavingPrefs(false);
+    }
+  };
+
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
@@ -73,6 +123,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     fetchNotifications();
+    fetchPreferences();
 
     // Listen to real-time notification broadcasts
     let bc: BroadcastChannel | null = null;
@@ -387,6 +438,16 @@ export default function NotificationsPage() {
               </label>
             </div>
           </Card>
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleSavePreferences}
+              disabled={isSavingPrefs}
+              className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-extrabold shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isSavingPrefs ? "Saving..." : "Save Notification Preferences"}
+            </button>
+          </div>
         </div>
       ) : (
         /* ================= NOTIFICATION FEED LIST ================= */

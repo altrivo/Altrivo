@@ -21,7 +21,7 @@ interface KPIDataResponse {
   data: Record<string, KPIMetric>;
 }
 
-export function KPICardRow() {
+export function KPICardRow({ vendorId }: { vendorId?: string } = {}) {
   const [range, setRange] = useState<string>("7d");
   const [loading, setLoading] = useState<boolean>(true);
   const [kpiData, setKpiData] = useState<Record<string, KPIMetric> | null>(null);
@@ -30,7 +30,8 @@ export function KPICardRow() {
   const fetchKPIData = async (selectedRange: string) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/kpi?range=${selectedRange}`);
+      const url = `/api/kpi?range=${selectedRange}${vendorId ? `&vendorId=${encodeURIComponent(vendorId)}` : ""}`;
+      const res = await fetch(url);
       if (res.ok) {
         const json: KPIDataResponse = await res.json();
         if (json.success) {

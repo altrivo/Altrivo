@@ -9,3 +9,5 @@ export function createClient() {
     supabaseAnonKey
   );
 }
+
+export const supabase = createClient();

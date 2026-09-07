@@ -12,23 +12,23 @@ export function Breadcrumbs() {
 
   if (pathSegments.length === 0) {
     return (
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-subtle">
-        <span className="flex items-center gap-1.5 font-semibold text-heading">
-          <Home className="w-3.5 h-3.5 text-primary-500" />
-          Dashboard
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
+        <span className="flex items-center gap-1.5 font-bold text-heading">
+          <Home className="w-4 h-4 text-primary-600" />
+          <span>Dashboard</span>
         </span>
       </nav>
     );
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-subtle overflow-x-auto py-1 scrollbar-none">
+    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm overflow-x-auto py-0.5 scrollbar-none">
       <Link
         href="/dashboard"
-        className="flex items-center gap-1 hover:text-heading transition-colors"
+        className="flex items-center gap-1.5 text-subtle hover:text-heading transition-colors font-medium"
       >
-        <Home className="w-3.5 h-3.5 text-subtle" />
-        <span className="hidden sm:inline">Vendor Studio</span>
+        <Home className="w-4 h-4 text-subtle" />
+        <span className="font-semibold text-body">Vendor</span>
       </Link>
 
       {pathSegments.map((segment, idx) => {
@@ -40,15 +40,15 @@ export function Breadcrumbs() {
 
         return (
           <React.Fragment key={routePath}>
-            <ChevronRight className="w-3.5 h-3.5 text-subtle/60 flex-shrink-0" />
+            <ChevronRight className="w-3.5 h-3.5 text-subtle/70 flex-shrink-0" />
             {isLast ? (
-              <span className="font-semibold text-heading truncate">
+              <span className="font-bold text-heading truncate">
                 {formattedLabel}
               </span>
             ) : (
               <Link
                 href={routePath}
-                className="hover:text-heading transition-colors truncate"
+                className="text-subtle hover:text-heading transition-colors truncate font-medium"
               >
                 {formattedLabel}
               </Link>
@@ -59,3 +59,4 @@ export function Breadcrumbs() {
     </nav>
   );
 }
+

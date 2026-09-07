@@ -328,15 +328,16 @@ export async function getVendorStores(): Promise<StoreRow[]> {
         .eq("vendor_id", userData.user.id)
         .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data as StoreRow[];
       }
+      return [];
     }
   } catch {
-    // Fall back to local persistent store
+    // Fall back
   }
 
-  return getStoresArray();
+  return [];
 }
 
 export async function getStoreById(storeId: string): Promise<StoreRow | null> {

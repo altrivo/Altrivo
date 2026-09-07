@@ -37,7 +37,14 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/billing") ||
     pathname.startsWith("/demo") ||
     pathname.startsWith("/checkout") ||
-    pathname.startsWith("/cart");
+    pathname.startsWith("/cart") ||
+    pathname.startsWith("/vendor") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/order-success") ||
+    pathname.startsWith("/auth");
 
   if (isSystemDomain) {
     return NextResponse.next();

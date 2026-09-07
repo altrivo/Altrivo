@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import { VendorSidebar } from "./VendorSidebar";
 import { VendorNavbar } from "./VendorNavbar";
-import { Breadcrumbs } from "./Breadcrumbs";
 import { MobileDrawer } from "./MobileDrawer";
-import { LiveSiteActivityWidget } from "@/components/shared/LiveSiteActivityWidget";
 
 interface VendorDashboardShellProps {
   children: React.ReactNode;
@@ -34,21 +32,10 @@ export function VendorDashboardShell({ children }: VendorDashboardShellProps) {
 
         {/* Main Content Wrapper */}
         <div className="flex-1 flex flex-col min-w-0 bg-page overflow-x-hidden">
-          {/* Top Primary Navbar */}
+          {/* Top Primary Single Unified Navbar */}
           <VendorNavbar
             onToggleMobileMenu={() => setMobileDrawerOpen(true)}
           />
-
-          {/* Second Navigation Bar with Z-Index Stacking Priority (relative z-30) */}
-          <div className="relative z-30 border-b border-default bg-card/40 backdrop-blur-md px-4 sm:px-6 py-2.5 flex items-center justify-between">
-            {/* Left: Dynamic Breadcrumbs */}
-            <Breadcrumbs />
-
-            {/* Right: Live Activity Real-Time Widget */}
-            <div className="flex items-center gap-2">
-              <LiveSiteActivityWidget />
-            </div>
-          </div>
 
           {/* Main Content Area */}
           <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6 animate-in fade-in duration-normal z-10">

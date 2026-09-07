@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { OrdersBackendService } from "@/services/orders-backend-service";
+import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export interface OrderItem {
   id: string;
@@ -20,19 +21,72 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "5", 10);
+    let vendorId = searchParams.get("vendorId");
 
-    // Fetch real live orders from OrdersBackendService & Supabase
-    const { orders: realOrders } = await OrdersBackendService.getOrders("vendor_dev_123", {
-      limit: 100,
-    });
+    // 1. Identify active logged in vendor from Supabase session
+    if (!vendorId) {
+      try {
+        const supabase = await createClient();
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          vendorId = userData.user.id;
+        }
+      } catch (authErr) {
+        // Continue
+      }
+    }
 
-    // Strictly sort by date descending
-    const sortedOrders = [...realOrders].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    if (!vendorId) {
+      try {
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const activeVendorId = cookieStore.get("active_vendor_id")?.value;
+        if (activeVendorId) {
+          vendorId = activeVendorId;
+        }
+      } catch {}
+    }
 
-    const formattedOrders: OrderItem[] = sortedOrders.map((o) => {
-      const orderDate = new Date(o.createdAt);
+    // 2. If no vendor is logged in, return empty orders
+    if (!vendorId) {
+      return NextResponse.json({
+        success: true,
+        page,
+        limit,
+        totalOrders: 0,
+        totalPages: 1,
+        orders: [],
+      });
+    }
+
+    // 3. Fetch real orders specifically for THIS vendor from Supabase
+    let vendorOrders: any[] = [];
+    if (supabaseAdmin) {
+      const { data: orders, error } = await supabaseAdmin
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false });
+
+      if (!error && orders) {
+        vendorOrders = orders;
+      }
+    }
+
+    // New vendor with 0 orders gets empty array
+    if (vendorOrders.length === 0) {
+      return NextResponse.json({
+        success: true,
+        page,
+        limit,
+        totalOrders: 0,
+        totalPages: 1,
+        orders: [],
+      });
+    }
+
+    const formattedOrders: OrderItem[] = vendorOrders.map((o: any) => {
+      const orderDate = new Date(o.created_at || Date.now());
       const isToday =
         orderDate.toDateString() === new Date().toDateString();
       const isYesterday =
@@ -52,25 +106,26 @@ export async function GET(request: Request) {
         hour12: false,
       });
 
-      // Capitalize status
       let mappedStatus: OrderItem["status"] = "Pending";
-      const st = o.deliveryStatus?.toLowerCase();
+      const st = (o.delivery_status || o.status || "pending").toLowerCase();
       if (st === "processing" || st === "confirmed") mappedStatus = "Processing";
       else if (st === "shipped") mappedStatus = "Shipped";
       else if (st === "delivered" || st === "completed") mappedStatus = "Delivered";
       else if (st === "cancelled" || st === "refunded") mappedStatus = "Cancelled";
       else mappedStatus = "Pending";
 
+      const totalAmt = Number(o.total) || 0;
+
       return {
         id: o.id,
-        orderNumber: o.orderNumber,
-        customerName: o.customerName || "Store Customer",
-        customerEmail: o.customerEmail || "customer@pakistan.store",
-        amount: `₨ ${o.totalAmount.toLocaleString()}`,
-        rawAmount: o.totalAmount,
+        orderNumber: `#ORD-${o.id.substring(0, 4).toUpperCase()}`,
+        customerName: o.customer_name || "Customer",
+        customerEmail: o.customer_email || "customer@example.com",
+        amount: `₨ ${totalAmt.toLocaleString()}`,
+        rawAmount: totalAmt,
         currency: "₨",
         status: mappedStatus,
-        itemsCount: o.items?.length || 1,
+        itemsCount: o.order_items?.length || 1,
         date: dateLabel,
         time: timeLabel,
       };

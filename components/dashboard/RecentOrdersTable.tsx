@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { OrderItem } from "@/app/api/orders/recent/route";
 
-export function RecentOrdersTable() {
+export function RecentOrdersTable({ vendorId }: { vendorId?: string } = {}) {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,8 @@ export function RecentOrdersTable() {
       if (isInitial) {
         setLoading(true);
       }
-      const res = await fetch(`/api/orders/recent?page=${pageNum}&limit=5`);
+      const url = `/api/orders/recent?page=${pageNum}&limit=5${vendorId ? `&vendorId=${encodeURIComponent(vendorId)}` : ""}`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -161,8 +162,16 @@ export function RecentOrdersTable() {
               ))
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-subtle">
-                  No orders found.
+                <td colSpan={5} className="p-12 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-2 max-w-sm mx-auto">
+                    <div className="w-12 h-12 rounded-2xl bg-muted/60 flex items-center justify-center text-subtle mb-1">
+                      <ShoppingCart className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-heading">No customer orders yet</p>
+                    <p className="text-xs text-subtle leading-relaxed">
+                      Once your store is live and customers place orders, real-time orders and statuses will be tracked here.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (

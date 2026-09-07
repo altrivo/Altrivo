@@ -7,14 +7,32 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json().catch(() => ({}));
-    const reason = body.reason || "Vendor requested refund";
+    const body = await request.json();
 
-    const updated = await OrdersBackendService.transitionStatus(id, "refunded");
-    return NextResponse.json({ success: true, order: updated, refundedReason: reason });
+    if (!body.amount || !body.reason) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields: amount, reason" },
+        { status: 400 }
+      );
+    }
+
+    const refund = await OrdersBackendService.issueRefund(id, {
+      amount: Number(body.amount),
+      reason: body.reason,
+      refundType: body.refundType || "full",
+      vendorId: body.vendorId,
+    });
+
+    const updatedOrder = await OrdersBackendService.getOrderById(id);
+
+    return NextResponse.json({
+      success: true,
+      refund,
+      order: updatedOrder,
+    });
   } catch (err: any) {
     return NextResponse.json(
-      { success: false, error: err.message || "Failed to refund order" },
+      { success: false, error: err.message || "Failed to issue refund" },
       { status: 400 }
     );
   }

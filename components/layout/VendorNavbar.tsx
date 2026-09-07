@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Search,
   Bell,
   Menu,
   User,
@@ -15,8 +14,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { NotificationItem } from "@/app/api/notifications/route";
-
+import { Breadcrumbs } from "./Breadcrumbs";
 import { StorefrontPreviewModal } from "@/components/storefront/StorefrontPreviewModal";
+import { createClient } from "@/lib/supabase/client";
 
 interface VendorNavbarProps {
   onToggleMobileMenu: () => void;
@@ -24,16 +24,52 @@ interface VendorNavbarProps {
 
 export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [vendorInfo, setVendorInfo] = useState<{
+    name: string;
+    email: string;
+    storeName: string;
+    initials: string;
+  }>({
+    name: "Vendor",
+    email: "vendor@artrivo.com",
+    storeName: "My Store",
+    initials: "VS",
+  });
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // Fetch active vendor profile
+  useEffect(() => {
+    async function loadVendor() {
+      try {
+        const res = await fetch("/api/auth/vendor/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.vendor) {
+            const name = data.vendor.name || "Vendor";
+            const email = data.vendor.email || "";
+            const storeName =
+              data.stores?.[0]?.name ||
+              (data.hasStore ? "My Store" : "No Store Yet");
+            const parts = name.trim().split(" ");
+            const initials =
+              parts.length > 1
+                ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+                : name.substring(0, 2).toUpperCase();
+            setVendorInfo({ name, email, storeName, initials });
+          }
+        }
+      } catch {}
+    }
+    loadVendor();
+  }, []);
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
@@ -106,31 +142,19 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
           "0 4px 20px -2px rgba(105,72,115,0.05), 0 1px 3px 0 rgba(0,0,0,0.03)",
       }}
     >
-      {/* Left side: Hamburger Button (mobile/tablet <1280px) & Search Bar */}
-      <div className="flex items-center gap-3 sm:gap-4 flex-1 max-w-xl">
+      {/* Left side: Hamburger Button (mobile/tablet <1280px) & Location Breadcrumbs */}
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         {/* Mobile Hamburger Menu Toggle (<1280px) */}
         <button
           onClick={onToggleMobileMenu}
           aria-label="Open mobile navigation menu"
-          className="xl:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-heading shadow-xs active:scale-95 transition-all"
+          className="xl:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-heading shadow-xs active:scale-95 transition-all flex-shrink-0"
         >
           <Menu className="w-5 h-5 text-heading" />
         </button>
 
-        {/* Global Search Bar with 3D token styling */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products, orders, analytics, customers..."
-            className="w-full h-input pl-10 pr-12 rounded-xl bg-input border border-default text-sm text-heading placeholder:text-subtle shadow-xs focus:outline-none focus:border-focus focus:ring-2 focus:ring-primary-500/20 transition-all duration-fast"
-          />
-          <div className="hidden sm:flex items-center absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md bg-muted border border-default text-[10px] font-mono text-subtle shadow-2xs">
-            ⌘K
-          </div>
-        </div>
+        {/* Dynamic Location Breadcrumbs (Vendor > Dashboard) */}
+        <Breadcrumbs />
       </div>
 
       {/* Right side Actions: Notifications + Profile Dropdown */}
@@ -258,17 +282,17 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
             {/* 3D Profile Avatar */}
             <div className="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-accent-500 p-[1px] shadow-sm flex items-center justify-center">
               <div className="w-full h-full rounded-[7px] bg-primary-700 flex items-center justify-center text-white font-bold text-xs">
-                AS
+                {vendorInfo.initials}
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success-500 border-2 border-card" />
             </div>
 
             <div className="hidden md:flex flex-col text-left">
-              <span className="text-xs font-bold text-heading leading-tight truncate max-w-[100px]">
-                Artrivo Vendor
+              <span className="text-xs font-bold text-heading leading-tight truncate max-w-[120px]">
+                {vendorInfo.name}
               </span>
-              <span className="text-[10px] text-subtle font-medium">
-                Pro Tier
+              <span className="text-[10px] text-subtle font-medium truncate max-w-[120px]">
+                {vendorInfo.storeName}
               </span>
             </div>
 
@@ -288,18 +312,18 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
               <div className="p-4 border-b border-default bg-gradient-to-br from-primary-50/80 to-accent-50/50">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary-600 text-white font-bold text-sm flex items-center justify-center shadow-md">
-                    AS
+                    {vendorInfo.initials}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-sm text-heading truncate">
-                      Artrivo Store
+                      {vendorInfo.name}
                     </h4>
                     <p className="text-xs text-subtle truncate">
-                      vendor@artrivo.com
+                      {vendorInfo.email}
                     </p>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-success-700 bg-success-50 px-1.5 py-0.5 rounded-md mt-1 border border-success-200">
-                      <ShieldCheck className="w-3 h-3 text-success-600" />
-                      Verified Merchant
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700 bg-primary-50 px-1.5 py-0.5 rounded-md mt-1 border border-primary-200">
+                      <ShieldCheck className="w-3 h-3 text-primary-600" />
+                      {vendorInfo.storeName}
                     </span>
                   </div>
                 </div>
@@ -308,12 +332,12 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
               {/* Menu items */}
               <div className="p-1.5 space-y-0.5">
                 <Link
-                  href="/profile"
+                  href="/store-builder"
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-heading hover:bg-sidebar-hover transition-colors"
                 >
                   <User className="w-4 h-4 text-subtle" />
-                  <span>Vendor Profile</span>
+                  <span>Store Generator</span>
                 </Link>
 
                 <Link
@@ -328,15 +352,23 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
 
               <div className="p-1.5 border-t border-default bg-muted/30">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setProfileOpen(false);
-                    alert("Logged out successfully.");
-                    router.push("/dashboard");
+                    try {
+                      const supabase = createClient();
+                      await supabase.auth.signOut();
+                    } catch {}
+                    try {
+                      localStorage.removeItem("active_vendor_id");
+                      localStorage.removeItem("active_vendor_name");
+                      localStorage.removeItem("active_vendor_email");
+                    } catch {}
+                    router.push("/auth/login");
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-error-600 hover:bg-error-50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-error-600 hover:bg-error-50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4 text-error-500" />
-                  <span>Sign Out</span>
+                  <span>Sign Out (Logout)</span>
                 </button>
               </div>
             </div>

@@ -1410,11 +1410,11 @@ export default function StoreBuilderPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans select-none">
       {/* Clean Top Navbar */}
-      <header className="border-b border-default bg-card shadow-2xs sticky top-0 z-30">
+      <header className="border-b border-[#5c3d5c]/20 bg-white shadow-2xs sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 text-subtle hover:text-heading transition-colors"
+            className="flex items-center gap-2 text-[#5c3d5c] hover:text-[#3e2845] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-xs font-semibold">Dashboard</span>
@@ -1425,46 +1425,46 @@ export default function StoreBuilderPage() {
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  currentStep >= 1 ? "bg-primary-600 text-white" : "bg-neutral-200 text-subtle"
+                  currentStep >= 1 ? "bg-[#3e2845] text-white" : "bg-[#f6f0f7] text-[#5c3d5c]"
                 }`}
               >
                 1
               </span>
-              <span className="text-xs font-bold text-heading">Prompt</span>
+              <span className="text-xs font-bold text-[#3e2845]">Prompt</span>
             </div>
 
-            <div className="w-6 h-px bg-neutral-200" />
+            <div className="w-6 h-px bg-[#5c3d5c]/20" />
 
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  currentStep >= 2 ? "bg-primary-600 text-white" : "bg-neutral-200 text-subtle"
+                  currentStep >= 2 ? "bg-[#3e2845] text-white" : "bg-[#f6f0f7] text-[#5c3d5c]"
                 }`}
               >
                 2
               </span>
-              <span className="text-xs font-bold text-heading">Components</span>
+              <span className="text-xs font-bold text-[#3e2845]">Components</span>
             </div>
 
-            <div className="w-6 h-px bg-neutral-200" />
+            <div className="w-6 h-px bg-[#5c3d5c]/20" />
 
             <div className="flex items-center gap-2">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  currentStep === 3 ? "bg-primary-600 text-white" : "bg-neutral-200 text-subtle"
+                  currentStep === 3 ? "bg-[#3e2845] text-white" : "bg-[#f6f0f7] text-[#5c3d5c]"
                 }`}
               >
                 3
               </span>
-              <span className="text-xs font-bold text-heading">Ready</span>
+              <span className="text-xs font-bold text-[#3e2845]">Ready</span>
             </div>
           </div>
 
           <Link
             href="/my-stores"
-            className="text-xs font-semibold text-heading hover:text-primary-700 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 border border-default transition-all shadow-2xs"
+            className="text-xs font-semibold text-[#3e2845] hover:text-black flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#faf7fa] hover:bg-[#f6f0f7] border border-[#5c3d5c]/25 transition-all shadow-2xs"
           >
-            <Store className="w-3.5 h-3.5 text-primary-600" />
+            <Store className="w-3.5 h-3.5 text-[#5c3d5c]" />
             <span>My Stores</span>
           </Link>
         </div>
@@ -1479,18 +1479,18 @@ export default function StoreBuilderPage() {
           <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-300">
             {/* Title */}
             <div className="text-center space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-[#3e2845] tracking-tight">
                 Create Your Storefront
               </h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm font-medium text-[#5c3d5c]">
                 Describe your brand or select a category below to configure your storefront.
               </p>
             </div>
 
-            {/* Form Card */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-5">
+            {/* Form Card (White background, no dark color) */}
+            <div className="p-6 sm:p-7 rounded-2xl bg-white border border-[#5c3d5c]/25 shadow-xl shadow-[#3e2845]/5 space-y-5">
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-bold text-[#3e2845] uppercase tracking-wider">
                   Store Description &amp; Vision
                 </label>
                 <textarea
@@ -1498,13 +1498,15 @@ export default function StoreBuilderPage() {
                   onChange={(e) => setPrompt(e.target.value)}
                   rows={4}
                   placeholder="e.g. Luxury handmade leather footwear store with a royal black and gold aesthetic, genuine craftsmanship, Cash on Delivery, and express shipping across Pakistan."
-                  className="w-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none leading-relaxed transition-all"
+                  className="w-full p-4 rounded-xl bg-[#faf7fa] border border-[#5c3d5c]/30 text-sm text-black placeholder:text-[#5c3d5c]/50 focus:outline-none focus:border-[#4b3254] focus:ring-2 focus:ring-[#4b3254]/20 focus:bg-white resize-none leading-relaxed transition-all"
                 />
               </div>
 
               {/* Quick Suggestions with Lucide Icons */}
               <div className="space-y-2.5">
-                <span className="text-[11px] font-medium text-slate-400 block">Popular Categories:</span>
+                <span className="text-[11px] font-bold text-[#4b3254] uppercase tracking-wider block">
+                  Popular Categories:
+                </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {PRESET_PROMPTS.map((item, idx) => {
                     const Icon = item.icon;
@@ -1513,9 +1515,9 @@ export default function StoreBuilderPage() {
                         key={idx}
                         type="button"
                         onClick={() => setPrompt(item.prompt)}
-                        className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 hover:text-white transition-all flex items-center gap-2 text-left active:scale-98"
+                        className="px-3 py-2.5 rounded-xl bg-white hover:bg-[#faf7fa] border border-[#5c3d5c]/30 hover:border-[#4b3254] text-xs font-semibold text-[#3e2845] hover:text-black transition-all flex items-center gap-2 text-left active:scale-98 shadow-2xs cursor-pointer group"
                       >
-                        <Icon className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <Icon className="w-4 h-4 text-[#5c3d5c] group-hover:text-[#4b3254] flex-shrink-0 transition-colors" />
                         <span className="truncate">{item.label}</span>
                       </button>
                     );
@@ -1530,14 +1532,14 @@ export default function StoreBuilderPage() {
                   onClick={() => setBuilderMode("custom_blueprints")}
                   className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                     builderMode === "custom_blueprints"
-                      ? "bg-emerald-950/30 border-emerald-500 text-white shadow-sm ring-1 ring-emerald-500/30"
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                      ? "bg-[#f6f0f7] border-2 border-[#4b3254] text-[#3e2845] shadow-sm ring-2 ring-[#4b3254]/15"
+                      : "bg-white border border-[#5c3d5c]/25 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
                   }`}
                 >
-                  <Layers className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "custom_blueprints" ? "text-emerald-400" : "text-slate-500"}`} />
+                  <Layers className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "custom_blueprints" ? "text-[#4b3254]" : "text-[#5c3d5c]"}`} />
                   <div>
-                    <p className="text-xs font-bold text-white">Component Blueprints</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Customize specific section layouts (Hero, Products, Story).</p>
+                    <p className="text-xs font-bold text-[#3e2845]">Component Blueprints</p>
+                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Customize specific section layouts (Hero, Products, Story).</p>
                   </div>
                 </button>
 
@@ -1546,14 +1548,14 @@ export default function StoreBuilderPage() {
                   onClick={() => setBuilderMode("quick_templates")}
                   className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                     builderMode === "quick_templates"
-                      ? "bg-emerald-950/30 border-emerald-500 text-white shadow-sm ring-1 ring-emerald-500/30"
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                      ? "bg-[#f6f0f7] border-2 border-[#4b3254] text-[#3e2845] shadow-sm ring-2 ring-[#4b3254]/15"
+                      : "bg-white border border-[#5c3d5c]/25 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
                   }`}
                 >
-                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-emerald-400" : "text-slate-500"}`} />
+                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-[#4b3254]" : "text-[#5c3d5c]"}`} />
                   <div>
-                    <p className="text-xs font-bold text-white">Instant Store Preset</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Generate a complete pre-built theme in 1 click.</p>
+                    <p className="text-xs font-bold text-[#3e2845]">Instant Store Preset</p>
+                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Generate a complete pre-built theme in 1 click.</p>
                   </div>
                 </button>
               </div>
@@ -1562,18 +1564,18 @@ export default function StoreBuilderPage() {
               <button
                 onClick={handleStartPlanning}
                 disabled={!prompt.trim() || isLoading}
-                className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] text-white font-bold text-xs shadow-lg shadow-[#3e2845]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] cursor-pointer"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
                     <span>Planning Storefront Layout...</span>
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-4 h-4 text-slate-950" />
+                    <Wand2 className="w-4 h-4 text-white" />
                     <span>Continue to Component Selection</span>
-                    <ArrowRight className="w-4 h-4 text-slate-950" />
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </>
                 )}
               </button>
@@ -1586,17 +1588,17 @@ export default function StoreBuilderPage() {
         {/* ========================================================================= */}
         {currentStep === 2 && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Top Bar with Editable Store Name & Tagline (No color dots) */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+            {/* Top Bar with Editable Store Name & Tagline */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#5c3d5c]/25 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
               <div className="space-y-1.5 flex-1 max-w-xl">
                 <div className="flex items-center gap-2">
-                  <Edit3 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <Edit3 className="w-3.5 h-3.5 text-[#5c3d5c] flex-shrink-0" />
                   <input
                     type="text"
                     value={customStoreName}
                     onChange={(e) => setCustomStoreName(e.target.value)}
                     placeholder="Enter Store Name (e.g. StepCraft Luxury)"
-                    className="text-base sm:text-lg font-bold text-white bg-transparent border-b border-dashed border-slate-700 focus:border-emerald-500 focus:outline-none w-full py-0.5 transition-all"
+                    className="text-base sm:text-lg font-bold text-[#3e2845] bg-transparent border-b border-dashed border-[#5c3d5c]/30 focus:border-[#4b3254] focus:outline-none w-full py-0.5 transition-all"
                   />
                 </div>
                 <input
@@ -1604,7 +1606,7 @@ export default function StoreBuilderPage() {
                   value={customStoreTagline}
                   onChange={(e) => setCustomStoreTagline(e.target.value)}
                   placeholder="Store Tagline or Slogan..."
-                  className="text-xs text-slate-400 bg-transparent focus:text-slate-200 border-b border-transparent focus:border-slate-700 focus:outline-none w-full py-0.5 transition-all"
+                  className="text-xs text-[#5c3d5c] bg-transparent focus:text-[#3e2845] border-b border-transparent focus:border-[#5c3d5c]/30 focus:outline-none w-full py-0.5 transition-all"
                 />
               </div>
 
@@ -1612,17 +1614,17 @@ export default function StoreBuilderPage() {
                 <button
                   type="button"
                   onClick={handleOpenNewCustomModal}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs border border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#faf7fa] text-[#3e2845] hover:text-black font-bold text-xs border border-[#5c3d5c]/30 hover:border-[#4b3254] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
-                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <Plus className="w-4 h-4 text-[#5c3d5c]" />
                   <span>+ Add Component</span>
                 </button>
 
                 <button
                   onClick={() => handleBuildStore()}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] text-white font-extrabold text-xs shadow-md shadow-[#3e2845]/20 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
                 >
-                  <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                  <Check className="w-4 h-4 text-white stroke-[3]" />
                   <span>Build Storefront</span>
                 </button>
               </div>
@@ -1632,43 +1634,40 @@ export default function StoreBuilderPage() {
             {builderMode === "quick_templates" ? (
               <div className="space-y-6">
                 <div className="text-center space-y-1">
-                  <h2 className="text-xl font-bold text-white">Select a Complete Store Preset</h2>
-                  <p className="text-xs text-slate-400">Choose a pre-styled theme layout tailored for your business.</p>
+                  <h2 className="text-xl font-bold text-[#3e2845]">Select a Complete Store Preset</h2>
+                  <p className="text-xs text-[#5c3d5c]">Choose a pre-styled theme layout tailored for your business.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {previews.map((preview) => (
                     <div
                       key={preview.templateId}
-                      className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/60 transition-all space-y-4 flex flex-col justify-between"
+                      className="p-5 rounded-2xl bg-white border border-[#5c3d5c]/25 hover:border-[#4b3254] transition-all space-y-4 flex flex-col justify-between shadow-sm hover:shadow-md"
                     >
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-md bg-[#f6f0f7] text-[#4b3254] text-[10px] font-bold border border-[#5c3d5c]/20">
                             {preview.tag}
                           </span>
-                          <span className="text-xs text-slate-400 font-medium">{preview.preview.fontFamily}</span>
+                          <span className="text-xs text-[#5c3d5c] font-medium">{preview.preview.fontFamily}</span>
                         </div>
 
-                        <h3 className="text-base font-bold text-white">{preview.templateName}</h3>
-                        <p className="text-xs text-slate-400">{preview.description}</p>
+                        <h3 className="text-base font-bold text-[#3e2845]">{preview.templateName}</h3>
+                        <p className="text-xs text-[#5c3d5c]">{preview.description}</p>
 
                         <div
-                          className="p-3.5 rounded-xl space-y-1.5 border border-slate-800 text-left"
-                          style={{
-                            background: `linear-gradient(135deg, ${preview.preview.primaryColor} 0%, #1e293b 100%)`,
-                          }}
+                          className="p-3.5 rounded-xl space-y-1.5 border border-[#5c3d5c]/20 text-left bg-gradient-to-r from-[#faf5fa] to-white"
                         >
-                          <p className="text-xs font-bold text-white line-clamp-1">{preview.preview.heroHeadline}</p>
-                          <p className="text-[10px] text-slate-300 line-clamp-2">{preview.preview.heroSub}</p>
+                          <p className="text-xs font-bold text-[#3e2845] line-clamp-1">{preview.preview.heroHeadline}</p>
+                          <p className="text-[10px] text-[#5c3d5c] line-clamp-2">{preview.preview.heroSub}</p>
                         </div>
                       </div>
 
                       <button
                         onClick={() => handleBuildStore(preview.templateId)}
-                        className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 font-bold text-xs text-white transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] font-bold text-xs text-white transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                       >
-                        <Check className="w-3.5 h-3.5" />
+                        <Check className="w-3.5 h-3.5 text-white" />
                         <span>Select {preview.templateName}</span>
                       </button>
                     </div>
@@ -1680,10 +1679,10 @@ export default function StoreBuilderPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {/* Left: Section Tabs (4 cols) */}
                 <div className="lg:col-span-4 space-y-3">
-                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                  <div className="p-4 rounded-2xl bg-white border border-[#5c3d5c]/25 space-y-3 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Sections:</h3>
-                      <span className="text-[10px] text-emerald-400 font-bold">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#3e2845]">Sections:</h3>
+                      <span className="text-[10px] text-[#4b3254] font-bold">
                         {7 + customComponents.length} Configured
                       </span>
                     </div>
@@ -1705,26 +1704,26 @@ export default function StoreBuilderPage() {
                             }}
                             className={`w-full p-2.5 rounded-xl border text-left transition-all flex items-center justify-between cursor-pointer ${
                               isSelectedTab
-                                ? "bg-emerald-500/10 border-emerald-500 text-white shadow-sm ring-1 ring-emerald-500/30"
-                                : "bg-slate-950 border-slate-800/80 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                                ? "bg-[#f6f0f7] border-2 border-[#4b3254] text-[#3e2845] shadow-sm ring-1 ring-[#4b3254]/15"
+                                : "bg-white border-[#5c3d5c]/20 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
                             }`}
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div
                                 className={`p-1.5 rounded-lg ${
-                                  isSelectedTab ? "bg-emerald-500 text-slate-950" : "bg-slate-800 text-slate-400"
+                                  isSelectedTab ? "bg-[#4b3254] text-white" : "bg-[#faf7fa] text-[#5c3d5c]"
                                 }`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs font-bold text-white truncate">{sec.title}</p>
-                                <p className="text-[10px] text-emerald-400 truncate">
+                                <p className="text-xs font-bold text-[#3e2845] truncate">{sec.title}</p>
+                                <p className="text-[10px] text-[#5c3d5c] truncate">
                                   {currentVariant?.name || "Selected"}
                                 </p>
                               </div>
                             </div>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${isSelectedTab ? "text-[#4b3254]" : "text-[#5c3d5c]/40"}`} />
                           </button>
                         );
                       })}
@@ -2195,22 +2194,22 @@ export default function StoreBuilderPage() {
       {/* RICH CUSTOM COMPONENT BUILDER & VISUAL EDITOR MODAL                       */}
       {/* ========================================================================= */}
       {showCustomModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full p-6 sm:p-7 space-y-6 shadow-2xl relative my-6 max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in">
+          <div className="bg-white border border-[#5c3d5c]/25 rounded-3xl max-w-3xl w-full p-6 sm:p-7 space-y-6 shadow-2xl relative my-6 max-h-[92vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 flex-shrink-0">
+            <div className="flex items-center justify-between pb-4 border-b border-[#5c3d5c]/20 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <div className="w-10 h-10 rounded-xl bg-[#f6f0f7] border border-[#5c3d5c]/25 flex items-center justify-center text-[#4b3254]">
                   <Layout className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Custom Component Studio</h3>
-                  <p className="text-xs text-slate-400">Design your custom section with AI images, button URLs &amp; styling</p>
+                  <h3 className="text-lg font-bold text-[#3e2845]">Custom Component Studio</h3>
+                  <p className="text-xs text-[#5c3d5c]">Design your custom section with AI images, button URLs &amp; styling</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCustomModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                className="p-2 rounded-xl text-[#5c3d5c] hover:text-[#3e2845] hover:bg-[#faf7fa] transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2320,14 +2319,14 @@ export default function StoreBuilderPage() {
               </div>
 
               {/* EDITOR TABS */}
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 border-b border-[#5c3d5c]/20 pb-3">
                 <button
                   type="button"
                   onClick={() => setActiveModalTab("content")}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeModalTab === "content"
-                      ? "bg-emerald-500 text-slate-950 shadow-md"
-                      : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                      ? "bg-[#3e2845] text-white shadow-md"
+                      : "bg-[#faf7fa] text-[#4b3254] hover:text-[#3e2845] border border-[#5c3d5c]/20"
                   }`}
                 >
                   <Type className="w-3.5 h-3.5" />
@@ -2339,8 +2338,8 @@ export default function StoreBuilderPage() {
                   onClick={() => setActiveModalTab("media")}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeModalTab === "media"
-                      ? "bg-emerald-500 text-slate-950 shadow-md"
-                      : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                      ? "bg-[#3e2845] text-white shadow-md"
+                      : "bg-[#faf7fa] text-[#4b3254] hover:text-[#3e2845] border border-[#5c3d5c]/20"
                   }`}
                 >
                   <ImageIcon className="w-3.5 h-3.5" />
@@ -2352,8 +2351,8 @@ export default function StoreBuilderPage() {
                   onClick={() => setActiveModalTab("styling")}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeModalTab === "styling"
-                      ? "bg-emerald-500 text-slate-950 shadow-md"
-                      : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                      ? "bg-[#3e2845] text-white shadow-md"
+                      : "bg-[#faf7fa] text-[#4b3254] hover:text-[#3e2845] border border-[#5c3d5c]/20"
                   }`}
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -2695,11 +2694,11 @@ export default function StoreBuilderPage() {
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-800 flex-shrink-0">
+            <div className="flex items-center justify-between pt-3 border-t border-[#5c3d5c]/20 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setShowCustomModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-[#faf7fa] hover:bg-[#f6f0f7] text-xs font-semibold text-[#3e2845] border border-[#5c3d5c]/20 cursor-pointer"
               >
                 Cancel
               </button>
@@ -2707,7 +2706,7 @@ export default function StoreBuilderPage() {
               <button
                 type="button"
                 onClick={handleSaveCustomComponent}
-                className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 cursor-pointer flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] text-white font-bold text-xs shadow-lg shadow-[#3e2845]/20 active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
                 <span>Save &amp; Add Component to Layout</span>
