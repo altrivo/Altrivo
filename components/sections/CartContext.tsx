@@ -6,7 +6,7 @@ import { StoreCustomer } from "@/types/customer";
 export interface CartItem {
   id: string;
   name: string;
-  price: string; // E.g., "₨ 8,900" or "$85.00"
+  price: string; // E.g., "$85.00" or "$8,900"
   originalPrice?: string;
   image: string;
   quantity: number;
@@ -191,23 +191,20 @@ export function CartProvider({
     return parseFloat(numbersOnly) || 0;
   };
 
-  // Helper to extract currency symbols (e.g. Rs. or ₨ or $)
-  const detectCurrencySymbol = (priceStr: string): string => {
-    if (!priceStr) return "₨ ";
-    const matches = priceStr.match(/^[^0-9]*/);
-    return matches ? matches[0].trim() + " " : "₨ ";
+  // Currency symbol - storefront uses USD ($)
+  const detectCurrencySymbol = (_priceStr?: string): string => {
+    return "$";
   };
 
   const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Compute total price string with dynamic currency symbol resolution
+  // Compute total price string with $ currency
   const rawSubtotal = cartItems.reduce(
     (acc, item) => acc + parseNumericPrice(item.price) * item.quantity,
     0
   );
 
-  const currencySymbol = cartItems.length > 0 ? detectCurrencySymbol(cartItems[0].price) : "₨ ";
-  const cartTotal = `${currencySymbol}${rawSubtotal.toLocaleString()}`;
+  const cartTotal = `$${rawSubtotal.toLocaleString()}`;
 
   return (
     <CartContext.Provider

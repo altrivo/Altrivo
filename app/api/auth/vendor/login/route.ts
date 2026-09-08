@@ -8,14 +8,14 @@ export async function POST(request: Request) {
 
     if (!emailOrPhone || typeof emailOrPhone !== "string" || !emailOrPhone.trim()) {
       return NextResponse.json(
-        { success: false, error: "Please enter your email or phone number / Email ya number enter karein." },
+        { success: false, error: "Please enter your email or phone number." },
         { status: 400 }
       );
     }
 
     if (!password || typeof password !== "string") {
       return NextResponse.json(
-        { success: false, error: "Please enter your password / Password enter karein." },
+        { success: false, error: "Please enter your password." },
         { status: 400 }
       );
     }
@@ -36,45 +36,54 @@ export async function POST(request: Request) {
 
     if (isEmail) {
       targetEmail = input.toLowerCase();
-      // Verify vendor exists in database
-      const { data: vendor, error: vErr } = await supabaseAdmin
+      // Check if vendor exists in database
+      const { data: vendor } = await supabaseAdmin
         .from("vendors")
         .select("id, name, business_name, email, phone, status")
         .eq("email", targetEmail)
         .maybeSingle();
 
-      if (vErr || !vendor) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Aapki registration database mein save nahi hai. Baraye meharbani pehle signup karein.",
-          },
-          { status: 404 }
-        );
+      if (vendor) {
+        vendorRecord = vendor;
       }
-      vendorRecord = vendor;
     } else {
       // Lookup by Phone in database
-      const { data: vendor, error: vErr } = await supabaseAdmin
+      const { data: vendor } = await supabaseAdmin
         .from("vendors")
         .select("id, name, business_name, email, phone, status")
         .eq("phone", cleanPhone)
         .maybeSingle();
 
-      if (vErr || !vendor) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ye mobile number database mein kisi vendor account se register nahi hai. Pehle signup karein.",
-          },
-          { status: 404 }
-        );
+      if (vendor) {
+        targetEmail = vendor.email;
+        vendorRecord = vendor;
+      } else {
+        // Search in Supabase Auth user metadata
+        try {
+          const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
+          const matchUser = authList?.users?.find(
+            (u) =>
+              u.user_metadata?.phone?.replace(/[\s\-]/g, "") === cleanPhone ||
+              u.phone?.replace(/[\s\-]/g, "") === cleanPhone
+          );
+          if (matchUser?.email) {
+            targetEmail = matchUser.email;
+          }
+        } catch {}
       }
-      targetEmail = vendor.email;
-      vendorRecord = vendor;
     }
 
-    // Now authenticate against Supabase Auth using the verified vendor email
+    if (!targetEmail) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No vendor account found with this mobile number. Please check or register first.",
+        },
+        { status: 404 }
+      );
+    }
+
+    // Authenticate against Supabase Auth using target email
     const { data: authData, error: authErr } = await supabaseAdmin.auth.signInWithPassword({
       email: targetEmail,
       password,
@@ -84,26 +93,50 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Incorrect password. Please verify your credentials / Password ghalat hai.",
+          error: "Incorrect password or credentials. Please check and try again.",
         },
         { status: 401 }
       );
     }
 
-    // Double check that the authenticated user matches the vendor record
-    if (authData.user.id !== vendorRecord.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Vendor ID verification failed.",
-        },
-        { status: 403 }
-      );
+    // If vendor record does not exist yet in public.vendors, provision/heal it now
+    if (!vendorRecord) {
+      const meta = authData.user.user_metadata || {};
+      const fallbackName = meta.name || targetEmail.split("@")[0];
+      const fallbackBusiness = meta.business_name || fallbackName;
+      const fallbackPhone = meta.phone || cleanPhone || "";
+
+      const { data: healedVendor } = await supabaseAdmin
+        .from("vendors")
+        .upsert(
+          {
+            id: authData.user.id,
+            name: fallbackName,
+            business_name: fallbackBusiness,
+            email: targetEmail,
+            phone: fallbackPhone,
+            category: "General",
+            region: "Pakistan",
+            status: "pending",
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        )
+        .select()
+        .maybeSingle();
+
+      vendorRecord = healedVendor || {
+        id: authData.user.id,
+        name: fallbackName,
+        business_name: fallbackBusiness,
+        email: targetEmail,
+        phone: fallbackPhone,
+      };
     }
 
     const response = NextResponse.json({
       success: true,
-      message: "Login successful / Kamyabi se login ho gaya!",
+      message: "Login successful!",
       vendor: {
         id: vendorRecord.id,
         name: vendorRecord.name,

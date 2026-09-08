@@ -221,7 +221,7 @@ export default function NewsletterSignupInline({
               className="flex flex-col items-center text-center space-y-4 py-4"
             >
               {/* celebratory SVG checkmark draw-in */}
-              <div className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-xs">
+              <div className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-xs">
                 <svg
                   className="h-6 w-6 text-emerald-600"
                   fill="none"

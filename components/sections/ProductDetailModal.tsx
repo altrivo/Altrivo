@@ -111,8 +111,8 @@ export default function ProductDetailModal({
       addToCart({
         id: `${product.id || "p"}_${selectedVariant}`,
         name: `${product.name} (${selectedVariant})`,
-        price: `₨ ${rawPrice.toLocaleString()}`,
-        originalPrice: `₨ ${rawComparePrice.toLocaleString()}`,
+        price: `$${rawPrice.toLocaleString()}`,
+        originalPrice: `$${rawComparePrice.toLocaleString()}`,
         image: images[activeImgIndex] || product.thumbnail || product.image,
       });
     }
@@ -261,16 +261,16 @@ export default function ProductDetailModal({
               {/* Price & Savings */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-baseline gap-3">
                 <span className="text-3xl font-black text-slate-900">
-                  ₨ {rawPrice.toLocaleString()}
+                  ${rawPrice.toLocaleString()}
                 </span>
                 {rawComparePrice > rawPrice && (
                   <span className="text-base text-slate-400 line-through font-semibold">
-                    ₨ {rawComparePrice.toLocaleString()}
+                    ${rawComparePrice.toLocaleString()}
                   </span>
                 )}
                 {discountPercent && (
                   <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
-                    Save ₨ {(rawComparePrice - rawPrice).toLocaleString()} ({discountPercent}%)
+                    Save ${(rawComparePrice - rawPrice).toLocaleString()} ({discountPercent}%)
                   </span>
                 )}
               </div>
@@ -339,7 +339,7 @@ export default function ProductDetailModal({
                   onClick={handleAddToCart}
                   className={`w-full py-3.5 rounded-2xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
                     isAdded
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-500 text-slate-950"
                       : "bg-slate-900 hover:bg-slate-800 text-white"
                   }`}
                 >
@@ -351,7 +351,7 @@ export default function ProductDetailModal({
                   ) : (
                     <>
                       <ShoppingBag className="w-4 h-4" />
-                      <span>Add to Cart • ₨ {(rawPrice * quantity).toLocaleString()}</span>
+                      <span>Add to Cart â€¢ â‚¨ {(rawPrice * quantity).toLocaleString()}</span>
                     </>
                   )}
                 </button>
@@ -423,9 +423,9 @@ export default function ProductDetailModal({
               )}
               {activeTab === "shipping" && (
                 <div className="space-y-2 text-xs">
-                  <p>🚚 <strong>Nationwide Shipping:</strong> Dispatched via TCS Express Courier with estimated arrival in 2-4 business days.</p>
-                  <p>🛡️ <strong>A2 Escrow Protection:</strong> Your payment remains securely locked in DigiShop Escrow until you inspect and accept your package.</p>
-                  <p>🔄 <strong>7-Day Returns:</strong> If you are not 100% satisfied, initiate a free exchange or refund within 7 days.</p>
+                  <p>ðŸšš <strong>Nationwide Shipping:</strong> Dispatched via TCS Express Courier with estimated arrival in 2-4 business days.</p>
+                  <p>ðŸ›¡ï¸ <strong>A2 Escrow Protection:</strong> Your payment remains securely locked in DigiShop Escrow until you inspect and accept your package.</p>
+                  <p>ðŸ”„ <strong>7-Day Returns:</strong> If you are not 100% satisfied, initiate a free exchange or refund within 7 days.</p>
                 </div>
               )}
             </div>
@@ -458,8 +458,8 @@ export default function ProductDetailModal({
                   <ProductCard
                     id={relProd.id}
                     name={relProd.name}
-                    price={`₨ ${Number(relProd.price).toLocaleString()}`}
-                    originalPrice={relProd.compareAtPrice ? `₨ ${Number(relProd.compareAtPrice).toLocaleString()}` : undefined}
+                    price={`$${Number(relProd.price).toLocaleString()}`}
+                    originalPrice={relProd.compareAtPrice ? `$${Number(relProd.compareAtPrice).toLocaleString()}` : undefined}
                     image={relProd.thumbnail || relProd.image || relProd.images?.[0]}
                     rating={relProd.rating || 4.9}
                     badge={relProd.badge}

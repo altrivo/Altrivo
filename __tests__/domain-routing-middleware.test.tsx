@@ -45,13 +45,13 @@ describe("Multi-Tenant Storefront Routing (Domain -> Vendor)", () => {
 
     it("domains table contains valid entries with ssl_status and verified flags", () => {
       expect(DOMAINS_TABLE.length).toBeGreaterThan(0);
-      const verifiedDomains = DOMAINS_TABLE.filter((d) => d.verified);
+      const verifiedDomains = DOMAINS_TABLE.filter((d: any) => d.verified);
       expect(verifiedDomains.length).toBeGreaterThan(0);
     });
   });
 
   describe("Next.js Middleware Domain Router", () => {
-    it("attaches x-vendor-id header for valid domain request", () => {
+    it("attaches x-vendor-id header for valid domain request", async () => {
       const req = {
         headers: new Headers({
           host: "www.brandxyz.com",
@@ -62,11 +62,11 @@ describe("Multi-Tenant Storefront Routing (Domain -> Vendor)", () => {
         url: "http://www.brandxyz.com/shop",
       };
 
-      const res = middleware(req as any);
+      const res = await middleware(req as any);
       expect(res).toBeDefined();
     });
 
-    it("rewrites unknown domain storefront requests to 404", () => {
+    it("rewrites unknown domain storefront requests to 404", async () => {
       const req = {
         headers: new Headers({
           host: "unknown-brand-999.com",
@@ -77,8 +77,8 @@ describe("Multi-Tenant Storefront Routing (Domain -> Vendor)", () => {
         url: "http://unknown-brand-999.com/shop",
       };
 
-      const res = middleware(req as any);
-      expect(res.status).toBe(404);
+      const res = await middleware(req as any);
+      expect((res as any)?.status).toBe(404);
     });
   });
 });

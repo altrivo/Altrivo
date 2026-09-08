@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 import { Button, Badge } from "@/components/shared";
+import { Pencil, Copy, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getStoredProductFormData } from "@/lib/product-storage";
 import type { Product } from "@/types/product";
 import type { ProductFormData, ProductVariant } from "@/types/product-form";
@@ -135,15 +136,16 @@ export function ProductQuickViewModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={handleEdit}>
-              ✏️ Edit Product
+            <Button variant="ghost" size="sm" onClick={handleEdit} className="gap-1.5">
+              <Pencil size={14} />
+              <span>Edit Product</span>
             </Button>
             <button
               onClick={onClose}
-              className="text-subtle hover:text-heading p-2 rounded-lg hover:bg-muted transition-colors text-lg"
+              className="text-subtle hover:text-heading p-2 rounded-lg hover:bg-muted transition-colors"
               aria-label="Close modal"
             >
-              ✕
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -188,7 +190,7 @@ export function ProductQuickViewModal({
                       className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shadow"
                       aria-label="Previous image"
                     >
-                      ←
+                      <ChevronLeft size={18} />
                     </button>
                     <button
                       onClick={() =>
@@ -199,7 +201,7 @@ export function ProductQuickViewModal({
                       className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shadow"
                       aria-label="Next image"
                     >
-                      →
+                      <ChevronRight size={18} />
                     </button>
                   </>
                 )}
@@ -380,12 +382,14 @@ export function ProductQuickViewModal({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-3 pt-4 border-t border-default">
-                <Button variant="primary" size="md" className="flex-1" onClick={handleEdit}>
-                  ✏️ Edit Full Product
+                <Button variant="primary" size="md" className="flex-1 gap-2" onClick={handleEdit}>
+                  <Pencil size={16} />
+                  <span>Edit Full Product</span>
                 </Button>
                 {onDuplicate && (
-                  <Button variant="ghost" size="md" onClick={handleDuplicate}>
-                    📋 Duplicate
+                  <Button variant="ghost" size="md" onClick={handleDuplicate} className="gap-1.5">
+                    <Copy size={16} />
+                    <span>Duplicate</span>
                   </Button>
                 )}
                 <Button variant="ghost" size="md" onClick={onClose}>

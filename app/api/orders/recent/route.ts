@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "5", 10);
     let vendorId = searchParams.get("vendorId");
+    const storeId = searchParams.get("storeId");
 
     // 1. Identify active logged in vendor from Supabase session
     if (!vendorId) {
@@ -59,14 +60,19 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Fetch real orders specifically for THIS vendor from Supabase
+    // 3. Fetch real orders specifically for THIS vendor and STORE from Supabase
     let vendorOrders: any[] = [];
     if (supabaseAdmin) {
-      const { data: orders, error } = await supabaseAdmin
+      let query = supabaseAdmin
         .from("orders")
         .select("*, order_items(*)")
-        .eq("vendor_id", vendorId)
-        .order("created_at", { ascending: false });
+        .eq("vendor_id", vendorId);
+
+      if (storeId) {
+        query = query.eq("store_id", storeId);
+      }
+
+      const { data: orders, error } = await query.order("created_at", { ascending: false });
 
       if (!error && orders) {
         vendorOrders = orders;

@@ -226,7 +226,7 @@ export default function NewsletterSignupModal({
                 aria-live="polite"
                 className="flex flex-col items-center text-center space-y-4 py-8"
               >
-                <div className="h-14 w-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm animate-bounce">
+                <div className="h-14 w-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm animate-bounce">
                   <Check className="h-7 w-7" />
                 </div>
                 <div className="space-y-1.5">

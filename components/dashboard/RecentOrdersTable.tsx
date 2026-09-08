@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { OrderItem } from "@/app/api/orders/recent/route";
 
-export function RecentOrdersTable({ vendorId }: { vendorId?: string } = {}) {
+export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; storeId?: string } = {}) {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,10 @@ export function RecentOrdersTable({ vendorId }: { vendorId?: string } = {}) {
       if (isInitial) {
         setLoading(true);
       }
-      const url = `/api/orders/recent?page=${pageNum}&limit=5${vendorId ? `&vendorId=${encodeURIComponent(vendorId)}` : ""}`;
+      let url = `/api/orders/recent?page=${pageNum}&limit=5`;
+      if (vendorId) url += `&vendorId=${encodeURIComponent(vendorId)}`;
+      if (storeId) url += `&storeId=${encodeURIComponent(storeId)}`;
+
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -68,7 +71,7 @@ export function RecentOrdersTable({ vendorId }: { vendorId?: string } = {}) {
       clearInterval(interval);
       if (bc) bc.close();
     };
-  }, [page]);
+  }, [page, storeId, vendorId]);
 
   const getStatusBadge = (status: OrderItem["status"]) => {
     switch (status) {

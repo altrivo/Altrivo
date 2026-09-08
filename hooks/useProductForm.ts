@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 
-import { saveProductFromForm } from "@/lib/product-storage";
+import { saveProductFromForm, generateUniqueSku } from "@/lib/product-storage";
 import type {
   ProductFormData,
   ProductFormErrors,
@@ -42,11 +42,18 @@ const defaultFormData: ProductFormData = {
   status: "draft",
 };
 
-export function useProductForm(initialData?: Partial<ProductFormData>) {
-  const [formData, setFormData] = useState<ProductFormData>(() => ({
-    ...defaultFormData,
-    ...initialData,
-  }));
+export function useProductForm(initialData?: Partial<ProductFormData>, explicitStoreId?: string) {
+  const [formData, setFormData] = useState<ProductFormData>(() => {
+    const generatedId = initialData?.id || `prod_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const generatedSku = initialData?.sku || generateUniqueSku(initialData?.title, initialData?.category);
+    return {
+      ...defaultFormData,
+      id: generatedId,
+      sku: generatedSku,
+      storeId: explicitStoreId || initialData?.storeId,
+      ...initialData,
+    };
+  });
 
   const [activeTab, setActiveTab] = useState<FormTab>("basic");
   const [errors, setErrors] = useState<ProductFormErrors>({});
@@ -370,10 +377,28 @@ export function useProductForm(initialData?: Partial<ProductFormData>) {
 
       setIsSaving(true);
       
-      // Update form status and save to storage with updated status
-      const updatedFormData = { ...formData, status: targetStatus };
-      setFormData(updatedFormData);
-      saveProductFromForm(updatedFormData, targetStatus);
+      const currentStoreId =
+        explicitStoreId ||
+        formData.storeId ||
+        (typeof window !== "undefined" ? localStorage.getItem("active_store_id") : null) ||
+        undefined;
+
+      const updatedFormData: ProductFormData = {
+        ...formData,
+        status: targetStatus,
+        storeId: currentStoreId,
+        sku: formData.sku || generateUniqueSku(formData.title, formData.category),
+      };
+
+      const saved = saveProductFromForm(updatedFormData, targetStatus, currentStoreId);
+
+      setFormData((prev) => ({
+        ...prev,
+        id: saved.id,
+        sku: saved.sku,
+        storeId: saved.storeId,
+        status: targetStatus,
+      }));
 
       setTimeout(() => {
         setIsSaving(false);
@@ -386,11 +411,11 @@ export function useProductForm(initialData?: Partial<ProductFormData>) {
           }),
         );
         if (onSuccess) onSuccess();
-      }, 600);
+      }, 350);
 
       return true;
     },
-    [validateForm, formData],
+    [validateForm, formData, explicitStoreId],
   );
 
   return {

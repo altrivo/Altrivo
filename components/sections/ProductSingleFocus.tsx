@@ -154,7 +154,7 @@ export default function ProductSingleFocus({
               onClick={handleAddToCart}
               className={`w-full py-4 rounded-2xl text-sm font-extrabold tracking-wide shadow-md transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer text-white active:scale-[0.98] ${
                 isAdded 
-                  ? "bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                  ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
                   : "bg-[var(--color-primary,#0f172a)] hover:brightness-110 hover:shadow-[0_0_20px_var(--color-primary)]"
               }`}
             >

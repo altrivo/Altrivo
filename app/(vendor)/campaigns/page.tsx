@@ -93,7 +93,7 @@ export default function CampaignsListPage() {
           <Link href="/campaigns/new">
             <Button variant="primary" size="md" className="font-extrabold shadow-md gap-2">
               <Plus size={18} />
-              <span>+ Create Campaign (AI Wizard)</span>
+              <span>Create Campaign (AI Wizard)</span>
             </Button>
           </Link>
         </div>
@@ -116,8 +116,9 @@ export default function CampaignsListPage() {
         <Card className="p-5 space-y-1 shadow-card">
           <p className="text-xs font-bold uppercase text-body font-display">Funding Payment Method</p>
           <p className="text-sm font-extrabold text-heading font-mono">Virtual Credit Card (VCC)</p>
-          <Link href="/wallet" className="text-xs font-extrabold text-primary-700 hover:underline">
-            Manage VCC Balance ($1,500.00) →
+          <Link href="/wallet" className="inline-flex items-center gap-1 text-xs font-extrabold text-primary-700 hover:underline">
+            <span>Manage VCC Balance ($1,500.00)</span>
+            <ChevronRight size={14} />
           </Link>
         </Card>
       </div>

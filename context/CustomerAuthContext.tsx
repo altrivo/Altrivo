@@ -1,12 +1,23 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { StoreCustomer, CustomerAddress } from "@/types/customer";
+/**
+ * DigiShop AI — Customer Authentication Context
+ *
+ * Uses real Supabase client-side auth via @supabase/ssr.
+ * Dynamic store context (resolved from domain/route instead of hardcoded).
+ * Handles cart merge on login, token refresh, and session lifecycle.
+ */
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { StoreCustomer } from "@/types/customer";
+import type { User } from "@supabase/supabase-js";
 
 interface CustomerAuthContextType {
   customer: StoreCustomer | null;
+  user: User | null;
   loading: boolean;
   storeId: string;
+  isAuthenticated: boolean;
   login: (email: string, password: string, storeId?: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string, phone?: string, storeId?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -16,32 +27,75 @@ interface CustomerAuthContextType {
 
 const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(undefined);
 
-const DEFAULT_STORE_ID = "753ea49c-abae-4dd3-9107-1dc8fcd6b221";
+/**
+ * Resolve the current store ID from the domain/URL.
+ * In production, this reads from the domain resolver.
+ * In development, falls back to a default.
+ */
+function resolveStoreId(): string {
+  if (typeof window === "undefined") return "";
+
+  const hostname = window.location.hostname;
+
+  // In development, use default store ID or read from meta tag
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    const metaStoreId = document.querySelector('meta[name="x-store-id"]')?.getAttribute("content");
+    if (metaStoreId) return metaStoreId;
+    // Fallback: try localStorage
+    const saved = localStorage.getItem("digishop_current_store_id");
+    if (saved) return saved;
+    return "";
+  }
+
+  // For custom domains, the store ID is resolved server-side and injected via headers
+  return "";
+}
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [customer, setCustomer] = useState<StoreCustomer | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [storeId] = useState<string>(DEFAULT_STORE_ID);
+  const [storeId, setStoreId] = useState<string>("");
+  const supabase = createClient();
 
-  // Hydrate customer session on mount
+  // Hydrate session on mount
   useEffect(() => {
     const hydrateSession = async () => {
       try {
-        const cached = localStorage.getItem("digishop_customer_session");
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.id) {
-            setCustomer(parsed);
-          }
-        }
+        // 1. Resolve store context
+        const resolvedStoreId = resolveStoreId();
+        setStoreId(resolvedStoreId);
 
-        // Verify with server profile endpoint
-        const res = await fetch(`/api/customer/profile?store_id=${storeId}`, { credentials: "omit" });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.customer) {
-            setCustomer(data.customer);
-            localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
+        // 2. Check Supabase auth session
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser);
+
+        if (authUser && resolvedStoreId) {
+          // 3. Fetch or hydrate store customer profile
+          const res = await fetch(
+            `/api/customer/profile?store_id=${resolvedStoreId}`,
+            { credentials: "include" }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.customer) {
+              setCustomer(data.customer);
+            }
+          }
+        } else if (authUser) {
+          // No store context yet — just set the user, customer profile will load when store is known
+          // Try to hydrate from localStorage cache
+          try {
+            const cached = localStorage.getItem("digishop_customer_session");
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (parsed?.id && parsed?.auth_user_id === authUser.id) {
+                setCustomer(parsed);
+                if (parsed.store_id) setStoreId(parsed.store_id);
+              }
+            }
+          } catch {
+            // Ignore parse errors
           }
         }
       } catch (err) {
@@ -52,31 +106,81 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     };
 
     hydrateSession();
-  }, [storeId]);
 
-  const login = async (email: string, password: string, targetStoreId?: string) => {
+    // Listen for auth state changes (token refresh, login from another tab, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+
+        if (event === "SIGNED_OUT") {
+          setCustomer(null);
+          try { localStorage.removeItem("digishop_customer_session"); } catch {}
+        }
+
+        if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+          // Re-fetch customer profile with refreshed session
+          if (session?.user && storeId) {
+            try {
+              const res = await fetch(
+                `/api/customer/profile?store_id=${storeId}`,
+                { credentials: "include" }
+              );
+              if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.customer) {
+                  setCustomer(data.customer);
+                }
+              }
+            } catch {}
+          }
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const login = useCallback(async (email: string, password: string, targetStoreId?: string) => {
     try {
+      const effectiveStoreId = targetStoreId || storeId;
+
+      // 1. Sign in via Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (authError || !authData.user) {
+        return { success: false, error: authError?.message || "Login failed" };
+      }
+
+      setUser(authData.user);
+
+      // 2. Resolve/create store customer record via API
       const res = await fetch("/api/auth/customer/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim(),
           password,
-          store_id: targetStoreId || storeId,
+          store_id: effectiveStoreId,
+          auth_user_id: authData.user.id,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        return { success: false, error: data.error || "Login failed" };
+      if (data.success && data.customer) {
+        setCustomer(data.customer);
+        if (data.customer.store_id) setStoreId(data.customer.store_id);
+        try {
+          localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
+        } catch {}
       }
 
-      setCustomer(data.customer);
-      try {
-        localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
-      } catch {}
-
-      // Trigger Cart Merge if guest items exist in localStorage
+      // 3. Cart merge: merge guest cart items after login
       try {
         const guestCart = localStorage.getItem("altrio_vendor_cart");
         if (guestCart) {
@@ -87,8 +191,8 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 action: "merge",
-                vendorId: targetStoreId || storeId,
-                customerId: data.customer.id,
+                vendorId: effectiveStoreId,
+                customerId: data.customer?.id,
                 items: parsed,
               }),
             });
@@ -102,10 +206,38 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, error: err.message || "Network error during login" };
     }
-  };
+  }, [storeId, supabase.auth]);
 
-  const register = async (name: string, email: string, password: string, phone?: string, targetStoreId?: string) => {
+  const register = useCallback(async (
+    name: string,
+    email: string,
+    password: string,
+    phone?: string,
+    targetStoreId?: string
+  ) => {
     try {
+      const effectiveStoreId = targetStoreId || storeId;
+
+      // 1. Create Supabase auth account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            phone: phone?.trim(),
+            role: "customer",
+          },
+        },
+      });
+
+      if (authError || !authData.user) {
+        return { success: false, error: authError?.message || "Registration failed" };
+      }
+
+      setUser(authData.user);
+
+      // 2. Create store customer record via API
       const res = await fetch("/api/auth/customer/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +246,8 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
           email: email.trim(),
           password,
           phone: phone?.trim(),
-          store_id: targetStoreId || storeId,
+          store_id: effectiveStoreId,
+          auth_user_id: authData.user.id,
         }),
       });
 
@@ -123,25 +256,30 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.error || "Registration failed" };
       }
 
-      setCustomer(data.customer);
-      try {
-        localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
-      } catch {}
+      if (data.customer) {
+        setCustomer(data.customer);
+        if (data.customer.store_id) setStoreId(data.customer.store_id);
+        try {
+          localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
+        } catch {}
+      }
 
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || "Network error during registration" };
     }
-  };
+  }, [storeId, supabase.auth]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setCustomer(null);
+    setUser(null);
     try {
       localStorage.removeItem("digishop_customer_session");
     } catch {}
-  };
+  }, [supabase.auth]);
 
-  const updateProfile = async (data: { name: string; phone?: string }) => {
+  const updateProfile = useCallback(async (data: { name: string; phone?: string }) => {
     if (!customer) return { success: false, error: "Not logged in" };
     try {
       const res = await fetch("/api/customer/profile", {
@@ -165,12 +303,15 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, error: err.message || "Failed to update profile" };
     }
-  };
+  }, [customer, storeId]);
 
-  const refreshCustomer = async () => {
+  const refreshCustomer = useCallback(async () => {
     if (!customer) return;
     try {
-      const res = await fetch(`/api/customer/profile?customerId=${customer.id}&store_id=${storeId}`);
+      const res = await fetch(
+        `/api/customer/profile?customerId=${customer.id}&store_id=${storeId}`,
+        { credentials: "include" }
+      );
       if (res.ok) {
         const data = await res.json();
         if (data.customer) {
@@ -178,15 +319,17 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
         }
       }
-    } catch (e) {}
-  };
+    } catch {}
+  }, [customer, storeId]);
 
   return (
     <CustomerAuthContext.Provider
       value={{
         customer,
+        user,
         loading,
         storeId,
+        isAuthenticated: !!user,
         login,
         register,
         logout,

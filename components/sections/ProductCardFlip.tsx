@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Star, ShoppingBag, Check, Eye } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductCardProps {
   id: string;
@@ -78,8 +79,8 @@ export default function ProductCardFlip({
     addToCart({
       id,
       name,
-      price,
-      originalPrice,
+      price: formatPrice(price),
+      originalPrice: formatCutPrice(price, originalPrice),
       image,
     });
     if (onAddToCart) {
@@ -143,7 +144,12 @@ export default function ProductCardFlip({
             <h3 className="text-xs font-black text-slate-800 line-clamp-1 leading-snug">
               {name}
             </h3>
-            <span className="text-sm font-black text-slate-900">{price}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-black text-slate-900">{formatPrice(price)}</span>
+              <span className="text-[10px] text-slate-400 line-through font-bold">
+                {formatCutPrice(price, originalPrice)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -167,7 +173,12 @@ export default function ProductCardFlip({
           <div className="space-y-2 pb-1">
             <div className="flex justify-between items-baseline text-xs font-black border-b border-white/15 pb-2">
               <span className="text-slate-400">Total Price</span>
-              <span className="text-sm text-amber-400">{price}</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm text-amber-400">{formatPrice(price)}</span>
+                <span className="text-[10px] text-slate-400 line-through">
+                  {formatCutPrice(price, originalPrice)}
+                </span>
+              </div>
             </div>
             
             <button

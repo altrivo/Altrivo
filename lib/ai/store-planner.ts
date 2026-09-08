@@ -41,7 +41,7 @@ export async function planStore(userPrompt: string): Promise<{ plan: StoreBluepr
   }
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -186,7 +186,7 @@ function generateFallbackPlan(userPrompt: string): StoreBlueprintPlan {
     style: match.style,
     market: isPakistan ? 'Pakistan' : 'global',
     targetAudience: `${match.industry} consumers`,
-    language: isPakistan ? 'ur-en' : 'en',
+    language: 'en',
     currency: isPakistan ? 'PKR' : 'USD',
     suggestedName: nameMatch?.[1]?.trim() || match.suggestedName,
     suggestedTagline: match.tagline,

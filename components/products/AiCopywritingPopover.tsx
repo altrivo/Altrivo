@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 
 import { Button, Input } from "@/components/shared";
 import {
+  ArrowLeft,
+  RefreshCw,
+  Sparkles,
+  X,
+} from "@/components/shared/LucideIcons";
+import {
   generateAiCopywriting,
   type CopywritingTone,
   type AiCopywritingResult,
@@ -90,7 +96,8 @@ export function AiCopywritingPopover({
         <div className="flex items-center justify-between border-b border-default pb-4">
           <div>
             <h3 className="text-lg font-bold text-heading flex items-center gap-2">
-              ✨ AI Copywriter (Title & Description)
+              <Sparkles className="w-5 h-5 text-primary-600" />
+              <span>AI Copywriter (Title & Description)</span>
             </h3>
             <p className="text-xs text-subtle mt-0.5">
               Generate SEO titles (≤60 chars) and structured product descriptions in seconds.
@@ -101,7 +108,7 @@ export function AiCopywritingPopover({
             className="text-subtle hover:text-heading p-1 transition-colors"
             aria-label="Close modal"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -158,8 +165,10 @@ export function AiCopywritingPopover({
                 size="md"
                 onClick={handleGenerate}
                 disabled={!keywords.trim()}
+                className="gap-2"
               >
-                ✨ Generate AI Copy
+                <Sparkles size={16} />
+                <span>Generate AI Copy</span>
               </Button>
             </div>
           </div>
@@ -278,11 +287,14 @@ export function AiCopywritingPopover({
                   variant="ghost"
                   size="sm"
                   onClick={() => setCopyResults(null)}
+                  className="gap-2"
                 >
-                  ← Back
+                  <ArrowLeft size={16} />
+                  <span>Back</span>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleGenerate}>
-                  🔄 Regenerate Copy
+                <Button variant="ghost" size="sm" onClick={handleGenerate} className="gap-2">
+                  <RefreshCw size={14} />
+                  <span>Regenerate Copy</span>
                 </Button>
               </div>
 

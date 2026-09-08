@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { FormInput } from "./FormInput";
-import { createClient } from "@/lib/supabase/client";
 
 interface ForgotPasswordModalProps {
   open: boolean;
@@ -12,7 +11,6 @@ interface ForgotPasswordModalProps {
 type ModalState = "email" | "sending" | "sent";
 
 export function ForgotPasswordModal({ open, onClose }: ForgotPasswordModalProps) {
-  const [supabase] = useState(() => createClient());
   const [state, setState] = useState<ModalState>("email");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -33,17 +31,23 @@ export function ForgotPasswordModal({ open, onClose }: ForgotPasswordModalProps)
     }
 
     setState("sending");
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-
-    if (resetError) {
+    try {
+      const res = await fetch("/api/auth/vendor/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setState("email");
+        setError(data.error || "Failed to send reset link.");
+        return;
+      }
+      setState("sent");
+    } catch (err: any) {
       setState("email");
-      setError(resetError.message);
-      return;
+      setError(err.message || "Failed to send reset link.");
     }
-
-    setState("sent");
   };
 
   const handleClose = () => {

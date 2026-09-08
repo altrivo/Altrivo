@@ -13,6 +13,7 @@ import {
   Target,
   CreditCard,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Megaphone,
 } from "@/components/shared/LucideIcons";
@@ -205,8 +206,9 @@ export default function NewCampaignWizardPage() {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-default">
-              <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="font-bold border-strong">
-                ← Back
+              <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="font-bold border-strong gap-2">
+                <ArrowLeft size={16} />
+                <span>Back</span>
               </Button>
               <Button variant="primary" size="md" onClick={() => setStep(3)} className="font-extrabold gap-2">
                 <span>Next: AI Smart Targeting</span>
@@ -281,8 +283,9 @@ export default function NewCampaignWizardPage() {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-default">
-              <Button variant="ghost" size="sm" onClick={() => setStep(2)} className="font-bold border-strong">
-                ← Back
+              <Button variant="ghost" size="sm" onClick={() => setStep(2)} className="font-bold border-strong gap-2">
+                <ArrowLeft size={16} />
+                <span>Back</span>
               </Button>
               <Button variant="primary" size="md" onClick={() => setStep(4)} className="font-extrabold gap-2">
                 <span>Next: Set Budget & VCC</span>
@@ -346,8 +349,9 @@ export default function NewCampaignWizardPage() {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-default">
-              <Button variant="ghost" size="sm" onClick={() => setStep(3)} className="font-bold border-strong">
-                ← Back
+              <Button variant="ghost" size="sm" onClick={() => setStep(3)} className="font-bold border-strong gap-2">
+                <ArrowLeft size={16} />
+                <span>Back</span>
               </Button>
               <Button variant="primary" size="md" onClick={() => setStep(5)} className="font-extrabold gap-2">
                 <span>Next: Ad Preview & Launch</span>

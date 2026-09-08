@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Zap, Clock, ShieldCheck, ShoppingBag, Star, ArrowRight } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductSaleHighlightProps {
   title?: string;
@@ -22,8 +23,8 @@ export default function ProductSaleHighlight({
   subtitle = "Limited Time Offer — Exclusive Handcrafted Release with Escrow Protection",
   productId = "prod_0001",
   productName = "Royal Oxford Calfskin Shoes",
-  price = "₨ 7,800",
-  originalPrice = "₨ 9,500",
+  price = "$78",
+  originalPrice = "$95",
   discountBadge = "18% OFF",
   image = "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
   endsInHours = 12,
@@ -66,7 +67,7 @@ export default function ProductSaleHighlight({
         
         {/* Glow Blurs */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 -mb-10 w-64 h-64 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 -mb-10 w-64 h-64 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
@@ -111,10 +112,10 @@ export default function ProductSaleHighlight({
 
             {/* Pricing Row */}
             <div className="flex items-baseline gap-4 pt-2">
-              <span className="text-3xl sm:text-4xl font-black text-emerald-400">{price}</span>
-              {originalPrice && (
-                <span className="text-lg text-slate-400 line-through font-semibold">{originalPrice}</span>
-              )}
+              <span className="text-3xl sm:text-4xl font-black text-emerald-400">{formatPrice(price)}</span>
+              <span className="text-lg text-slate-400 line-through font-semibold">
+                {formatCutPrice(price, originalPrice)}
+              </span>
               <span className="px-3 py-1 rounded-xl bg-rose-500 text-white font-black text-xs shadow-md">
                 {discountBadge}
               </span>
@@ -124,7 +125,7 @@ export default function ProductSaleHighlight({
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={handleQuickBuy}
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg hover:shadow-emerald-500/25 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-300 hover:to-teal-400 text-white font-black text-xs shadow-lg hover:shadow-emerald-500/25 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>Claim Deal & Checkout Now</span>
@@ -167,7 +168,7 @@ export default function ProductSaleHighlight({
                   ))}
                   <span className="text-xs font-black text-white ml-1">4.9 / 5.0</span>
                 </div>
-                <p className="text-xs text-slate-300 font-medium">100% Escrow Protected • 7-Day Easy Returns</p>
+                <p className="text-xs text-slate-300 font-medium">100% Escrow Protected â€¢ 7-Day Easy Returns</p>
               </div>
             </div>
           </div>

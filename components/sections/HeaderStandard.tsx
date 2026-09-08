@@ -16,13 +16,18 @@ import {
   ArrowRight,
   ShieldCheck,
   MessageCircle,
-  Truck
+  Truck,
+  Home,
+  Info,
+  Phone
 } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice } from "@/lib/storefront/priceUtils";
 
 export interface NavLink {
   name: string;
   href: string;
+  pageKey?: string;
   hasDropdown?: boolean;
   dropdownItems?: { name: string; href: string }[];
 }
@@ -34,22 +39,27 @@ export interface HeaderStandardProps {
   navigation?: NavLink[];
   products?: any[];
   cartItemCount?: number;
+  deviceMode?: "desktop" | "tablet" | "mobile";
+  activePage?: string;
+  onNavigatePage?: (page: string) => void;
 }
 
-const DEFAULT_LINKS: NavLink[] = [
-  { name: "All Products", href: "#catalog" },
-  { name: "Automatic Chronographs", href: "#catalog" },
-  { name: "Classic Dress", href: "#catalog" },
-  { name: "Heritage Story", href: "#story" },
-  { name: "Track Order", href: "#tracking" },
+const CORE_PAGE_LINKS: NavLink[] = [
+  { name: "Home", href: "#home", pageKey: "home" },
+  { name: "About", href: "#about", pageKey: "about" },
+  { name: "Shop", href: "#shop", pageKey: "shop" },
+  { name: "Contact", href: "#contact", pageKey: "contact" },
 ];
 
 export default function HeaderStandard({
   logoText = "Artisanal Store",
   logoUrlLight = "",
   logoUrlDark = "",
-  navigation = DEFAULT_LINKS,
+  navigation,
   products = [],
+  deviceMode = "desktop",
+  activePage = "home",
+  onNavigatePage,
 }: HeaderStandardProps) {
   const { 
     itemCount, 
@@ -61,6 +71,15 @@ export default function HeaderStandard({
     setIsCustomerAuthOpen,
     logoutCustomer
   } = useCart();
+
+  const isMobileMode = deviceMode === "mobile";
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  // Combine core pages (Home, About, Shop, Contact) with custom category links if any
+  const primaryLinks = CORE_PAGE_LINKS;
+  const categoryLinks = (navigation || []).filter(
+    (l) => !["home", "about", "shop", "contact"].includes(l.name.toLowerCase())
+  );
 
   // Listen to #tracking hash in URL
   useEffect(() => {
@@ -130,139 +149,163 @@ export default function HeaderStandard({
       {/* ------------------------------------------------------------------- */}
       {/* TOP HEADER ROW: [Logo / Store Name] - [Search Bar] - [Cart & Profile] */}
       {/* ------------------------------------------------------------------- */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between gap-3 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+        <div className="flex items-center justify-between gap-2 sm:gap-6">
           
           {/* LEFT: Mobile Menu Toggle + Store Logo / Name */}
-          <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-xl border md:hidden transition-colors bg-slate-100/80 border-slate-200 text-slate-800"
+              className={`p-2 rounded-xl border transition-colors bg-slate-100/80 border-slate-200 text-slate-800 cursor-pointer ${
+                isMobileMode ? "flex" : "md:hidden flex"
+              }`}
               aria-label="Open menu"
             >
-              <div className="w-5 h-5 flex flex-col justify-between items-center py-1">
-                <span className="block h-[2px] w-4.5 rounded-full bg-slate-800" />
-                <span className="block h-[2px] w-4.5 rounded-full bg-slate-800" />
-                <span className="block h-[2px] w-4.5 rounded-full bg-slate-800" />
+              <div className="w-4.5 h-4.5 flex flex-col justify-between items-center py-0.5">
+                <span className="block h-[2px] w-4 rounded-full bg-slate-800" />
+                <span className="block h-[2px] w-4 rounded-full bg-slate-800" />
+                <span className="block h-[2px] w-4 rounded-full bg-slate-800" />
               </div>
             </button>
 
-            <a href="#" className="flex items-center gap-2 select-none group">
+            <a
+              href="#home"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigatePage?.("home");
+              }}
+              className="flex items-center gap-2 select-none group"
+            >
               <span
                 style={{
                   fontFamily: "var(--font-heading, inherit)",
                   color: "var(--color-text, #0f172a)",
                 }}
-                className="font-extrabold text-base sm:text-lg lg:text-xl tracking-tight transition-all duration-200 whitespace-nowrap group-hover:text-[var(--color-primary,#0f172a)]"
+                className="font-extrabold text-sm sm:text-lg lg:text-xl tracking-tight transition-all duration-200 truncate max-w-[140px] sm:max-w-xs group-hover:text-[var(--color-primary,#0f172a)]"
               >
                 {logoText}
               </span>
             </a>
           </div>
 
-          {/* MIDDLE: Interactive Search Bar */}
-          <div ref={searchContainerRef} className="flex-1 max-w-xl relative hidden sm:block">
-            <div className="relative flex items-center">
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onFocus={() => setIsSearchOpen(true)}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setIsSearchOpen(true);
-                }}
-                placeholder="Search watches, footwear, collections..."
-                className="w-full pl-10 pr-10 py-2 rounded-2xl bg-slate-100/90 border border-slate-200 text-slate-800 text-xs font-semibold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all"
-              />
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchResults([]);
+          {/* MIDDLE: Interactive Search Bar (Desktop / Tablet) */}
+          {!isMobileMode && (
+            <div ref={searchContainerRef} className="flex-1 max-w-xl relative hidden sm:block">
+              <div className="relative flex items-center">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onFocus={() => setIsSearchOpen(true)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchOpen(true);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Instant Search Results Dropdown */}
-            {isSearchOpen && searchQuery.trim().length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-3 z-50 animate-in fade-in-50 zoom-in-95 space-y-2">
-                <div className="flex items-center justify-between px-2 pb-1 border-b border-slate-100 text-[11px]">
-                  <span className="font-bold text-slate-500">
-                    Search Results ({searchResults.length})
-                  </span>
-                  <span className="text-[10px] text-slate-400">Press ESC to close</span>
-                </div>
-
-                {searchResults.length > 0 ? (
-                  <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-                    {searchResults.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-10 h-10 rounded-lg object-cover bg-slate-100 flex-shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <p className="font-bold text-xs text-slate-800 truncate group-hover:text-emerald-600">
-                              {item.name}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-xs text-slate-900">
-                                {item.price}
-                              </span>
-                              {item.tag && (
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                  {item.tag}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            addToCart({
-                              id: item.id,
-                              name: item.name,
-                              price: item.price,
-                              image: item.image,
-                            });
-                            setIsSearchOpen(false);
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all active:scale-95 flex-shrink-0"
-                        >
-                          <ShoppingBag className="w-3 h-3" />
-                          <span>+ Add</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-xs text-slate-400">
-                    No products matched "<span className="text-slate-600 font-semibold">{searchQuery}</span>"
-                  </div>
+                  placeholder="Search products..."
+                  className="w-full pl-10 pr-10 py-2 rounded-2xl bg-slate-100/90 border border-slate-200 text-slate-800 text-xs font-semibold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all"
+                />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchResults([]);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* RIGHT: [Add to Cart Button] & [Profile Button + Dropdown] */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              {/* Instant Search Results Dropdown */}
+              {isSearchOpen && searchQuery.trim().length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-3 z-50 animate-in fade-in-50 zoom-in-95 space-y-2">
+                  <div className="flex items-center justify-between px-2 pb-1 border-b border-slate-100 text-[11px]">
+                    <span className="font-bold text-slate-500">
+                      Search Results ({searchResults.length})
+                    </span>
+                    <span className="text-[10px] text-slate-400">Press ESC to close</span>
+                  </div>
+
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+                      {searchResults.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-10 h-10 rounded-lg object-cover bg-slate-100 flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs text-slate-800 truncate group-hover:text-emerald-600">
+                                {item.name}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <span className="font-extrabold text-xs text-slate-900">
+                                  {formatPrice(item.price)}
+                                </span>
+                                {item.tag && (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    {item.tag}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              addToCart({
+                                id: item.id,
+                                name: item.name,
+                                price: formatPrice(item.price),
+                                image: item.image,
+                              });
+                              setIsSearchOpen(false);
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all active:scale-95 flex-shrink-0 cursor-pointer"
+                          >
+                            <ShoppingBag className="w-3 h-3" />
+                            <span>Add</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-slate-400">
+                      No products matched "<span className="text-slate-600 font-semibold">{searchQuery}</span>"
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* RIGHT: [Mobile Search Icon] + [Add to Cart Button] & [Profile Button + Dropdown] */}
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             
+            {/* Mobile Search Toggle Icon */}
+            {isMobileMode && (
+              <button
+                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                  isMobileSearchOpen ? "bg-purple-50 border-purple-300 text-emerald-800" : "bg-slate-100 border-slate-200 text-slate-800"
+                }`}
+                title="Search products"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            )}
+
             {/* 1. Shopping Bag / Cart Drawer Button */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-800 transition-all duration-150 active:scale-95 group"
+              className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-800 transition-all duration-150 active:scale-95 group cursor-pointer"
               aria-label="Open Cart Drawer"
             >
               <div className="relative">
@@ -284,13 +327,13 @@ export default function HeaderStandard({
                 onClick={() => {
                   setIsCustomerAuthOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border border-slate-200 bg-slate-100/90 hover:bg-emerald-50 hover:border-emerald-300 text-slate-800 hover:text-emerald-800 text-xs font-extrabold transition-all active:scale-95 shadow-2xs cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl border border-slate-200 bg-slate-100/90 hover:bg-purple-50 hover:border-purple-300 text-slate-800 hover:text-emerald-800 text-xs font-extrabold transition-all active:scale-95 shadow-2xs cursor-pointer"
                 title="Customer Sign In & Account"
               >
                 <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white text-[9px]">
                   <User className="w-2.5 h-2.5 text-white" />
                 </div>
-                <span>Sign In</span>
+                <span className="hidden sm:inline">Sign In</span>
               </button>
             ) : (
               <div ref={profileDropdownRef} className="relative">
@@ -343,7 +386,7 @@ export default function HeaderStandard({
                           <span className="font-bold text-xs text-slate-800 truncate">
                             {customer.name}
                           </span>
-                          <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-700 text-[8px] font-extrabold uppercase">
+                          <span className="px-1.5 py-0.2 rounded bg-purple-100 text-emerald-700 text-[8px] font-extrabold uppercase">
                             Verified
                           </span>
                         </div>
@@ -379,9 +422,6 @@ export default function HeaderStandard({
                           <Package className="w-4 h-4 text-slate-500" />
                           <span>My Orders &amp; Tracking</span>
                         </div>
-                        <span className="px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 text-[9px] font-bold">
-                          Live
-                        </span>
                       </button>
 
                       {/* View Cart Drawer */}
@@ -406,7 +446,7 @@ export default function HeaderStandard({
                         href="https://wa.me/923001234567"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-2 rounded-xl hover:bg-emerald-50/50 text-slate-700 hover:text-emerald-700 transition-colors font-semibold"
+                        className="flex items-center justify-between p-2 rounded-xl hover:bg-purple-50/50 text-slate-700 hover:text-emerald-700 transition-colors font-semibold"
                       >
                         <div className="flex items-center gap-2.5">
                           <MessageCircle className="w-4 h-4 text-emerald-600" />
@@ -437,71 +477,184 @@ export default function HeaderStandard({
           </div>
 
         </div>
+
+        {/* Mobile Search Bar Dropdown Row */}
+        {isMobileMode && isMobileSearchOpen && (
+          <div className="pt-2.5 pb-1 animate-in fade-in-50 slide-in-from-top-2">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search store products..."
+                autoFocus
+                className="w-full pl-9 pr-9 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Dropdown Search Results */}
+            {searchQuery.trim().length > 0 && (
+              <div className="mt-2 bg-white rounded-xl shadow-xl border border-slate-200 p-2 space-y-1.5 max-h-60 overflow-y-auto">
+                {searchResults.length > 0 ? (
+                  searchResults.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-8 h-8 rounded-md object-cover bg-slate-100 flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-bold text-[11px] text-slate-800 truncate">{item.name}</p>
+                          <span className="font-extrabold text-[11px] text-emerald-700">{item.price}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          addToCart({
+                            id: item.id,
+                            name: item.name,
+                            price: item.price,
+                            image: item.image,
+                          });
+                          setIsMobileSearchOpen(false);
+                          setSearchQuery("");
+                        }}
+                        className="px-2 py-1 rounded-md bg-[#694873] text-white font-bold text-[10px] flex items-center gap-1 active:scale-95 cursor-pointer"
+                      >
+                        <ShoppingBag className="w-2.5 h-2.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="p-3 text-center text-xs text-slate-400">No products found for "{searchQuery}"</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------------- */}
-      {/* SUB-HEADER ROW: Categories Navbar & Store Pages Links                */}
+      {/* SUB-HEADER ROW: 4 Core Store Pages (Home, About, Shop, Contact)     */}
       {/* ------------------------------------------------------------------- */}
-      <div className="bg-slate-900 text-slate-200 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 lg:gap-8 whitespace-nowrap text-xs font-bold uppercase tracking-wider">
-          {navigation.map((link, idx) => (
-            <a
-              key={link.name || idx}
-              href={link.href || "#catalog"}
-              onClick={(e) => {
-                if (link.href === "#tracking" || link.name?.toLowerCase().includes("track")) {
+      {/* ------------------------------------------------------------------- */}
+      {/* SUB-HEADER ROW: 4 Core Store Pages (Home, About, Shop, Contact)     */}
+      {/* ------------------------------------------------------------------- */}
+      <div className="bg-slate-900 text-slate-200 border-t border-slate-800/80 px-3 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-6 sm:gap-10">
+          {/* Strictly 4 Core Store Navigation Pages in Center */}
+          {primaryLinks.map((link) => {
+            const isPageActive = activePage === link.pageKey;
+            return (
+              <button
+                key={link.name}
+                onClick={(e) => {
                   e.preventDefault();
-                  setIsTrackingOpen(true);
-                }
-              }}
-              className="text-slate-300 hover:text-emerald-400 transition-colors py-1 flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>{link.name}</span>
-            </a>
-          ))}
+                  if (link.pageKey && onNavigatePage) {
+                    onNavigatePage(link.pageKey);
+                  } else if (link.href) {
+                    window.location.hash = link.href;
+                  }
+                }}
+                className={`relative py-1 px-1 text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 cursor-pointer group flex flex-col items-center ${
+                  isPageActive
+                    ? "text-emerald-400 font-extrabold"
+                    : "text-slate-300 hover:text-white font-semibold"
+                }`}
+              >
+                <span>{link.name}</span>
+                {/* Underline hover effect & active line indicator */}
+                <span
+                  className={`block h-[2.5px] rounded-full transition-all duration-200 mt-1 ${
+                    isPageActive
+                      ? "w-full bg-emerald-400 shadow-xs shadow-emerald-400/50"
+                      : "w-0 group-hover:w-full bg-slate-400/70"
+                  }`}
+                />
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Drawer (Responsive for Mobile Preview Frame and Real Phone) */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm md:hidden flex">
-          <div className="w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between border-r border-slate-200">
-            <div className="space-y-6">
+        <div className={`fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex ${isMobileMode ? "" : "md:hidden"}`}>
+          <div className="w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between border-r border-slate-200 animate-in slide-in-from-left-4 duration-200">
+            <div className="space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="font-extrabold text-slate-900 text-sm">{logoText}</span>
+                <span className="font-extrabold text-slate-900 text-sm truncate">{logoText}</span>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Mobile Search */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search catalog..."
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              {/* Mobile Navigation List - 4 Core Pages with Clean Lucide Icons */}
+              <div className="space-y-1">
+                <p className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider px-2">Store Navigation</p>
+                <nav className="flex flex-col gap-1.5 pt-1">
+                  {primaryLinks.map((link) => {
+                    const isPageActive = activePage === link.pageKey;
+                    const PageIcon = link.pageKey === "home" ? Home : link.pageKey === "about" ? Info : link.pageKey === "shop" ? ShoppingBag : Phone;
+                    return (
+                      <button
+                        key={link.name}
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          if (link.pageKey && onNavigatePage) {
+                            onNavigatePage(link.pageKey);
+                          } else if (link.href) {
+                            window.location.hash = link.href;
+                          }
+                        }}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                          isPageActive
+                            ? "bg-emerald-50 text-emerald-800 border-l-4 border-emerald-500 font-extrabold"
+                            : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <PageIcon className={`w-4 h-4 ${isPageActive ? "text-emerald-600" : "text-slate-500"}`} />
+                          <span>{link.name}</span>
+                        </div>
+                        {isPageActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                      </button>
+                    );
+                  })}
+                </nav>
               </div>
 
-              {/* Mobile Navigation List */}
-              <nav className="flex flex-col gap-3">
-                {navigation.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-xs font-bold text-slate-700 hover:text-emerald-600 py-1"
-                  >
-                    {link.name}
-                  </a>
-                ))}
-              </nav>
+              {/* Track Order */}
+              <div className="border-t border-slate-100 pt-3">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsTrackingOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 text-left cursor-pointer"
+                >
+                  <Truck className="w-4 h-4 text-emerald-600" />
+                  <span>Track My Order</span>
+                </button>
+              </div>
             </div>
 
             <div className="border-t border-slate-100 pt-4 flex gap-2">
@@ -510,10 +663,10 @@ export default function HeaderStandard({
                   setIsMobileMenuOpen(false);
                   setIsCartOpen(true);
                 }}
-                className="w-full py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>Open Bag ({itemCount})</span>
+                <span>Open Cart ({itemCount})</span>
               </button>
             </div>
           </div>

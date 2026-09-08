@@ -1,4 +1,5 @@
 import { resolveDomainToVendor } from "./domainResolver";
+import { formatPrice, formatCutPrice } from "./priceUtils";
 
 export interface HeroConfig {
   badge: string;
@@ -80,7 +81,7 @@ const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
   primaryColor: "#694873",
   accentColor: "#F2DDE1",
   supportPhone: "+92 300 1234567",
-  freeShippingThreshold: "₨ 5,000",
+  freeShippingThreshold: "$50",
   categories: [
     { name: "All Products", href: "/shop" },
     { name: "Ceramics & Decor", href: "/category/decor" },
@@ -115,8 +116,8 @@ const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
     {
       id: "prod-1",
       name: "Ceramic Minimalist Vase (Handcrafted)",
-      price: "₨ 8,900",
-      originalPrice: "₨ 11,000",
+      price: "$89",
+      originalPrice: "$110",
       rating: 4.9,
       reviewsCount: 42,
       category: "Decor",
@@ -129,8 +130,8 @@ const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
     {
       id: "prod-2",
       name: "Abstract Canvas Painting 'Golden Dawn'",
-      price: "₨ 34,000",
-      originalPrice: "₨ 40,000",
+      price: "$340",
+      originalPrice: "$400",
       rating: 5.0,
       reviewsCount: 28,
       category: "Art",
@@ -142,8 +143,8 @@ const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
     {
       id: "prod-3",
       name: "Nordic Wooden Desk Lamp",
-      price: "₨ 12,500",
-      originalPrice: "₨ 15,000",
+      price: "$125",
+      originalPrice: "$150",
       rating: 4.8,
       reviewsCount: 19,
       category: "Lighting",
@@ -155,8 +156,8 @@ const DEFAULT_VENDOR_CONFIG: VendorStoreConfig = {
     {
       id: "prod-4",
       name: "Handcrafted Genuine Leather Journal",
-      price: "₨ 4,800",
-      originalPrice: "₨ 6,000",
+      price: "$48",
+      originalPrice: "$60",
       rating: 4.9,
       reviewsCount: 64,
       category: "Stationery",
@@ -353,59 +354,38 @@ function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConf
   // Extract hero props if present
   const heroSection = layout.sections?.find((s: any) => s.type?.startsWith("Hero")) || layout.sections?.[0];
 
-  const defaultProducts = [
-    {
-      id: "s1",
-      name: "Royal Oxford Calfskin Shoes",
-      price: "₨ 7,800",
-      originalPrice: "₨ 9,500",
-      discount: "18% OFF",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
-      tag: "Bestseller",
-      inStock: true,
-    },
-    {
-      id: "s2",
-      name: "Handcrafted Suede Loafers",
-      price: "₨ 6,400",
-      originalPrice: "₨ 7,800",
-      discount: "18% OFF",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
-      tag: "Trending",
-      inStock: true,
-    },
-    {
-      id: "s3",
-      name: "Peshawari Chappal - Pure Leather",
-      price: "₨ 5,200",
-      originalPrice: "₨ 6,500",
-      discount: "20% OFF",
-      rating: 5.0,
-      image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
-      tag: "Traditional",
-      inStock: true,
-    },
-    {
-      id: "s4",
-      name: "Urban Streetwear Sneakers",
-      price: "₨ 8,900",
-      originalPrice: "₨ 11,000",
-      discount: "20% OFF",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
-      tag: "Limited Drop",
-      inStock: true,
-    },
-  ];
-
-  const effectiveProducts =
-    layout.products && layout.products.length > 0
+  const rawProducts =
+    layout.products && Array.isArray(layout.products) && layout.products.length > 0
       ? layout.products
-      : commerce.products && commerce.products.length > 0
+      : commerce.products && Array.isArray(commerce.products) && commerce.products.length > 0
       ? commerce.products
-      : defaultProducts;
+      : [];
+
+  const effectiveProducts = rawProducts.map((p: any) => ({
+    ...p,
+    price: formatPrice(p.price),
+    originalPrice: formatCutPrice(p.price, p.originalPrice),
+  }));
+
+  // Ensure sections with products also format prices to $
+  if (layout.sections && Array.isArray(layout.sections)) {
+    layout.sections = layout.sections.map((s: any) => {
+      if (s.props?.products && Array.isArray(s.props.products)) {
+        return {
+          ...s,
+          props: {
+            ...s.props,
+            products: s.props.products.map((p: any) => ({
+              ...p,
+              price: formatPrice(p.price),
+              originalPrice: formatCutPrice(p.price, p.originalPrice),
+            })),
+          },
+        };
+      }
+      return s;
+    });
+  }
 
   const categorySection = layout.sections?.find((s: any) => s.type?.includes("Category"));
   const effectiveCategories = categorySection?.props?.categories || layout.categories || [];
@@ -422,7 +402,7 @@ function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConf
     primaryColor: layout.theme?.colors?.primary || "#171717",
     accentColor: layout.theme?.colors?.secondary || "#D4AF37",
     supportPhone: undefined,
-    freeShippingThreshold: commerce.freeShippingThreshold ? `₨ ${commerce.freeShippingThreshold}` : "₨ 5,000",
+    freeShippingThreshold: commerce.freeShippingThreshold ? `$${commerce.freeShippingThreshold}` : "$50",
     categories: layout.categories || [{ name: "All Products", href: "/shop" }],
     socialLinks: layout.socialLinks || [
       { name: "Instagram", href: "https://instagram.com", icon: "instagram" },
@@ -473,6 +453,7 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
     storeName: config.storeName,
     categories: config.categories,
     socialLinks: config.socialLinks,
+    pages: (config as any)._dbLayoutConfig?.pages,
     theme: {
       colors: {
         primary: config.primaryColor,

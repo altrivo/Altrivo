@@ -24,6 +24,8 @@ export interface ProductImage {
 
 export interface ProductFormData {
   id?: string;
+  sku?: string;
+  storeId?: string;
   // (1) Basic Tab
   title: string;
   description: string;

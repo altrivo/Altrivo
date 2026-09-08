@@ -111,7 +111,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           <div className="lg:col-span-6 space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
                   {product.brand || "StepCraft Heritage"}
                 </span>
                 <span className="text-xs font-bold text-slate-500">{product.category}</span>
@@ -140,7 +140,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <span className="text-base text-slate-400 line-through font-semibold">
                 ₨ {comparePrice.toLocaleString()}
               </span>
-              <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-black text-purple-700 bg-purple-100 px-2.5 py-1 rounded-lg">
                 Save ₨ {(comparePrice - product.price).toLocaleString()} ({discount}%)
               </span>
             </div>
@@ -163,7 +163,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-600">
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-purple-600 flex-shrink-0" />
                 <span>100% Escrow</span>
               </div>
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
@@ -181,7 +181,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         {/* 2 Rows of Recommended Products */}
         <div className="space-y-6">
           <div className="border-b border-slate-200 pb-3">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+            <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
               Curated Catalog
             </span>
             <h2 className="text-2xl font-black text-slate-900 mt-1">Recommended For You</h2>

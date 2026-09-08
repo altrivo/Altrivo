@@ -17,7 +17,9 @@ import {
   Loader2,
   ExternalLink,
   LayoutDashboard,
+  Check,
 } from "lucide-react";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 interface StoreItem {
   id: string;
@@ -35,10 +37,12 @@ interface StoreItem {
 }
 
 export default function MyStoresPage() {
+  const { activeStore, activeStoreId, setActiveStoreId } = useVendorStore();
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showAllStores, setShowAllStores] = useState(false);
 
   // Fetch stores on mount
   useEffect(() => {
@@ -145,21 +149,35 @@ export default function MyStoresPage() {
             </div>
             <div>
               <h1 className="text-xl font-black text-heading font-display tracking-tight">
-                My Stores
+                {showAllStores ? "All Managed Stores" : "My Active Store"}
               </h1>
               <p className="text-xs text-subtle font-medium">
-                {stores.length} store{stores.length !== 1 ? "s" : ""} created & managed
+                {showAllStores
+                  ? `${stores.length} store${stores.length !== 1 ? "s" : ""} created & managed`
+                  : `Currently viewing open store: ${activeStore?.name || stores[0]?.name || "Active Store"}`}
               </p>
             </div>
           </div>
 
-          <Link
-            href="/store-builder"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-400 to-accent-500 text-primary-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-primary-950" />
-            <span>Create New Store</span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            {stores.length > 1 && (
+              <button
+                onClick={() => setShowAllStores(!showAllStores)}
+                className="px-3.5 py-2 rounded-xl border border-default bg-card hover:bg-neutral-100 text-xs font-bold text-heading transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <Store className="w-3.5 h-3.5 text-primary-600" />
+                <span>{showAllStores ? `Show Active Only` : `View All Stores (${stores.length})`}</span>
+              </button>
+            )}
+
+            <Link
+              href="/store-builder"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-400 to-accent-500 text-primary-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-primary-950" />
+              <span>Create New Store</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -197,10 +215,22 @@ export default function MyStoresPage() {
         {/* Store Cards Grid */}
         {!isLoading && stores.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {stores.map((store) => (
+            {((!showAllStores && (activeStoreId || activeStore?.id)
+              ? stores.filter((s) => s.id === (activeStoreId || activeStore?.id))
+              : stores
+            ).length > 0
+              ? (!showAllStores && (activeStoreId || activeStore?.id)
+                  ? stores.filter((s) => s.id === (activeStoreId || activeStore?.id))
+                  : stores)
+              : stores
+            ).map((store) => {
+              const isCurrent = store.id === (activeStoreId || activeStore?.id);
+              return (
               <div
                 key={store.id}
-                className="group rounded-3xl bg-card border border-default shadow-card hover:shadow-card-hover transition-all duration-normal overflow-hidden flex flex-col justify-between"
+                className={`group rounded-3xl bg-card border shadow-card hover:shadow-card-hover transition-all duration-normal overflow-hidden flex flex-col justify-between ${
+                  isCurrent ? "border-primary-400 ring-2 ring-primary-400/20" : "border-default"
+                }`}
               >
                 {/* Store Color Header Bar */}
                 <div
@@ -225,6 +255,13 @@ export default function MyStoresPage() {
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        {isCurrent && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-50 border border-primary-300 text-primary-800 text-[11px] font-extrabold shadow-2xs">
+                            <Check className="w-3.5 h-3.5 text-primary-600" />
+                            Active
+                          </span>
+                        )}
+
                         {/* Status Badge */}
                         {store.is_published ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success-50 border border-success-200 text-success-800 text-[11px] font-extrabold shadow-2xs">
@@ -317,13 +354,13 @@ export default function MyStoresPage() {
                   {/* Action Buttons */}
                   <div className="grid grid-cols-3 gap-2.5 pt-2">
                     <a
-                      href={`/preview/${store.slug}`}
+                      href={`/store/${store.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer"
                       title="View Live Storefront"
                     >
-                      <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                      <Eye className="w-3.5 h-3.5 text-purple-600" />
                       <span>View</span>
                     </a>
                     <Link
@@ -343,7 +380,8 @@ export default function MyStoresPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
       </div>

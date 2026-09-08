@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "7d";
     let vendorId = searchParams.get("vendorId");
+    const storeId = searchParams.get("storeId");
 
     // 1. Identify active logged in vendor from Supabase session
     if (!vendorId) {
@@ -57,13 +58,19 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Fetch real orders specifically for THIS vendor from Supabase
+    // 3. Fetch real orders specifically for THIS vendor and STORE from Supabase
     let vendorOrders: any[] = [];
     if (supabaseAdmin) {
-      const { data: orders, error } = await supabaseAdmin
+      let query = supabaseAdmin
         .from("orders")
-        .select("id, total, status, created_at")
+        .select("id, total, status, created_at, store_id")
         .eq("vendor_id", vendorId);
+
+      if (storeId) {
+        query = query.eq("store_id", storeId);
+      }
+
+      const { data: orders, error } = await query;
 
       if (!error && orders) {
         vendorOrders = orders;

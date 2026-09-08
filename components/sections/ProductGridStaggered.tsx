@@ -81,7 +81,7 @@ export default function ProductGridStaggered({
         return;
       }
       if (storeSlug) {
-        router.push(`/preview/${storeSlug}/product/${product.id}`);
+        router.push(`/store/${storeSlug}/product/${product.id}`);
         return;
       }
       router.push(`/product/${product.id}`);

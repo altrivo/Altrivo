@@ -7,6 +7,7 @@ import {
   Search,
   Filter,
   MessageCircle,
+  Plus,
 } from "@/components/shared/LucideIcons";
 
 interface Customer {
@@ -115,7 +116,8 @@ export default function CustomersPage() {
 
           <div className="flex items-center gap-3">
             <Button variant="primary" size="md" className="font-extrabold shadow-md gap-2">
-              <span>+ Add Customer Note</span>
+              <Plus size={16} />
+              <span>Add Customer Note</span>
             </Button>
           </div>
         </div>

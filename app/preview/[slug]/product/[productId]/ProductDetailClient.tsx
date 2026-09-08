@@ -81,8 +81,8 @@ export default function ProductDetailClient({
       addToCart({
         id: `${product.id}_${selectedVariant}`,
         name: `${product.name} (${selectedVariant})`,
-        price: `₨ ${rawPrice.toLocaleString()}`,
-        originalPrice: `₨ ${rawComparePrice.toLocaleString()}`,
+        price: `$${rawPrice.toLocaleString()}`,
+        originalPrice: `$${rawComparePrice.toLocaleString()}`,
         image: galleryImages[activeImgIdx] || product.thumbnail,
       });
     }
@@ -104,8 +104,8 @@ export default function ProductDetailClient({
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-slate-500">
         <Link
-          href={`/preview/${storeSlug}`}
-          className="hover:text-slate-900 transition-colors flex items-center gap-1 font-bold text-emerald-600"
+          href={`/store/${storeSlug}`}
+          className="hover:text-slate-900 transition-colors flex items-center gap-1 font-bold text-purple-600"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Store</span>
@@ -176,7 +176,7 @@ export default function ProductDetailClient({
                   onClick={() => setActiveImgIdx(idx)}
                   className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
                     activeImgIdx === idx
-                      ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105"
+                      ? "border-[#694873] ring-2 ring-purple-500/30 scale-105"
                       : "border-slate-200 opacity-60 hover:opacity-100"
                   }`}
                 >
@@ -191,7 +191,7 @@ export default function ProductDetailClient({
         <div className="lg:col-span-6 space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+              <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
                 {product.brand || storeName || "StepCraft Heritage"}
               </span>
               <span className="text-xs font-bold text-slate-500">{product.category || "Footwear"}</span>
@@ -223,16 +223,16 @@ export default function ProductDetailClient({
           {/* Pricing Box */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-baseline gap-3">
             <span className="text-3xl sm:text-4xl font-black text-slate-900">
-              ₨ {rawPrice.toLocaleString()}
+              ${rawPrice.toLocaleString()}
             </span>
             {rawComparePrice > rawPrice && (
               <span className="text-lg text-slate-400 line-through font-semibold">
-                ₨ {rawComparePrice.toLocaleString()}
+                ${rawComparePrice.toLocaleString()}
               </span>
             )}
             {discountPercent && (
-              <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-lg">
-                Save ₨ {(rawComparePrice - rawPrice).toLocaleString()} ({discountPercent}%)
+              <span className="text-xs font-black text-purple-700 bg-purple-100 px-3 py-1 rounded-lg">
+                Save ${(rawComparePrice - rawPrice).toLocaleString()} ({discountPercent}%)
               </span>
             )}
           </div>
@@ -246,7 +246,7 @@ export default function ProductDetailClient({
           <div className="space-y-2.5">
             <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wide flex items-center justify-between">
               <span>Select Option / Size:</span>
-              <span className="text-emerald-600 normal-case font-bold">{selectedVariant}</span>
+              <span className="text-purple-600 normal-case font-bold">{selectedVariant}</span>
             </label>
             <div className="flex flex-wrap gap-2.5">
               {(product.variants && product.variants.length > 0
@@ -289,8 +289,8 @@ export default function ProductDetailClient({
               </button>
             </div>
 
-            <div className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="text-xs font-bold text-purple-700 flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" />
               <span>In Stock (Nationwide Dispatch in 24h via TCS)</span>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function ProductDetailClient({
               onClick={handleAddToCart}
               className={`w-full py-4 rounded-2xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
                 isAdded
-                  ? "bg-emerald-600 text-white"
+                  ? "bg-[#694873] text-white"
                   : "bg-slate-900 hover:bg-slate-800 text-white"
               }`}
             >
@@ -313,14 +313,14 @@ export default function ProductDetailClient({
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Cart • ₨ {(rawPrice * quantity).toLocaleString()}</span>
+                  <span>Add to Cart • ${(rawPrice * quantity).toLocaleString()}</span>
                 </>
               )}
             </button>
 
             <button
               onClick={handleBuyNow}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-700 via-purple-600 to-purple-800 hover:from-purple-800 hover:to-purple-900 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
               <span>Instant Buy with Escrow</span>
@@ -330,7 +330,7 @@ export default function ProductDetailClient({
           {/* Trust Badges */}
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-600">
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-purple-600 flex-shrink-0" />
               <span>100% Escrow</span>
             </div>
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
@@ -359,7 +359,7 @@ export default function ProductDetailClient({
               onClick={() => setActiveTab(tab.id as any)}
               className={`pb-3 text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                 activeTab === tab.id
-                  ? "border-emerald-500 text-emerald-600"
+                  ? "border-[#694873] text-purple-600"
                   : "border-transparent text-slate-400 hover:text-slate-700"
               }`}
             >
@@ -397,7 +397,7 @@ export default function ProductDetailClient({
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+            <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
               Curated Recommendations
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
@@ -414,15 +414,15 @@ export default function ProductDetailClient({
           {relatedProducts.map((relProd) => (
             <Link
               key={relProd.id}
-              href={`/preview/${storeSlug}/product/${relProd.id}`}
+              href={`/store/${storeSlug}/product/${relProd.id}`}
               className="block group"
             >
               <ProductCard
                 id={relProd.id}
                 name={relProd.name}
-                price={`₨ ${relProd.price.toLocaleString()}`}
+                price={`$${relProd.price.toLocaleString()}`}
                 originalPrice={
-                  relProd.compareAtPrice ? `₨ ${relProd.compareAtPrice.toLocaleString()}` : undefined
+                  relProd.compareAtPrice ? `$${relProd.compareAtPrice.toLocaleString()}` : undefined
                 }
                 image={relProd.thumbnail}
                 rating={relProd.rating || 4.9}

@@ -192,7 +192,7 @@ export default function WalletPage() {
             className="font-extrabold shadow-md gap-2"
           >
             <Plus size={18} />
-            <span>+ Top-Up Wallet ($1,000)</span>
+            <span>Top-Up Wallet ($1,000)</span>
           </Button>
         </div>
       </div>

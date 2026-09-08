@@ -5,6 +5,7 @@ import React, { useState } from "react";
 
 import { formatCloudinaryUrl } from "@/lib/storefront/imageOptimizer";
 import { StorefrontProduct, VendorStoreConfig } from "@/lib/storefront/themeResolver";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 
 interface FeaturedProductsGridProps {
@@ -136,10 +137,10 @@ export function FeaturedProductsGrid({ config }: FeaturedProductsGridProps) {
               <div className="pt-3 border-t border-default flex items-center justify-between gap-2">
                 <div>
                   <div className="font-extrabold text-base text-heading leading-tight">
-                    {prod.price}
+                    {formatPrice(prod.price)}
                   </div>
                   <div className="text-[10px] text-subtle line-through">
-                    {prod.originalPrice}
+                    {formatCutPrice(prod.price, prod.originalPrice)}
                   </div>
                 </div>
 

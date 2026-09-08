@@ -38,16 +38,18 @@ export const A2EscrowService = {
 };
 
 // 3. Valid State Machine Transitions
-export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["processing", "cancelled"],
-  processing: ["packed", "cancelled"],
-  packed: ["ready_to_ship", "cancelled"],
-  ready_to_ship: ["shipped", "cancelled"],
-  shipped: ["delivered", "cancelled"],
-  delivered: ["completed"],
-  completed: [],
+export const VALID_ORDER_TRANSITIONS: Record<OrderStatus | "refunded" | "paid", (OrderStatus | "refunded" | "paid")[]> = {
+  pending: ["confirmed", "cancelled", "paid"],
+  confirmed: ["processing", "cancelled", "refunded"],
+  processing: ["packed", "cancelled", "refunded"],
+  packed: ["ready_to_ship", "cancelled", "refunded"],
+  ready_to_ship: ["shipped", "cancelled", "refunded"],
+  shipped: ["delivered", "cancelled", "refunded"],
+  delivered: ["completed", "refunded"],
+  completed: ["refunded"],
   cancelled: [],
+  refunded: [],
+  paid: ["confirmed", "processing", "cancelled"],
 };
 
 // 4. In-Memory Store for quick hydration & fallback
@@ -491,11 +493,15 @@ export class OrdersBackendService {
     couponCode?: string;
     customerNote?: string;
     items: OrderItem[];
-    subtotal: number;
-    discountTotal: number;
-    shippingTotal: number;
-    taxTotal: number;
-    grandTotal: number;
+    subtotal?: number;
+    discountTotal?: number;
+    shippingTotal?: number;
+    taxTotal?: number;
+    grandTotal?: number;
+    totalAmount?: number;
+    paymentStatus?: PaymentStatus;
+    deliveryStatus?: DeliveryStatus;
+    deliveryMethod?: string;
   }): Promise<Order> {
     // 1. Idempotency Check: Prevent duplicate orders on double click or retry
     if (orderInput.idempotency_key) {
@@ -511,6 +517,7 @@ export class OrdersBackendService {
     const nowISO = new Date().toISOString();
     const storeId = orderInput.store_id || (await this.getValidStoreId());
     const vendorId = orderInput.vendor_id || (await this.getValidVendorId());
+    const finalGrandTotal = orderInput.grandTotal ?? orderInput.totalAmount ?? 0;
 
     // Initial timeline event
     const initialTimeline: TimelineEvent[] = [
@@ -534,7 +541,7 @@ export class OrdersBackendService {
         new_status: "pending",
         actor_type: "customer",
         actor_id: orderInput.customer_id || "guest_customer",
-        message: `Customer ${orderInput.customerName} placed order #${orderNumber} for ₨ ${orderInput.grandTotal.toLocaleString()}`,
+        message: `Customer ${orderInput.customerName} placed order #${orderNumber} for ₨ ${finalGrandTotal.toLocaleString()}`,
         metadata: {
           itemsCount: orderInput.items.length,
           paymentMethod: orderInput.paymentMethod,
@@ -570,12 +577,12 @@ export class OrdersBackendService {
       customerName: orderInput.customerName,
       customerEmail: orderInput.customerEmail,
       customerPhone: orderInput.customerPhone,
-      subtotal: orderInput.subtotal,
-      discount_total: orderInput.discountTotal,
-      shipping_total: orderInput.shippingTotal,
-      tax_total: orderInput.taxTotal,
-      grand_total: orderInput.grandTotal,
-      totalAmount: orderInput.grandTotal,
+      subtotal: orderInput.subtotal ?? (orderInput.totalAmount ?? orderInput.grandTotal ?? 0),
+      discount_total: orderInput.discountTotal ?? 0,
+      shipping_total: orderInput.shippingTotal ?? 0,
+      tax_total: orderInput.taxTotal ?? 0,
+      grand_total: orderInput.grandTotal ?? orderInput.totalAmount ?? 0,
+      totalAmount: orderInput.grandTotal ?? orderInput.totalAmount ?? 0,
       currency: "PKR",
       order_status: "pending",
       paymentStatus: orderInput.paymentMethod === "cod" ? "pending" : "paid",
@@ -716,7 +723,7 @@ export class OrdersBackendService {
           new_status: "pending",
           actor_type: "customer",
           actor_id: orderInput.customer_id || "guest",
-          message: `Order #${orderNumber} created for ₨ ${orderInput.grandTotal.toLocaleString()}`,
+          message: `Order #${orderNumber} created for ₨ ${finalGrandTotal.toLocaleString()}`,
           metadata: { idempotency_key: orderInput.idempotency_key },
           created_at: nowISO,
         });
@@ -762,7 +769,7 @@ export class OrdersBackendService {
    */
   static async transitionStatus(
     orderId: string,
-    nextStatus: OrderStatus,
+    nextStatus: OrderStatus | "refunded" | "paid",
     options?: {
       actorType?: "system" | "customer" | "vendor" | "courier";
       actorId?: string;
@@ -785,7 +792,7 @@ export class OrdersBackendService {
     const allowed = VALID_ORDER_TRANSITIONS[currentStatus];
     if (allowed && !allowed.includes(nextStatus)) {
       throw new Error(
-        `Invalid transition from '${currentStatus}' to '${nextStatus}'. Allowed next steps: ${allowed.join(", ") || "none (terminal state)"}`
+        `Invalid status transition from '${currentStatus}' to '${nextStatus}'. Allowed next steps: ${allowed.join(", ") || "none (terminal state)"}`
       );
     }
 
@@ -871,6 +878,24 @@ export class OrdersBackendService {
         updated.cancelled_by = actorType;
         updated.cancellation_reason = options?.reason || "Cancelled by request";
         eventMessage = `Order cancelled. Reason: ${updated.cancellation_reason}`;
+        break;
+
+      case "refunded":
+        updated.deliveryStatus = "cancelled";
+        updated.delivery_status = "cancelled";
+        updated.paymentStatus = "refunded";
+        updated.payment_status = "refunded";
+        updated.escrowStatus = "refunded_a2_escrow";
+        eventMessage = "Order refunded via A2 escrow.";
+        break;
+
+      case "paid":
+        updated.paymentStatus = "paid";
+        updated.payment_status = "paid";
+        if (updated.order_status === "pending") {
+          updated.order_status = "confirmed";
+        }
+        eventMessage = "Payment marked paid by gateway.";
         break;
     }
 

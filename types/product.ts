@@ -12,6 +12,7 @@ export interface ProductVariantItem {
 
 export interface Product {
   id: string;
+  storeId?: string;
   name: string;
   sku: string;
   price: number;

@@ -12,11 +12,14 @@ import {
   ExternalLink,
   ChevronDown,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 import { NotificationItem } from "@/app/api/notifications/route";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { StorefrontPreviewModal } from "@/components/storefront/StorefrontPreviewModal";
 import { createClient } from "@/lib/supabase/client";
+import { useVendorStore } from "@/context/VendorStoreContext";
+import { Check, Plus, Store } from "lucide-react";
 
 interface VendorNavbarProps {
   onToggleMobileMenu: () => void;
@@ -30,46 +33,21 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [vendorInfo, setVendorInfo] = useState<{
-    name: string;
-    email: string;
-    storeName: string;
-    initials: string;
-  }>({
-    name: "Vendor",
-    email: "vendor@artrivo.com",
-    storeName: "My Store",
-    initials: "VS",
-  });
+
+  const { stores, activeStore, activeStoreId, setActiveStoreId, vendor } = useVendorStore();
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // Fetch active vendor profile
-  useEffect(() => {
-    async function loadVendor() {
-      try {
-        const res = await fetch("/api/auth/vendor/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.authenticated && data.vendor) {
-            const name = data.vendor.name || "Vendor";
-            const email = data.vendor.email || "";
-            const storeName =
-              data.stores?.[0]?.name ||
-              (data.hasStore ? "My Store" : "No Store Yet");
-            const parts = name.trim().split(" ");
-            const initials =
-              parts.length > 1
-                ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
-                : name.substring(0, 2).toUpperCase();
-            setVendorInfo({ name, email, storeName, initials });
-          }
-        }
-      } catch {}
-    }
-    loadVendor();
-  }, []);
+  const vendorName = vendor?.name || "Vendor";
+  const vendorEmail = vendor?.email || "";
+  const activeStoreName = activeStore?.name || (stores.length > 0 ? stores[0].name : "No Store Yet");
+
+  const nameParts = vendorName.trim().split(" ");
+  const initials =
+    nameParts.length > 1
+      ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
+      : vendorName.substring(0, 2).toUpperCase();
 
   // Fetch notifications from API
   const fetchNotifications = async () => {
@@ -159,14 +137,18 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
 
       {/* Right side Actions: Notifications + Profile Dropdown */}
       <div className="flex items-center gap-2.5 sm:gap-3">
-        {/* Quick Action Button to Open Storefront Preview Modal */}
-        <button
-          onClick={() => setPreviewModalOpen(true)}
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-xs font-semibold text-heading shadow-xs active:scale-95 transition-all cursor-pointer"
-        >
-          <span>Preview Storefront</span>
-          <ExternalLink className="w-3.5 h-3.5 text-subtle" />
-        </button>
+        {/* Quick Action Button to Open Live Storefront (shown ONLY when store exists) */}
+        {activeStore?.slug && (
+          <Link
+            href={`/store/${activeStore.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-xs font-semibold text-heading shadow-xs active:scale-95 transition-all cursor-pointer"
+          >
+            <span>Preview My Store</span>
+            <ExternalLink className="w-3.5 h-3.5 text-subtle" />
+          </Link>
+        )}
 
         {/* Notification Bell Dropdown */}
         <div className="relative" ref={notifRef}>
@@ -261,9 +243,10 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                 <Link
                   href="/notifications"
                   onClick={() => setNotifOpen(false)}
-                  className="text-xs font-semibold text-primary-600 hover:text-primary-700 block"
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
                 >
-                  View notification settings →
+                  <span>View notification settings</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -282,17 +265,17 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
             {/* 3D Profile Avatar */}
             <div className="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-accent-500 p-[1px] shadow-sm flex items-center justify-center">
               <div className="w-full h-full rounded-[7px] bg-primary-700 flex items-center justify-center text-white font-bold text-xs">
-                {vendorInfo.initials}
+                {initials}
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success-500 border-2 border-card" />
             </div>
 
             <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-bold text-heading leading-tight truncate max-w-[120px]">
-                {vendorInfo.name}
+                {vendorName}
               </span>
               <span className="text-[10px] text-subtle font-medium truncate max-w-[120px]">
-                {vendorInfo.storeName}
+                {activeStoreName}
               </span>
             </div>
 
@@ -302,42 +285,101 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
           {/* Profile Dropdown Popover */}
           {profileOpen && (
             <div
-              className="absolute right-0 mt-2 w-64 rounded-2xl border border-default bg-card shadow-float z-popover overflow-hidden animate-in fade-in slide-in-from-top-2 duration-fast"
+              className="absolute right-0 mt-2 w-[300px] rounded-2xl border border-default bg-card shadow-float z-popover overflow-hidden animate-in fade-in slide-in-from-top-2 duration-fast"
               style={{
                 boxShadow:
-                  "0 20px 40px -10px rgba(105,72,115,0.18), 0 8px 16px -4px rgba(0,0,0,0.06)",
+                  "0 24px 48px -12px rgba(105,72,115,0.22), 0 8px 16px -4px rgba(0,0,0,0.08)",
               }}
             >
               {/* Profile Card Header */}
               <div className="p-4 border-b border-default bg-gradient-to-br from-primary-50/80 to-accent-50/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary-600 text-white font-bold text-sm flex items-center justify-center shadow-md">
-                    {vendorInfo.initials}
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 text-white font-bold text-sm flex items-center justify-center shadow-md ring-2 ring-white/80">
+                    {initials}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-sm text-heading truncate">
-                      {vendorInfo.name}
+                      {vendorName}
                     </h4>
                     <p className="text-xs text-subtle truncate">
-                      {vendorInfo.email}
+                      {vendorEmail}
                     </p>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-700 bg-primary-50 px-1.5 py-0.5 rounded-md mt-1 border border-primary-200">
-                      <ShieldCheck className="w-3 h-3 text-primary-600" />
-                      {vendorInfo.storeName}
-                    </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Multi-Store Switcher Section */}
+              <div className="p-2.5 border-b border-default bg-muted/20">
+                <div className="px-2 py-1 text-[10px] font-bold text-subtle uppercase tracking-wider flex items-center justify-between">
+                  <span>Switch Store</span>
+                  <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-bold">{stores.length}</span>
+                </div>
+
+                <div className="max-h-40 overflow-y-auto space-y-0.5 py-1.5 scrollbar-thin">
+                  {stores.length === 0 ? (
+                    <p className="px-2 py-3 text-xs text-subtle text-center italic">No stores yet</p>
+                  ) : (
+                    stores.map((s) => {
+                      const isCurrent = (activeStore?.id || stores[0]?.id) === s.id;
+                      const initial = s.name.charAt(0).toUpperCase();
+                      return (
+                        <button
+                          key={s.id}
+                          onClick={() => {
+                            setActiveStoreId(s.id);
+                            setProfileOpen(false);
+                            if (typeof window !== "undefined" && window.location.pathname.includes("/dashboard/editor/")) {
+                              router.push(`/dashboard/editor/${s.slug}`);
+                            } else {
+                              router.refresh();
+                            }
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left text-xs transition-all cursor-pointer ${
+                            isCurrent
+                              ? "bg-primary-50 text-primary-900 font-bold border border-primary-200 shadow-xs"
+                              : "text-heading hover:bg-sidebar-hover"
+                          }`}
+                        >
+                          {/* Store Initial Badge */}
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs ${
+                            isCurrent
+                              ? "bg-primary-600 text-white shadow-sm"
+                              : "bg-neutral-100 text-neutral-500 border border-default"
+                          }`}>
+                            {initial}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="truncate font-semibold">{s.name}</p>
+                            <p className="text-[10px] text-subtle font-mono truncate">/{s.slug}</p>
+                          </div>
+                          {isCurrent && <Check className="w-3.5 h-3.5 text-primary-700 flex-shrink-0" />}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                <Link
+                  href="/store-builder"
+                  onClick={() => setProfileOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 mt-1 rounded-xl text-xs font-bold text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary-50 border border-primary-200 flex items-center justify-center">
+                    <Plus className="w-3.5 h-3.5 text-primary-600" />
+                  </div>
+                  <span>Create New Store</span>
+                </Link>
               </div>
 
               {/* Menu items */}
               <div className="p-1.5 space-y-0.5">
                 <Link
-                  href="/store-builder"
+                  href="/my-stores"
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-heading hover:bg-sidebar-hover transition-colors"
                 >
-                  <User className="w-4 h-4 text-subtle" />
-                  <span>Store Generator</span>
+                  <Store className="w-4 h-4 text-subtle" />
+                  <span>Manage All Stores</span>
                 </Link>
 
                 <Link
@@ -355,6 +397,9 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                   onClick={async () => {
                     setProfileOpen(false);
                     try {
+                      await fetch("/api/auth/vendor/logout", { method: "POST" });
+                    } catch {}
+                    try {
                       const supabase = createClient();
                       await supabase.auth.signOut();
                     } catch {}
@@ -362,8 +407,12 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                       localStorage.removeItem("active_vendor_id");
                       localStorage.removeItem("active_vendor_name");
                       localStorage.removeItem("active_vendor_email");
+                      localStorage.removeItem("active_store_id");
+                      document.cookie = "active_vendor_id=; path=/; max-age=0";
+                      document.cookie = "active_store_id=; path=/; max-age=0";
                     } catch {}
                     router.push("/auth/login");
+                    router.refresh();
                   }}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-error-600 hover:bg-error-50 transition-colors cursor-pointer"
                 >
@@ -379,6 +428,8 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
       <StorefrontPreviewModal
         isOpen={previewModalOpen}
         onClose={() => setPreviewModalOpen(false)}
+        previewUrl={activeStore?.slug ? `/store/${activeStore.slug}` : "/shop"}
+        storeName={activeStore?.name || "My Store"}
       />
     </header>
   );

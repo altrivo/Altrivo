@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, CheckCircle2, ShieldCheck, Truck, Lock, ArrowRight, ShoppingBag, Loader2 } from "lucide-react";
+import { X, CheckCircle2, ShieldCheck, Truck, Lock, ArrowRight, ShoppingBag, Loader2, Check } from "lucide-react";
 import { useCart } from "./CartContext";
 
 export interface CheckoutModalProps {
@@ -221,7 +221,7 @@ export default function CheckoutModal({
                 <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
                   <span className="text-slate-500 font-semibold">Total Amount</span>
                   <span className="font-black text-slate-900 text-sm">
-                    ₨ {confirmedOrder.totalAmount?.toLocaleString() || finalTotalAmount.toLocaleString()}
+                    ${confirmedOrder.totalAmount?.toLocaleString() || finalTotalAmount.toLocaleString()}
                   </span>
                 </div>
 
@@ -254,7 +254,7 @@ export default function CheckoutModal({
                     if (orderNum) setTrackingOrderNumber(orderNum);
                     setIsTrackingOpen(true);
                   }}
-                  className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Truck className="w-4 h-4" />
                   <span>Track Order Live</span>
@@ -307,8 +307,8 @@ export default function CheckoutModal({
                 {customer ? (
                   <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between text-xs text-emerald-950 font-semibold">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-[10px]">
-                        ✓
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shadow-xs">
+                        <Check className="w-3.5 h-3.5" />
                       </div>
                       <div>
                         <span>Signed in as <strong>{customer.name}</strong> ({customer.email})</span>
@@ -327,9 +327,10 @@ export default function CheckoutModal({
                         setIsCheckoutGate(true);
                         setIsCustomerAuthOpen(true);
                       }}
-                      className="text-emerald-600 font-extrabold hover:underline"
+                      className="text-emerald-600 font-extrabold hover:underline inline-flex items-center gap-1"
                     >
-                      Sign In for 1-Click Fill →
+                      <span>Sign In for 1-Click Fill</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
@@ -482,15 +483,15 @@ export default function CheckoutModal({
                       {shippingCost === 0 ? (
                         <span className="font-bold text-emerald-600 uppercase text-[10px]">Free Express Delivery</span>
                       ) : (
-                        `₨ ${shippingCost}`
+                        `$${shippingCost}`
                       )}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between font-black text-sm text-slate-900 pt-2 border-t border-slate-200/60">
-                    <span>Total Amount (PKR)</span>
+                    <span>Total Amount (USD)</span>
                     <span className="text-base text-slate-900 font-extrabold">
-                      ₨ {finalTotalAmount.toLocaleString()}
+                      ${finalTotalAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -511,7 +512,7 @@ export default function CheckoutModal({
                 <button
                   type="submit"
                   disabled={isSubmitting || itemCount === 0}
-                  className="flex-1 max-w-sm py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="flex-1 max-w-sm py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
@@ -521,7 +522,7 @@ export default function CheckoutModal({
                   ) : (
                     <>
                       <Lock className="w-4 h-4 text-slate-950" />
-                      <span>Place Order Now (₨ {finalTotalAmount.toLocaleString()})</span>
+                      <span>Place Order Now (${finalTotalAmount.toLocaleString()})</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

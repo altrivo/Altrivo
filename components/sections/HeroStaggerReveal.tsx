@@ -154,15 +154,15 @@ export default function HeroStaggerReveal({
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Store Benefits</span>
                 <div className="space-y-3">
                   <div className="flex gap-3">
-                    <span className="text-emerald-500 font-bold">✔</span>
+                    <span className="text-emerald-400 font-bold">✔</span>
                     <p className="text-xs text-slate-600 font-medium">Authenticity card included with every piece.</p>
                   </div>
                   <div className="flex gap-3">
-                    <span className="text-emerald-500 font-bold">✔</span>
+                    <span className="text-emerald-400 font-bold">✔</span>
                     <p className="text-xs text-slate-600 font-medium">Safe packing & insurance coverage against breakages.</p>
                   </div>
                   <div className="flex gap-3">
-                    <span className="text-emerald-500 font-bold">✔</span>
+                    <span className="text-emerald-400 font-bold">✔</span>
                     <p className="text-xs text-slate-600 font-medium">Support community workshops directly with every purchase.</p>
                   </div>
                 </div>

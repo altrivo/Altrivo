@@ -21,7 +21,7 @@ interface KPIDataResponse {
   data: Record<string, KPIMetric>;
 }
 
-export function KPICardRow({ vendorId }: { vendorId?: string } = {}) {
+export function KPICardRow({ vendorId, storeId }: { vendorId?: string; storeId?: string } = {}) {
   const [range, setRange] = useState<string>("7d");
   const [loading, setLoading] = useState<boolean>(true);
   const [kpiData, setKpiData] = useState<Record<string, KPIMetric> | null>(null);
@@ -30,7 +30,10 @@ export function KPICardRow({ vendorId }: { vendorId?: string } = {}) {
   const fetchKPIData = async (selectedRange: string) => {
     try {
       setLoading(true);
-      const url = `/api/kpi?range=${selectedRange}${vendorId ? `&vendorId=${encodeURIComponent(vendorId)}` : ""}`;
+      let url = `/api/kpi?range=${selectedRange}`;
+      if (vendorId) url += `&vendorId=${encodeURIComponent(vendorId)}`;
+      if (storeId) url += `&storeId=${encodeURIComponent(storeId)}`;
+
       const res = await fetch(url);
       if (res.ok) {
         const json: KPIDataResponse = await res.json();
@@ -48,7 +51,7 @@ export function KPICardRow({ vendorId }: { vendorId?: string } = {}) {
 
   useEffect(() => {
     fetchKPIData(range);
-  }, [range]);
+  }, [range, storeId, vendorId]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -85,46 +88,35 @@ export function KPICardRow({ vendorId }: { vendorId?: string } = {}) {
 
   return (
     <div className="space-y-4">
-      {/* Header bar with Range Switcher & Refresh Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="font-bold text-base text-heading font-display">
-            Key Performance Indicators
-          </h2>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-100 text-primary-700">
-            Live Metrics
-          </span>
+      {/* Range Switcher & Refresh Button */}
+      <div className="flex items-center justify-end gap-2">
+        {/* Time range selector */}
+        <div className="flex items-center p-1 rounded-xl bg-muted border border-default text-xs font-semibold text-subtle">
+          {(["7d", "30d", "90d"] as const).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                range === r
+                  ? "bg-card text-heading shadow-xs font-bold"
+                  : "hover:text-heading"
+              }`}
+            >
+              {r === "7d" ? "7 Days" : r === "30d" ? "30 Days" : "90 Days"}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Time range selector */}
-          <div className="flex items-center p-1 rounded-xl bg-muted border border-default text-xs font-semibold text-subtle">
-            {(["7d", "30d", "90d"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
-                  range === r
-                    ? "bg-card text-heading shadow-xs font-bold"
-                    : "hover:text-heading"
-                }`}
-              >
-                {r === "7d" ? "7 Days" : r === "30d" ? "30 Days" : "90 Days"}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-            aria-label="Refresh KPI metrics"
-            className="p-2 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-subtle hover:text-heading shadow-xs active:scale-95 transition-all disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${refreshing ? "animate-spin text-primary-600" : ""}`}
-            />
-          </button>
-        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing || loading}
+          aria-label="Refresh KPI metrics"
+          className="p-2 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-subtle hover:text-heading shadow-xs active:scale-95 transition-all disabled:opacity-50"
+        >
+          <RefreshCw
+            className={`w-4 h-4 ${refreshing ? "animate-spin text-primary-600" : ""}`}
+          />
+        </button>
       </div>
 
       {/* 4 Cards Grid */}

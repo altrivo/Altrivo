@@ -31,10 +31,10 @@ export default function StorefrontPage() {
       </div>
 
       {/* AI Store Builder CTA */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-950 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-emerald-800">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-purple-950 via-teal-900 to-purple-950 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-emerald-800">
         <div className="space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-emerald-200 text-xs font-bold">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
+            <Sparkles className="w-3.5 h-3.5 text-purple-300 animate-pulse" />
             <span>AI Store Generation Engine</span>
           </div>
 
@@ -49,9 +49,9 @@ export default function StorefrontPage() {
 
         <Link
           href="/store-builder"
-          className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-emerald-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap self-start sm:self-auto"
+          className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-purple-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap self-start sm:self-auto"
         >
-          <Sparkles className="w-4 h-4 text-emerald-950" />
+          <Sparkles className="w-4 h-4 text-purple-950" />
           <span>Build My Store</span>
         </Link>
       </div>
@@ -83,8 +83,8 @@ export default function StorefrontPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Link href="/my-stores" className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-slate-900 border border-emerald-800/60 shadow-card hover:border-emerald-500/80 space-y-3 transition-all">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+        <Link href="/my-stores" className="p-5 rounded-2xl bg-gradient-to-br from-purple-950/40 to-slate-900 border border-emerald-800/60 shadow-card hover:border-[#694873]/80 space-y-3 transition-all">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
             <Store className="w-5 h-5" />
           </div>
           <h3 className="font-bold text-sm text-heading">My Created Stores</h3>

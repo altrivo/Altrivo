@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 import {
   getStoredProducts,
   saveStoredProducts,
+  resolveStoreId,
   PRODUCTS_UPDATED_EVENT,
 } from "@/lib/product-storage";
 import type {
@@ -16,7 +18,12 @@ import type {
 
 const PAGE_SIZE = 20;
 
-export function useProducts() {
+export function useProducts(explicitStoreId?: string) {
+  const { activeStoreId, activeStore } = useVendorStore();
+  const effectiveStoreId = resolveStoreId(
+    explicitStoreId || activeStoreId || activeStore?.id || undefined,
+  );
+
   const [filters, setFilters] = useState<ProductFilters>({
     search: "",
     category: "",
@@ -28,12 +35,14 @@ export function useProducts() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [products, setProducts] = useState<Product[]>([]);
 
-  // Sync state with local storage on mount and on update events
+  // Sync state with local storage on mount, on update events, and when active store changes
   useEffect(() => {
-    setProducts(getStoredProducts());
+    setProducts(getStoredProducts(effectiveStoreId));
+    setSelectedIds(new Set());
+    setCurrentPage(1);
 
     const syncProducts = () => {
-      setProducts(getStoredProducts());
+      setProducts(getStoredProducts(effectiveStoreId));
     };
 
     window.addEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);
@@ -42,7 +51,7 @@ export function useProducts() {
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);
       window.removeEventListener("storage", syncProducts);
     };
-  }, []);
+  }, [effectiveStoreId]);
 
   const categories = useMemo(
     () => [...new Set(products.map((p) => p.category))].sort(),
@@ -162,46 +171,53 @@ export function useProducts() {
     setSelectedIds(new Set());
   }, []);
 
-  const deleteProduct = useCallback((id: string) => {
-    setProducts((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      saveStoredProducts(next);
-      return next;
-    });
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-  }, []);
+  const deleteProduct = useCallback(
+    (id: string) => {
+      setProducts((prev) => {
+        const next = prev.filter((p) => p.id !== id);
+        saveStoredProducts(next, effectiveStoreId);
+        return next;
+      });
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    },
+    [effectiveStoreId],
+  );
 
-  const duplicateProduct = useCallback((id: string) => {
-    setProducts((prev) => {
-      const index = prev.findIndex((p) => p.id === id);
-      if (index === -1) return prev;
-      const original = prev[index];
-      const copy: Product = {
-        ...original,
-        id: `prod_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        name: `${original.name} (Copy)`,
-        sku: `${original.sku}-COPY`,
-        updatedAt: new Date().toISOString(),
-      };
-      const updated = [...prev];
-      updated.splice(index + 1, 0, copy);
-      saveStoredProducts(updated);
-      return updated;
-    });
-  }, []);
+  const duplicateProduct = useCallback(
+    (id: string) => {
+      setProducts((prev) => {
+        const index = prev.findIndex((p) => p.id === id);
+        if (index === -1) return prev;
+        const original = prev[index];
+        const copy: Product = {
+          ...original,
+          id: `prod_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          name: `${original.name} (Copy)`,
+          sku: `${original.sku}-COPY`,
+          storeId: effectiveStoreId || original.storeId,
+          updatedAt: new Date().toISOString(),
+        };
+        const updated = [...prev];
+        updated.splice(index + 1, 0, copy);
+        saveStoredProducts(updated, effectiveStoreId);
+        return updated;
+      });
+    },
+    [effectiveStoreId],
+  );
 
   const bulkDelete = useCallback(() => {
     setProducts((prev) => {
       const next = prev.filter((p) => !selectedIds.has(p.id));
-      saveStoredProducts(next);
+      saveStoredProducts(next, effectiveStoreId);
       return next;
     });
     setSelectedIds(new Set());
-  }, [selectedIds]);
+  }, [selectedIds, effectiveStoreId]);
 
   const bulkChangeCategory = useCallback(
     (category: string) => {
@@ -209,12 +225,12 @@ export function useProducts() {
         const next = prev.map((p) =>
           selectedIds.has(p.id) ? { ...p, category } : p,
         );
-        saveStoredProducts(next);
+        saveStoredProducts(next, effectiveStoreId);
         return next;
       });
       setSelectedIds(new Set());
     },
-    [selectedIds],
+    [selectedIds, effectiveStoreId],
   );
 
   const bulkChangeStatus = useCallback(
@@ -230,12 +246,12 @@ export function useProducts() {
               }
             : p,
         );
-        saveStoredProducts(next);
+        saveStoredProducts(next, effectiveStoreId);
         return next;
       });
       setSelectedIds(new Set());
     },
-    [selectedIds],
+    [selectedIds, effectiveStoreId],
   );
 
   const hasActiveFilters = Boolean(
@@ -243,6 +259,8 @@ export function useProducts() {
   );
 
   return {
+    activeStore,
+    effectiveStoreId,
     filters,
     updateFilter,
     resetFilters,

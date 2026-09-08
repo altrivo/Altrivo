@@ -6,6 +6,7 @@ import { BillingHistoryTable } from "@/components/billing/BillingHistoryTable";
 import { FAQAccordion } from "@/components/billing/FAQAccordion";
 import { PlanCards } from "@/components/billing/PlanCards";
 import { WalletTopUpModal } from "@/components/billing/WalletTopUpModal";
+import { ArrowRight } from "lucide-react";
 import {
   BillingState,
   getBillingState,
@@ -179,9 +180,10 @@ export default function BillingPage() {
                 <button
                   type="button"
                   onClick={() => setShowTopUpModal(true)}
-                  className="px-4 py-2 rounded-xl bg-accent-200 hover:bg-white text-primary-950 text-xs font-bold shadow-md transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-accent-200 hover:bg-white text-primary-950 text-xs font-bold shadow-md transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
-                  Top Up Funds &rarr;
+                  <span>Top Up Funds</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

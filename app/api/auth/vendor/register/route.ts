@@ -1,36 +1,37 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { EmailService } from "@/services/email-service";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, email, password } = body;
+    const { name, phone, email, password, business_name, country, region } = body;
 
     // 1. Validate mandatory fields
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
-        { success: false, error: "Name is required / Name likhna lazmi hai." },
+        { success: false, error: "Name is required." },
         { status: 400 }
       );
     }
 
     if (!phone || typeof phone !== "string" || !phone.trim()) {
       return NextResponse.json(
-        { success: false, error: "Phone number is required / Mobile number likhna lazmi hai." },
+        { success: false, error: "Phone number is required." },
         { status: 400 }
       );
     }
 
     if (!email || typeof email !== "string" || !email.trim()) {
       return NextResponse.json(
-        { success: false, error: "Email address is required / Email likhna lazmi hai." },
+        { success: false, error: "Email address is required." },
         { status: 400 }
       );
     }
 
     if (!password || typeof password !== "string") {
       return NextResponse.json(
-        { success: false, error: "Password is required / Password likhna lazmi hai." },
+        { success: false, error: "Password is required." },
         { status: 400 }
       );
     }
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       return NextResponse.json(
-        { success: false, error: "Please enter a valid email address / Sahi email likhein." },
+        { success: false, error: "Please enter a valid email address." },
         { status: 400 }
       );
     }
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     const phoneDigits = cleanPhone.replace(/\D/g, "");
     if (phoneDigits.length < 10) {
       return NextResponse.json(
-        { success: false, error: "Please enter a valid phone number (at least 10 digits) / Sahi mobile number likhein." },
+        { success: false, error: "Please enter a valid phone number (at least 10 digits)." },
         { status: 400 }
       );
     }
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Duplicate Check in public.vendors and auth.users
+    // 5. Duplicate Check in public.vendors
     // Check Email in vendors table
     const { data: vendorByEmail } = await supabaseAdmin
       .from("vendors")
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ye email aur number already register hain, doosra use karein.",
+          error: "This email address and mobile number are already registered as a vendor. Please sign in instead.",
           conflictField: "both",
         },
         { status: 409 }
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ye mail already register h other use kry.",
+          error: "This email address is already registered as a vendor. Please sign in or use another email.",
           conflictField: "email",
         },
         { status: 409 }
@@ -129,57 +130,83 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Ye number already register h other use kry.",
+          error: "This phone number is already registered with another vendor. Please use another number or sign in.",
           conflictField: "phone",
         },
         { status: 409 }
       );
     }
 
-    // Also check auth.users in case the user registered in auth but not vendors
+    // 6. Check if an account already exists in Supabase Auth (e.g. from customer portal or previous partial signup)
+    let existingAuthUser: any = null;
     try {
       const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
-      const existingAuth = listData?.users?.find(
+      existingAuthUser = listData?.users?.find(
         (u) => u.email?.toLowerCase() === cleanEmail
       );
-      if (existingAuth) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Ye mail already register h other use kry.",
-            conflictField: "email",
-          },
-          { status: 409 }
-        );
-      }
     } catch (authListErr) {
       console.warn("[Vendor Register] auth list check warning:", authListErr);
     }
 
-    // 6. Create Vendor User in Supabase Auth
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: cleanEmail,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        name: cleanName,
-        phone: cleanPhone,
-        role: "vendor",
-      },
-    });
+    let userId: string;
 
-    if (authError || !authUser?.user) {
-      console.error("[Vendor Register] Auth creation error:", authError);
-      return NextResponse.json(
+    if (existingAuthUser) {
+      // User account already exists in Supabase Auth, but is NOT yet in public.vendors.
+      // Upgrade their account with vendor credentials, phone, and vendor role metadata
+      const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
+        existingAuthUser.id,
         {
-          success: false,
-          error: authError?.message || "Failed to create vendor auth account.",
-        },
-        { status: 500 }
+          password: password,
+          email_confirm: true,
+          user_metadata: {
+            ...existingAuthUser.user_metadata,
+            name: cleanName,
+            phone: cleanPhone,
+            role: "vendor",
+            business_name: business_name?.trim() || cleanName,
+          },
+        }
       );
-    }
 
-    const userId = authUser.user.id;
+      if (updateErr) {
+        console.error("[Vendor Register] Error updating existing auth user:", updateErr);
+        return NextResponse.json(
+          {
+            success: false,
+            error: updateErr.message || "Failed to update account credentials.",
+          },
+          { status: 500 }
+        );
+      }
+
+      userId = existingAuthUser.id;
+    } else {
+      // Create new Vendor User in Supabase Auth
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: cleanEmail,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          name: cleanName,
+          phone: cleanPhone,
+          role: "vendor",
+          business_name: business_name?.trim() || cleanName,
+        },
+      });
+
+      if (authError || !authUser?.user) {
+        console.error("[Vendor Register] Auth creation error:", authError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: authError?.message || "Failed to create vendor auth account.",
+          },
+          { status: 500 }
+        );
+      }
+
+      userId = authUser.user.id;
+    }
 
     // 7. Save / Update Vendor in public.vendors table
     // PostgreSQL trigger may have already inserted a blank vendor record, so we upsert
@@ -189,12 +216,12 @@ export async function POST(request: Request) {
         {
           id: userId,
           name: cleanName,
-          business_name: cleanName,
+          business_name: business_name?.trim() || cleanName,
           phone: cleanPhone,
           email: cleanEmail,
           category: "General",
-          region: "Pakistan",
-          status: "active",
+          region: region?.trim() || country?.trim() || "Pakistan",
+          status: "pending",
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
@@ -209,18 +236,29 @@ export async function POST(request: Request) {
         .from("vendors")
         .update({
           name: cleanName,
-          business_name: cleanName,
+          business_name: business_name?.trim() || cleanName,
           phone: cleanPhone,
           email: cleanEmail,
-          status: "active",
+          status: "pending",
         })
         .eq("id", userId);
+    }
+
+    // Dispatch welcome notification email via Resend
+    try {
+      await EmailService.sendVendorWelcome(
+        cleanName,
+        cleanEmail,
+        business_name?.trim() || cleanName
+      );
+    } catch (welcomeErr) {
+      console.error("[Vendor Register] Error dispatching welcome email:", welcomeErr);
     }
 
     const response = NextResponse.json(
       {
         success: true,
-        message: "Vendor account registration kamyabi se mukammal ho gayi! Dashboard open ho raha hai...",
+        message: "Vendor account created successfully! Your account is pending approval. You can start onboarding while we verify your details.",
         vendor: {
           id: userId,
           name: cleanName,

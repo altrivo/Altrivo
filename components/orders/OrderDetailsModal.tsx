@@ -19,6 +19,7 @@ import {
   Building,
   User,
   Store,
+  ArrowRight,
 } from "lucide-react";
 
 interface OrderDetailsModalProps {
@@ -434,7 +435,7 @@ export function OrderDetailsModal({
                         >
                           {step.replace(/_/g, " ")}
                         </span>
-                        {idx < 7 && <span className="text-neutral-400">→</span>}
+                        {idx < 7 && <ArrowRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />}
                       </div>
                     );
                   })}
@@ -545,7 +546,7 @@ export function OrderDetailsModal({
                   )}
 
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => setShowRefundDialog(true)}
                     className="font-bold gap-1.5"
@@ -739,7 +740,7 @@ export function OrderDetailsModal({
                   </button>
                 </div>
 
-                <Button variant="outline" size="sm" onClick={() => window.print()} className="font-bold gap-1.5">
+                <Button variant="ghost" size="sm" onClick={() => window.print()} className="font-bold gap-1.5">
                   <Printer className="w-3.5 h-3.5" />
                   Print Document
                 </Button>

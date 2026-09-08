@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { TeamMember } from "@/lib/settings";
+import { ArrowRight } from "lucide-react";
 
 interface Props {
   members: TeamMember[];
@@ -224,9 +225,10 @@ export function TeamMembersTab({ members, onUpdateMembers }: Props) {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-primary-500 text-on-primary text-xs font-bold hover:bg-primary-600"
+                className="px-5 py-2.5 rounded-xl bg-primary-500 text-on-primary text-xs font-bold hover:bg-primary-600 inline-flex items-center gap-1.5"
               >
-                Send Invitation &rarr;
+                <span>Send Invitation</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </form>

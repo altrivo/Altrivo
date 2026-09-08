@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Star, ShoppingBag, Check, Eye } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductCardProps {
   id: string;
@@ -39,8 +40,8 @@ export default function ProductCardSlideActions({
     addToCart({
       id,
       name,
-      price,
-      originalPrice,
+      price: formatPrice(price),
+      originalPrice: formatCutPrice(price, originalPrice),
       image,
     });
     if (onAddToCart) {
@@ -55,7 +56,7 @@ export default function ProductCardSlideActions({
 
   return (
     <div
-      className="group relative flex flex-col w-full bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer select-none shadow-[0_2px_4px_rgba(0,0,0,0.05)] hover:border-slate-200/80"
+      className="group relative flex flex-col w-full bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer select-none transition-all duration-200 hover:shadow-md"
     >
       {/* Product Image Wrapper */}
       <div className={`w-full ${imageAspect} bg-slate-50 relative overflow-hidden`}>
@@ -69,14 +70,13 @@ export default function ProductCardSlideActions({
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover select-none pointer-events-none"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
       </div>
 
-      {/* Product Card Details */}
-      <div className="p-4 pb-16 flex-1 flex flex-col justify-between space-y-2">
-        {/* Spacer at bottom accommodates the slide-up panel space */}
+      {/* Product Information */}
+      <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
         <div className="space-y-1">
           {/* Rating */}
           <div className="flex items-center gap-1 text-amber-500">
@@ -94,18 +94,16 @@ export default function ProductCardSlideActions({
 
         {/* Pricing */}
         <div className="flex items-baseline gap-1.5 pt-1">
-          <span className="text-sm font-black text-slate-900">{price}</span>
-          {originalPrice && (
-            <span className="text-[10px] text-slate-400 line-through font-bold">
-              {originalPrice}
-            </span>
-          )}
+          <span className="text-sm font-black text-slate-900">{formatPrice(price)}</span>
+          <span className="text-[10px] text-slate-400 line-through font-bold">
+            {formatCutPrice(price, originalPrice)}
+          </span>
         </div>
       </div>
 
       {/* Slide-up Quick Actions Panel (positioned on Card overflow-hidden) */}
       <div
-        className="absolute bottom-0 left-0 w-full h-12 bg-slate-950 text-white flex items-center justify-between px-4 z-20 transition-transform duration-250 ease-out translate-y-0 opacity-90 md:translate-y-full md:opacity-100 md:group-hover:translate-y-0"
+        className="absolute bottom-0 left-0 w-full h-12 bg-slate-950 text-white flex items-center justify-between px-4 z-20 transition-transform duration-250 ease-out translate-y-full opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
         style={{ willChange: "transform" }}
       >
         <span className="text-[10px] font-black tracking-widest uppercase">Quick Add</span>

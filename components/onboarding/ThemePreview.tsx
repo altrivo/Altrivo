@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ThemeOption, ThemeProduct } from "@/lib/onboarding";
+import { ArrowRight } from "lucide-react";
 
 /**
  * The preview is laid out once at a fixed canvas size and then scaled to fit
@@ -348,8 +349,9 @@ export function ThemePreview({ theme, showChrome = false }: Props) {
             }}
           >
             <span style={{ ...headingStyle, fontSize: 13 }}>Featured</span>
-            <span style={{ fontFamily: t.fontBody, fontSize: 10, color: t.accent, fontWeight: 600 }}>
-              View all →
+            <span style={{ fontFamily: t.fontBody, fontSize: 10, color: t.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 }}>
+              <span>View all</span>
+              <ArrowRight size={10} />
             </span>
           </div>
           <ProductArea theme={theme} />

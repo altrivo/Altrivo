@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Check } from "lucide-react";
 import { InvoiceItem } from "@/lib/settings";
 
 interface Props {
@@ -121,8 +122,9 @@ export function BillingHistoryTable({ invoices }: Props) {
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-success-700 font-semibold flex items-center gap-1">
-                ✓ Digitally signed by Altrivo Payments Inc.
+              <span className="text-[11px] text-success-700 font-semibold flex items-center gap-1.5">
+                <Check size={14} className="text-success-600" />
+                <span>Digitally signed by Altrivo Payments Inc.</span>
               </span>
               <button
                 type="button"

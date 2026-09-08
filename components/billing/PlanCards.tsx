@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Check } from "lucide-react";
 
 interface Props {
   currentPlanId: "starter" | "growth" | "scale";
@@ -258,8 +259,18 @@ export function PlanCards({ currentPlanId, billingCycle, onSelectPlan }: Props) 
                 <tr>
                   <td className="py-3 px-4 font-semibold text-heading">WhatsApp API Integration</td>
                   <td className="py-3 px-4 text-subtle">&mdash;</td>
-                  <td className="py-3 px-4 font-bold text-primary-700">✓ Included</td>
-                  <td className="py-3 px-4">✓ Dedicated Number</td>
+                  <td className="py-3 px-4 font-bold text-primary-700">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check size={14} className="text-primary-700" />
+                      <span>Included</span>
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check size={14} className="text-success-600" />
+                      <span>Dedicated Number</span>
+                    </span>
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-semibold text-heading">Support SLA</td>

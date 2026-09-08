@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button, Card } from "@/components/shared";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   return (
@@ -26,7 +27,7 @@ export default function Home() {
               <Link href="/products/p-101" className="block">
                 <Button variant="accent" size="md" className="w-full justify-between font-extrabold">
                   <span>Public Customer Product Page (PDP)</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -42,56 +43,56 @@ export default function Home() {
               <Link href="/dashboard" className="block">
                 <Button variant="primary" size="md" className="w-full justify-between font-bold text-xs">
                   <span>Dashboard (Analytics)</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/orders" className="block">
                 <Button variant="primary" size="md" className="w-full justify-between font-bold text-xs">
                   <span>Orders Management</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/inventory" className="block">
                 <Button variant="primary" size="md" className="w-full justify-between font-bold text-xs">
                   <span>Inventory Catalog</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/products" className="block">
                 <Button variant="primary" size="md" className="w-full justify-between font-bold text-xs">
                   <span>Products Catalog</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/onboarding" className="block">
                 <Button variant="ghost" size="md" className="w-full justify-between font-bold text-xs border border-default">
                   <span>Onboarding Wizard</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/settings" className="block">
                 <Button variant="ghost" size="md" className="w-full justify-between font-bold text-xs border border-default">
                   <span>Business Settings</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/billing" className="block">
                 <Button variant="ghost" size="md" className="w-full justify-between font-bold text-xs border border-default">
                   <span>Wallet & Billing</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
 
               <Link href="/demo" className="block">
                 <Button variant="ghost" size="md" className="w-full justify-between font-bold text-xs border border-default">
                   <span>UI System Demo</span>
-                  <span>→</span>
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>

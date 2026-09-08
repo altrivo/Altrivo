@@ -3,6 +3,7 @@
 import { useState, type KeyboardEvent } from "react";
 
 import { Button, Input, Checkbox } from "@/components/shared";
+import { Plus, X } from "lucide-react";
 import type {
   ProductFormData,
   VariantOption,
@@ -108,8 +109,9 @@ export function TabVariants({
             ))}
 
             {formData.options.length < 3 && (
-              <Button variant="ghost" size="sm" onClick={addOption}>
-                + Add Option Type (e.g. Size, Color, Material)
+              <Button variant="ghost" size="sm" onClick={addOption} className="gap-1.5">
+                <Plus size={14} />
+                <span>Add Option Type (e.g. Size, Color, Material)</span>
               </Button>
             )}
           </div>
@@ -422,9 +424,9 @@ function OptionRow({
                 <button
                   type="button"
                   onClick={() => handleRemoveVal(v)}
-                  className="hover:text-error-600 ml-0.5"
+                  className="hover:text-error-600 ml-0.5 p-0.5"
                 >
-                  ×
+                  <X size={12} />
                 </button>
               </span>
             ))}

@@ -11,8 +11,10 @@ import { CustomerRetentionBarChart } from "@/components/analytics/CustomerRetent
 import { ConversionFunnelWidget } from "@/components/analytics/ConversionFunnelWidget";
 import { DeviceAndTopProducts } from "@/components/analytics/DeviceAndTopProducts";
 import { AnalyticsData } from "@/app/api/analytics/route";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 export default function AnalyticsPage() {
+  const { activeStoreId, activeStore } = useVendorStore();
   const [range, setRange] = useState<string>("7d");
   const [loading, setLoading] = useState<boolean>(true);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -24,7 +26,11 @@ export default function AnalyticsPage() {
     try {
       setLoading(true);
       const start = performance.now();
-      const res = await fetch(`/api/analytics?range=${selectedRange}`);
+      const params = new URLSearchParams({ range: selectedRange });
+      if (activeStoreId) {
+        params.set("storeId", activeStoreId);
+      }
+      const res = await fetch(`/api/analytics?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
         if (json.success) {
@@ -59,10 +65,24 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics(range);
-  }, [range]);
+  }, [range, activeStoreId]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-normal select-none">
+      {/* Active Store Indicator */}
+      {activeStore && (
+        <div className="flex items-center justify-between px-4 py-2.5 bg-purple-50/80 border border-purple-200/80 rounded-xl text-xs text-purple-800 font-medium shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+            <span>Store Performance Scope:</span>
+            <span className="font-bold text-purple-950 underline decoration-purple-400 underline-offset-2">{activeStore.name}</span>
+          </div>
+          <span className="text-[11px] text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md font-semibold">
+            {(activeStore as any).niche || "Retail"}
+          </span>
+        </div>
+      )}
+
       {/* Date Range Picker Filters Bar */}
       <AnalyticsHeaderFilters
         activeRange={range}

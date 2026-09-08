@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 
 import { Button } from "@/components/shared";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Sparkles,
+  X,
+  Check,
+} from "@/components/shared/LucideIcons";
 import { generate4AiProductImages } from "@/services/ai-image-generator";
 
 export type PhotographyStyle = "studio" | "lifestyle" | "flatlay" | "moody";
@@ -53,6 +60,14 @@ const fallbackPool = [
   "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=600&auto=format&fit=crop&q=80",
 ];
 
+interface GeneratedPhotoItem {
+  id: string;
+  url: string;
+  fallbackUrl?: string;
+  angleName: string;
+  prompt?: string;
+}
+
 interface AiImageGeneratorModalProps {
   open: boolean;
   onClose: () => void;
@@ -69,9 +84,10 @@ export function AiImageGeneratorModal({
   const [prompt, setPrompt] = useState(initialPrompt);
   const [selectedStyle, setSelectedStyle] = useState<PhotographyStyle>("studio");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedPhotoItem[]>([]);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string>("Analyzing product prompt with Gemini AI...");
 
   useEffect(() => {
     if (initialPrompt && !prompt) {
@@ -84,34 +100,70 @@ export function AiImageGeneratorModal({
   const currentStyleObj =
     photographyStyles.find((s) => s.id === selectedStyle) || photographyStyles[0];
 
-  const runGeneration = () => {
+  const runGeneration = async () => {
     const rawPrompt = prompt.trim();
     if (!rawPrompt) return;
 
     setIsGenerating(true);
-    setGenerationProgress(20);
+    setGenerationProgress(15);
+    setStatusMessage("Gemini AI is analyzing product & crafting 4 studio perspectives...");
     setGeneratedImages([]);
     setSelectedIndices(new Set());
 
     const progressInterval = setInterval(() => {
       setGenerationProgress((prev) => {
-        if (prev >= 90) {
+        if (prev >= 85) {
           clearInterval(progressInterval);
-          return 90;
+          return 85;
         }
-        return prev + 30;
+        return prev + 15;
       });
-    }, 150);
+    }, 350);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/ai/generate-product-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: rawPrompt,
+          style: selectedStyle,
+        }),
+      });
+
       clearInterval(progressInterval);
-      setGenerationProgress(100);
 
-      const urls = generate4AiProductImages(rawPrompt, currentStyleObj.promptSuffix);
-      setGeneratedImages(urls);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.images && data.images.length > 0) {
+          setGenerationProgress(100);
+          setStatusMessage("Images generated successfully!");
+          setGeneratedImages(data.images);
+          setSelectedIndices(new Set([0])); // Pre-select primary front view
+          setIsGenerating(false);
+          return;
+        }
+      }
+      throw new Error("API call failed");
+    } catch (err) {
+      clearInterval(progressInterval);
+      console.warn("[AiImageGeneratorModal] fallback generation:", err);
+      const fallbackUrls = generate4AiProductImages(rawPrompt, currentStyleObj.promptSuffix);
+      const defaultAngles = [
+        "Front Studio View",
+        "3/4 Perspective Angle",
+        "Material Texture Macro",
+        "Styled Presentation",
+      ];
+      setGeneratedImages(
+        fallbackUrls.map((url, idx) => ({
+          id: `fallback_${idx}`,
+          url,
+          angleName: defaultAngles[idx] || `Angle #${idx + 1}`,
+        }))
+      );
       setSelectedIndices(new Set([0]));
       setIsGenerating(false);
-    }, 700);
+    }
   };
 
   const toggleSelectImage = (idx: number) => {
@@ -127,9 +179,10 @@ export function AiImageGeneratorModal({
   };
 
   const handleConfirmAdd = () => {
-    const selectedUrls = Array.from(selectedIndices).map(
-      (idx) => generatedImages[idx],
-    );
+    const selectedUrls = Array.from(selectedIndices)
+      .map((idx) => generatedImages[idx]?.url)
+      .filter((url): url is string => Boolean(url));
+
     if (selectedUrls.length > 0) {
       onAddImages(selectedUrls);
       onClose();
@@ -143,7 +196,8 @@ export function AiImageGeneratorModal({
         <div className="flex items-center justify-between border-b border-default pb-4">
           <div>
             <h3 className="text-lg font-bold text-heading flex items-center gap-2">
-              ✨ AI Image Generator
+              <Sparkles className="w-5 h-5 text-primary-600" />
+              <span>AI Image Generator</span>
             </h3>
             <p className="text-xs text-subtle mt-0.5">
               Generate 4 studio-quality product photos using AI and pick your favorites.
@@ -154,7 +208,7 @@ export function AiImageGeneratorModal({
             className="text-subtle hover:text-heading p-1 transition-colors"
             aria-label="Close modal"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -199,7 +253,7 @@ export function AiImageGeneratorModal({
                         <h4 className="text-xs font-bold text-heading flex items-center justify-between">
                           {style.title}
                           {isSelected && (
-                            <span className="text-primary-600 font-bold">✓</span>
+                            <Check size={14} className="text-primary-600 font-bold" />
                           )}
                         </h4>
                         <p className="text-[11px] text-subtle leading-tight">
@@ -221,8 +275,9 @@ export function AiImageGeneratorModal({
                 size="md"
                 onClick={runGeneration}
                 disabled={!prompt.trim()}
+                className="gap-2"
               >
-                ✨ Generate 4 AI Images
+                <span>✨ Generate 4 AI Images</span>
               </Button>
             </div>
           </div>
@@ -235,17 +290,17 @@ export function AiImageGeneratorModal({
               <div className="absolute inset-0 rounded-full border-4 border-primary-200 border-t-primary-600 animate-spin" />
               <span className="text-xl">✨</span>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <h4 className="text-base font-bold text-heading">
                 Generating 4 AI Product Images...
               </h4>
-              <p className="text-xs text-subtle">
-                Applying {currentStyleObj.title} style using AI engine ({generationProgress}%)
+              <p className="text-xs text-subtle max-w-sm mx-auto">
+                {statusMessage} ({generationProgress}%)
               </p>
             </div>
             <div className="max-w-xs mx-auto h-2 bg-primary-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary-600 transition-all duration-150"
+                className="h-full bg-primary-600 transition-all duration-200"
                 style={{ width: `${generationProgress}%` }}
               />
             </div>
@@ -266,11 +321,11 @@ export function AiImageGeneratorModal({
 
             {/* 4 Image Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {generatedImages.map((url, idx) => {
+              {generatedImages.map((item, idx) => {
                 const isSelected = selectedIndices.has(idx);
                 return (
                   <div
-                    key={idx}
+                    key={item.id || idx}
                     onClick={() => toggleSelectImage(idx)}
                     className={`group relative aspect-square rounded-2xl border-2 overflow-hidden cursor-pointer transition-all ${
                       isSelected
@@ -279,13 +334,13 @@ export function AiImageGeneratorModal({
                     }`}
                   >
                     <img
-                      src={url}
-                      alt={`AI generated option ${idx + 1}`}
-                      className="h-full w-full object-cover"
+                      src={item.url}
+                      alt={item.angleName || `Option #${idx + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
                         // Fallback image if network times out
                         (e.target as HTMLImageElement).src =
-                          fallbackPool[idx % fallbackPool.length];
+                          item.fallbackUrl || fallbackPool[idx % fallbackPool.length];
                       }}
                     />
 
@@ -298,13 +353,20 @@ export function AiImageGeneratorModal({
                             : "bg-black/40 text-white/70 hover:bg-black/60"
                         }`}
                       >
-                        {isSelected ? "✓" : idx + 1}
+                        {isSelected ? <Check size={14} /> : idx + 1}
                       </div>
                     </div>
 
-                    <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/60 text-white backdrop-blur-sm">
-                      Option #{idx + 1}
-                    </span>
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/75 text-white backdrop-blur-md shadow-xs border border-white/10">
+                        Option #{idx + 1}
+                      </span>
+                      {item.angleName && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-black/60 text-primary-200 backdrop-blur-md truncate max-w-[140px]">
+                          {item.angleName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -313,11 +375,13 @@ export function AiImageGeneratorModal({
             {/* Action Bar */}
             <div className="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-default">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setGeneratedImages([])}>
-                  ← Back to Prompt
+                <Button variant="ghost" size="sm" onClick={() => setGeneratedImages([])} className="gap-2">
+                  <ArrowLeft size={16} />
+                  <span>Back to Prompt</span>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={runGeneration}>
-                  🔄 Regenerate (New Seed)
+                <Button variant="ghost" size="sm" onClick={runGeneration} className="gap-2">
+                  <RefreshCw size={14} />
+                  <span>Regenerate (New Seed)</span>
                 </Button>
               </div>
 

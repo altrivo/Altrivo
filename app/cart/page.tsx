@@ -400,8 +400,9 @@ export default function FullCartPage() {
                 </div>
 
                 <Link href={`/products/${rel.id}`} className="block">
-                  <Button variant="ghost" size="sm" className="w-full font-bold text-xs">
-                    View Product →
+                  <Button variant="ghost" size="sm" className="w-full font-bold text-xs inline-flex items-center justify-center gap-1">
+                    <span>View Product</span>
+                    <ArrowRight size={14} />
                   </Button>
                 </Link>
               </Card>

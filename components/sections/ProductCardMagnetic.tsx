@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 import { Star, ShoppingBag, Check } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductCardProps {
   id: string;
@@ -55,8 +56,8 @@ export default function ProductCardMagnetic({
     addToCart({
       id,
       name,
-      price,
-      originalPrice,
+      price: formatPrice(price),
+      originalPrice: formatCutPrice(price, originalPrice),
       image,
     });
     if (onAddToCart) {
@@ -149,12 +150,10 @@ export default function ProductCardMagnetic({
         {/* Pricing & Magnetic Add to Cart button */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-black text-slate-900">{price}</span>
-            {originalPrice && (
-              <span className="text-[10px] text-slate-400 line-through font-bold">
-                {originalPrice}
-              </span>
-            )}
+            <span className="text-sm font-black text-slate-900">{formatPrice(price)}</span>
+            <span className="text-[10px] text-slate-400 line-through font-bold">
+              {formatCutPrice(price, originalPrice)}
+            </span>
           </div>
 
           {/* Magnetic Wrapper Zone (adds 30px active padding coordinate zone) */}

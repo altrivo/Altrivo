@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { PasswordInput } from "@/components/auth";
 import { createClient } from "@/lib/supabase/client";
+import { ArrowRight } from "lucide-react";
 
 type Status = "idle" | "loading" | "success";
 
@@ -66,9 +67,10 @@ export default function ResetPasswordPage() {
         </div>
         <Link
           href="/auth/login"
-          className="inline-flex h-input w-full items-center justify-center rounded-lg bg-primary-500 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-600"
+          className="inline-flex h-input w-full items-center justify-center gap-1.5 rounded-lg bg-primary-500 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-600"
         >
-          Sign In &rarr;
+          <span>Sign In</span>
+          <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     );

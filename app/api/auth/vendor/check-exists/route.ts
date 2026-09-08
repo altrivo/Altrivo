@@ -23,13 +23,6 @@ export async function GET(request: Request) {
 
       if (vEmail) {
         emailExists = true;
-      } else {
-        // Also check auth.users
-        try {
-          const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
-          const match = authList?.users?.find((u) => u.email?.toLowerCase() === email);
-          if (match) emailExists = true;
-        } catch {}
       }
     }
 
@@ -47,11 +40,11 @@ export async function GET(request: Request) {
       phoneExists,
       message:
         emailExists && phoneExists
-          ? "Ye email aur number already register hain, doosra use karein."
+          ? "This email address and phone number are already registered. Please sign in or use different credentials."
           : emailExists
-          ? "Ye mail already register h other use kry."
+          ? "This email address is already registered. Please sign in or use another email."
           : phoneExists
-          ? "Ye number already register h other use kry."
+          ? "This phone number is already registered. Please sign in or use another phone number."
           : "Available",
     });
   } catch (error: any) {

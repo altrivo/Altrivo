@@ -10,8 +10,10 @@ import { OrderFilters } from "@/components/orders/OrderFilters";
 import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderPagination } from "@/components/orders/OrderPagination";
 import { OrderDetailsModal } from "@/components/orders/OrderDetailsModal";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 export default function OrdersPage() {
+  const { activeStore, activeStoreId } = useVendorStore();
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [realtimeNewOrders, setRealtimeNewOrders] = useState<Order[]>([]);
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -34,22 +36,29 @@ export default function OrdersPage() {
   // Fetch live orders from backend API and sync with local storefront orders
   const fetchOrders = async () => {
     try {
-      // 1. Fetch from backend
-      const res = await fetch("/api/orders?limit=100");
+      // 1. Fetch from backend scoped to storeId
+      const storeParam = activeStoreId ? `&storeId=${activeStoreId}` : "";
+      const res = await fetch(`/api/orders?limit=100${storeParam}`);
       let backendOrders: Order[] = [];
       if (res.ok) {
         const data = await res.json();
         if (data.orders && Array.isArray(data.orders)) {
-          backendOrders = data.orders;
+          backendOrders = activeStoreId
+            ? data.orders.filter((o: any) => !o.storeId || o.storeId === activeStoreId || (activeStore?.slug && o.storeId === activeStore.slug))
+            : data.orders;
         }
       }
 
-      // 2. Read local customer placed orders across all stores in browser storage
+      // 2. Read local customer placed orders strictly scoped to active store
       let localOrders: Order[] = [];
       try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("storefront_customer_orders_")) {
+        if (activeStoreId || activeStore?.slug) {
+          const validKeys = [
+            `storefront_customer_orders_${activeStoreId}`,
+            activeStore?.slug ? `storefront_customer_orders_${activeStore.slug}` : "",
+          ].filter(Boolean);
+
+          for (const key of validKeys) {
             const raw = localStorage.getItem(key);
             if (raw) {
               const parsed = JSON.parse(raw);
@@ -102,7 +111,7 @@ export default function OrdersPage() {
     fetchOrders();
     const interval = setInterval(fetchOrders, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeStoreId]);
 
   // Multi-tab instant sync via BroadcastChannel & storage events
   useEffect(() => {

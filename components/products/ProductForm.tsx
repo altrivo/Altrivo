@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button, Badge, ConfirmDialog } from "@/components/shared";
+import { ArrowLeft, ArrowRight, Check, Rocket, Store } from "lucide-react";
+import { useVendorStore } from "@/context/VendorStoreContext";
 import { useProductForm } from "@/hooks/useProductForm";
 import type { FormTab, ProductFormData } from "@/types/product-form";
 
@@ -28,6 +30,7 @@ const tabItems: { id: FormTab; label: string; icon: string }[] = [
 
 export function ProductForm({ mode, initialData }: ProductFormProps) {
   const router = useRouter();
+  const { activeStore, activeStoreId } = useVendorStore();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [saveNextSuccess, setSaveNextSuccess] = useState(false);
 
@@ -56,7 +59,7 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
     removeImage,
     setPrimaryImage,
     saveProduct,
-  } = useProductForm(initialData);
+  } = useProductForm(initialData, activeStoreId || undefined);
 
   const currentTabIndex = tabItems.findIndex((t) => t.id === activeTab);
   const isLastTab = currentTabIndex === tabItems.length - 1;
@@ -98,8 +101,9 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
       <div className="sticky top-0 z-sticky bg-card/95 backdrop-blur-md border-b border-default shadow-sm">
         <div className="mx-auto max-w-[1200px] px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              ← Back
+            <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">
+              <ArrowLeft size={16} />
+              <span>Back</span>
             </Button>
             <div className="h-4 w-px bg-default" />
             <div>
@@ -115,6 +119,12 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                 >
                   {formData.status === "published" ? "Published" : "Draft"}
                 </Badge>
+                {activeStore && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary-50 border border-primary-200 text-[11px] font-bold text-primary-800">
+                    <Store className="w-3 h-3 text-primary-600" />
+                    {activeStore.name}
+                  </span>
+                )}
                 <span className="text-xs text-subtle" suppressHydrationWarning>
                   {isAutoSaving ? (
                     <span className="text-primary-600 animate-pulse font-medium">
@@ -174,7 +184,7 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                     }`}
                   >
                     {isDone ? (
-                      <span className="text-success-600 font-bold">✓</span>
+                      <Check size={14} className="text-success-600 font-bold" />
                     ) : (
                       <span>{tab.icon}</span>
                     )}
@@ -282,7 +292,8 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                     onClick={handleGoToPrev}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-default text-sm font-medium text-subtle hover:text-heading hover:border-primary-400 hover:bg-primary-50/40 transition-all"
                   >
-                    ← {prevTab.icon} {prevTab.label}
+                    <ArrowLeft size={16} />
+                    <span>{prevTab.icon} {prevTab.label}</span>
                   </button>
                 ) : (
                   <div />
@@ -298,7 +309,8 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
 
                 {saveNextSuccess && (
                   <span className="text-xs text-success-600 font-semibold animate-in fade-in duration-200 flex items-center gap-1">
-                    ✓ Saved!
+                    <Check size={14} />
+                    <span>Saved!</span>
                   </span>
                 )}
 
@@ -316,8 +328,8 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                       </>
                     ) : (
                       <>
-                        Save &amp; Next: {nextTab?.icon} {nextTab?.label}
-                        <span className="text-white/70">→</span>
+                        <span>Save &amp; Next: {nextTab?.icon} {nextTab?.label}</span>
+                        <ArrowRight size={16} className="text-white/80" />
                       </>
                     )}
                   </button>
@@ -334,7 +346,10 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                         Publishing...
                       </>
                     ) : (
-                      <>🚀 Publish Product</>
+                      <span className="flex items-center gap-2">
+                        <Rocket size={16} />
+                        <span>Publish Product</span>
+                      </span>
                     )}
                   </button>
                 )}

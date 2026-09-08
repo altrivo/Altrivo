@@ -357,7 +357,8 @@ export default function CheckoutSuccessPage() {
           <Link href="/products">
             <Button variant="ghost" size="lg" className="font-extrabold text-heading gap-2">
               <ShoppingCart size={18} />
-              <span>Continue Shopping Products Catalog →</span>
+              <span>Continue Shopping Products Catalog</span>
+              <ArrowRight size={16} />
             </Button>
           </Link>
         </div>

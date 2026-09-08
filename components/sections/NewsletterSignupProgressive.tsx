@@ -228,7 +228,7 @@ export default function NewsletterSignupProgressive({
               aria-live="polite"
               className="flex flex-col items-center text-center space-y-4 py-6"
             >
-              <div className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-xs animate-bounce">
+              <div className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-xs animate-bounce">
                 <Check className="h-6 w-6" />
               </div>
               <div className="space-y-1.5">

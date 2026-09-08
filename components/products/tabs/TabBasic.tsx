@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from "react";
 
 import { AiCopywritingPopover } from "@/components/products/AiCopywritingPopover";
 import { Input, Select } from "@/components/shared";
+import { generateUniqueSku } from "@/lib/product-storage";
 import type { ProductFormData, ProductFormErrors } from "@/types/product-form";
 
 const defaultCategories = [
@@ -39,7 +40,12 @@ export function TabBasic({ formData, updateField, errors }: TabBasicProps) {
   };
 
   const handleApplyCopy = (newTitle?: string, newDesc?: string) => {
-    if (newTitle) updateField("title", newTitle);
+    if (newTitle) {
+      updateField("title", newTitle);
+      if (!formData.sku) {
+        updateField("sku", generateUniqueSku(newTitle, formData.category));
+      }
+    }
     if (newDesc) updateField("description", newDesc);
   };
 
@@ -96,7 +102,13 @@ export function TabBasic({ formData, updateField, errors }: TabBasicProps) {
           <Input
             placeholder="e.g. Premium Leather Crossbody Bag"
             value={formData.title}
-            onChange={(e) => updateField("title", e.target.value)}
+            onChange={(e) => {
+              const newTitle = e.target.value;
+              updateField("title", newTitle);
+              if (!formData.sku || formData.sku === "WATCH") {
+                updateField("sku", generateUniqueSku(newTitle, formData.category));
+              }
+            }}
             error={errors.title}
           />
         </div>
@@ -111,23 +123,57 @@ export function TabBasic({ formData, updateField, errors }: TabBasicProps) {
         </div>
       </div>
 
-      {/* Category */}
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-heading">
-          Category <span className="text-error-500">*</span>
-        </label>
-        <Select
-          options={[
-            { value: "", label: "Select a Category" },
-            ...defaultCategories.map((c) => ({ value: c, label: c })),
-          ]}
-          value={formData.category}
-          onChange={(e) => updateField("category", e.target.value)}
-          className="w-full"
-        />
-        {errors.category && (
-          <p className="text-xs text-error-500 mt-1">{errors.category}</p>
-        )}
+      {/* Category & Unique SKU */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-heading">
+            Category <span className="text-error-500">*</span>
+          </label>
+          <Select
+            options={[
+              { value: "", label: "Select a Category" },
+              ...defaultCategories.map((c) => ({ value: c, label: c })),
+            ]}
+            value={formData.category}
+            onChange={(e) => {
+              const newCat = e.target.value;
+              updateField("category", newCat);
+              if (!formData.sku || formData.sku === "WATCH") {
+                updateField("sku", generateUniqueSku(formData.title, newCat));
+              }
+            }}
+            className="w-full"
+          />
+          {errors.category && (
+            <p className="text-xs text-error-500 mt-1">{errors.category}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-heading">
+              SKU (Stock Keeping Unit)
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                const newSku = generateUniqueSku(formData.title, formData.category);
+                updateField("sku", newSku);
+              }}
+              className="text-xs font-semibold text-primary-600 hover:text-primary-800 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              🎲 Generate New SKU
+            </button>
+          </div>
+          <Input
+            placeholder="e.g. BDY-8392 or WAT-4721"
+            value={formData.sku || ""}
+            onChange={(e) => updateField("sku", e.target.value.toUpperCase())}
+          />
+          <p className="text-xs text-subtle">
+            Unique product inventory code (e.g. BDY-8392). Auto-generated or custom.
+          </p>
+        </div>
       </div>
 
       {/* Rich Text Description */}

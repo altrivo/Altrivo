@@ -3,6 +3,7 @@
 import { useState, useRef, type ChangeEvent, type DragEvent } from "react";
 
 import { Button } from "@/components/shared";
+import { Sparkles, X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { uploadToCloudinary, deleteFromCloudinary } from "@/services/cloudinary";
 import type { ProductImage } from "@/types/product-form";
 
@@ -203,9 +204,10 @@ export function ProductImageUploader({
             variant="ghost"
             size="sm"
             onClick={onOpenAiModal}
-            className="border border-primary-300 text-primary-700 bg-primary-50/50 hover:bg-primary-100"
+            className="border border-primary-300 text-primary-700 bg-primary-50/50 hover:bg-primary-100 gap-1.5"
           >
-            ✨ Generate with AI
+            <Sparkles size={14} />
+            <span>Generate with AI</span>
           </Button>
         )}
       </div>
@@ -214,8 +216,8 @@ export function ProductImageUploader({
       {errorMsg && (
         <div className="p-3 rounded-xl border border-error-200 bg-error-50 text-xs font-medium text-error-600 flex items-center justify-between animate-in fade-in duration-150">
           <span>{errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="hover:text-error-800">
-            ×
+          <button onClick={() => setErrorMsg(null)} className="hover:text-error-800 p-0.5">
+            <X size={14} />
           </button>
         </div>
       )}
@@ -310,7 +312,7 @@ export function ProductImageUploader({
                           className="h-6 w-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent text-xs"
                           title="Move Left"
                         >
-                          ←
+                          <ChevronLeft size={14} />
                         </button>
                         <button
                           type="button"
@@ -322,7 +324,7 @@ export function ProductImageUploader({
                           className="h-6 w-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent text-xs"
                           title="Move Right"
                         >
-                          →
+                          <ChevronRight size={14} />
                         </button>
                       </div>
 
@@ -336,7 +338,7 @@ export function ProductImageUploader({
                         className="h-7 w-7 rounded-lg bg-error-600 hover:bg-error-700 text-white flex items-center justify-center text-xs shadow transition-colors"
                         title="Delete Image"
                       >
-                        🗑️
+                        <Trash2 size={14} />
                       </button>
                     </div>
 

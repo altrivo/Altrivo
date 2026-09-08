@@ -124,7 +124,7 @@ export default function OrderTrackingPage() {
 
                 <div className="p-3.5 rounded-xl bg-gray-50 border border-[#5c3d5c]/10 text-xs space-y-1">
                   <span className="text-[#5c3d5c] text-[11px]">Contact & WhatsApp Updates</span>
-                  <p className="font-bold text-black">{order?.customerPhone || customer.phone || "Active SMS Alert"}</p>
+                  <p className="font-bold text-black">{order?.customerPhone || customer?.phone || "Active SMS Alert"}</p>
                 </div>
               </div>
             </div>

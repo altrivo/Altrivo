@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { X, Sparkles, Copy, Check, Gift, ArrowRight } from "lucide-react";
@@ -14,7 +14,7 @@ export interface StorefrontOfferModalProps {
 export default function StorefrontOfferModal({
   couponCode = "WELCOME15",
   discountAmount = "15% OFF",
-  headline = "🎉 Exclusive Welcome Voucher",
+  headline = "ðŸŽ‰ Exclusive Welcome Voucher",
   subheadline = "Unlock an instant 15% discount on all handcrafted shoes and leather goods today!",
   delaySeconds = 4,
 }: StorefrontOfferModalProps) {
@@ -65,7 +65,7 @@ export default function StorefrontOfferModal({
         </button>
 
         {/* Header Icon */}
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 flex items-center justify-center shadow-lg">
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-slate-950 flex items-center justify-center shadow-lg">
           <Gift className="w-7 h-7" />
         </div>
 
@@ -91,7 +91,7 @@ export default function StorefrontOfferModal({
 
           <button
             onClick={handleCopy}
-            className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
           >
             {copied ? (
               <>
@@ -110,14 +110,14 @@ export default function StorefrontOfferModal({
         {/* Claim CTA */}
         <button
           onClick={handleClose}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-300 hover:to-teal-400 text-white font-black text-xs shadow-lg active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>Apply Discount & Continue Shopping</span>
           <ArrowRight className="w-4 h-4" />
         </button>
 
         <p className="text-[10px] text-slate-400">
-          *Offer valid on orders above ₨ 5,000. 100% Escrow Protected.
+          *Offer valid on orders above â‚¨ 5,000. 100% Escrow Protected.
         </p>
       </div>
     </div>

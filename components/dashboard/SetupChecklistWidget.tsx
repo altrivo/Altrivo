@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Plus, Check } from "lucide-react";
 import { SetupChecklist, saveOnboardingState, OnboardingState } from "@/lib/onboarding";
 
 interface Props {
@@ -139,7 +140,7 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                   : "border-strong text-transparent hover:border-primary-500"
               }`}
             >
-              ✓
+              <Check size={13} strokeWidth={3} />
             </button>
             <div>
               <h4 className={`text-sm font-semibold ${item1Done ? "line-through text-subtle" : "text-heading"}`}>
@@ -165,7 +166,14 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                   : "bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200"
               }`}
             >
-              {item1Done ? "Completed" : "+ Add product"}
+              {item1Done ? (
+                "Completed"
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <Plus size={13} />
+                  <span>Add product</span>
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -188,7 +196,7 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                   : "border-strong text-transparent hover:border-primary-500"
               }`}
             >
-              ✓
+              <Check size={13} strokeWidth={3} />
             </button>
             <div>
               <h4 className={`text-sm font-semibold ${item2Done ? "line-through text-subtle" : "text-heading"}`}>
@@ -229,7 +237,7 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                   : "border-strong text-transparent hover:border-primary-500"
               }`}
             >
-              ✓
+              <Check size={13} strokeWidth={3} />
             </button>
             <div>
               <h4 className={`text-sm font-semibold ${item3Done ? "line-through text-subtle" : "text-heading"}`}>
@@ -268,7 +276,7 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                   : "border-strong text-transparent hover:border-primary-500"
               }`}
             >
-              ✓
+              <Check size={13} strokeWidth={3} />
             </button>
             <div>
               <h4 className={`text-sm font-semibold ${item4Done ? "line-through text-subtle" : "text-heading"}`}>
@@ -291,7 +299,14 @@ export function SetupChecklistWidget({ state, onUpdateState }: Props) {
                 : "bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200"
             }`}
           >
-            {item4Done ? "Configured ✓" : "Enable Payments"}
+            {item4Done ? (
+              <span className="inline-flex items-center gap-1">
+                <span>Configured</span>
+                <Check size={13} />
+              </span>
+            ) : (
+              "Enable Payments"
+            )}
           </button>
         </div>
       </div>

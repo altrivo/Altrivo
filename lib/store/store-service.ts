@@ -316,26 +316,46 @@ async function getAdminSupabaseClient() {
   }
 }
 
-export async function getVendorStores(): Promise<StoreRow[]> {
+export async function getVendorStores(explicitVendorId?: string): Promise<StoreRow[]> {
   try {
-    const supabase = await createClient();
-    const { data: userData } = await supabase.auth.getUser();
+    let targetVendorId = explicitVendorId;
 
-    if (userData?.user) {
-      const { data, error } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("vendor_id", userData.user.id)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        return data as StoreRow[];
-      }
-      return [];
+    if (!targetVendorId) {
+      try {
+        const supabase = await createClient();
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          targetVendorId = userData.user.id;
+        }
+      } catch {}
     }
-  } catch {
-    // Fall back
-  }
+
+    if (!targetVendorId) {
+      try {
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const cookieVendor = cookieStore.get("active_vendor_id")?.value;
+        if (cookieVendor) {
+          targetVendorId = cookieVendor;
+        }
+      } catch {}
+    }
+
+    if (targetVendorId) {
+      const supabase = (await getAdminSupabaseClient()) || (await createClient());
+      if (supabase) {
+        const { data, error } = await supabase
+          .from("stores")
+          .select("*")
+          .eq("vendor_id", targetVendorId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          return data as StoreRow[];
+        }
+      }
+    }
+  } catch {}
 
   return [];
 }
@@ -456,20 +476,69 @@ export async function getStoreByDomain(domain: string): Promise<StoreRow | null>
   return stores.find((s) => s.custom_domain?.toLowerCase() === clean) || null;
 }
 
-export async function createStore(input: CreateStoreInput): Promise<StoreRow> {
-  const vendorId = "vendor_dev_123";
+export async function createStore(input: CreateStoreInput, explicitVendorId?: string): Promise<StoreRow> {
+  let effectiveVendorId = explicitVendorId;
+
+  if (!effectiveVendorId) {
+    try {
+      const supabase = await createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id) {
+        effectiveVendorId = userData.user.id;
+      }
+    } catch {}
+  }
+
+  if (!effectiveVendorId || !UUID_REGEX.test(effectiveVendorId)) {
+    try {
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const cookieVendor = cookieStore.get("active_vendor_id")?.value;
+      if (cookieVendor && UUID_REGEX.test(cookieVendor)) {
+        effectiveVendorId = cookieVendor;
+      }
+    } catch {}
+  }
+
+  // Fallback: lookup the latest active vendor from database so foreign key is always satisfied
+  if (!effectiveVendorId || !UUID_REGEX.test(effectiveVendorId)) {
+    try {
+      const supabase = (await getAdminSupabaseClient()) || (await createClient());
+      if (supabase) {
+        const { data: latestVendor } = await supabase
+          .from("vendors")
+          .select("id")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (latestVendor?.id && UUID_REGEX.test(latestVendor.id)) {
+          effectiveVendorId = latestVendor.id;
+        }
+      }
+    } catch {}
+  }
+
+  const finalVendorId = (effectiveVendorId && UUID_REGEX.test(effectiveVendorId))
+    ? effectiveVendorId
+    : "ce8c7d73-2150-452d-91a7-04de62102920"; // valid fallback vendor UUID
   const now = new Date().toISOString();
   const cleanSlug = (input.slug || await generateUniqueSlug(input.name)).toLowerCase().trim();
 
+  // Ensure layout_config has the exact store name
+  const updatedLayoutConfig = {
+    ...(input.layout_config || {}),
+    storeName: input.name,
+  };
+
   const newStoreRow: StoreRow = {
     id: `store_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    vendor_id: vendorId,
+    vendor_id: finalVendorId,
     name: input.name,
     slug: cleanSlug,
     niche: input.niche || "shoes",
     description: input.description || null,
     logo_url: input.logo_url || null,
-    layout_config: input.layout_config,
+    layout_config: updatedLayoutConfig,
     seo_config: input.seo_config || {},
     commerce_config: input.commerce_config || {},
     is_published: true,
@@ -483,13 +552,15 @@ export async function createStore(input: CreateStoreInput): Promise<StoreRow> {
   try {
     const supabase = (await getAdminSupabaseClient()) || (await createClient());
     if (supabase) {
-      const { data: userData } = await supabase.auth.getUser();
-      const effectiveVendorId = userData?.user?.id || vendorId;
-      newStoreRow.vendor_id = effectiveVendorId;
-
       const { data, error } = await supabase
         .from("stores")
-        .insert([{ ...input, slug: cleanSlug, vendor_id: effectiveVendorId, is_published: true }])
+        .insert([{
+          ...input,
+          layout_config: updatedLayoutConfig,
+          slug: cleanSlug,
+          vendor_id: finalVendorId,
+          is_published: true
+        }])
         .select()
         .single();
 

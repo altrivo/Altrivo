@@ -21,6 +21,7 @@ import {
   AlertCircle,
   CreditCard,
   Building,
+  Plus,
 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -446,7 +447,10 @@ export default function CheckoutPage() {
                             : "border-[#5c3d5c]/20 text-[#5c3d5c] hover:border-[#3e2845]/40"
                         }`}
                       >
-                        <p className="font-bold text-xs">+ Enter Different Address</p>
+                        <p className="font-bold text-xs flex items-center gap-1">
+                          <Plus className="w-3.5 h-3.5 text-[#5c3d5c]" />
+                          <span>Enter Different Address</span>
+                        </p>
                         <p className="text-[11px] text-[#5c3d5c]">Custom delivery location</p>
                       </div>
                     </div>

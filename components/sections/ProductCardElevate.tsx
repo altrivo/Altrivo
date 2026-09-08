@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Star, ShoppingBag, Check } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductCardProps {
   id: string;
@@ -39,8 +40,8 @@ export default function ProductCardElevate({
     addToCart({
       id,
       name,
-      price,
-      originalPrice,
+      price: formatPrice(price),
+      originalPrice: formatCutPrice(price, originalPrice),
       image,
     });
     if (onAddToCart) {
@@ -94,12 +95,10 @@ export default function ProductCardElevate({
         {/* Pricing & Add to Cart button */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-black text-slate-900">{price}</span>
-            {originalPrice && (
-              <span className="text-[10px] text-slate-400 line-through font-bold">
-                {originalPrice}
-              </span>
-            )}
+            <span className="text-sm font-black text-slate-900">{formatPrice(price)}</span>
+            <span className="text-[10px] text-slate-400 line-through font-bold">
+              {formatCutPrice(price, originalPrice)}
+            </span>
           </div>
 
           <button

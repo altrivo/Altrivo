@@ -52,11 +52,11 @@ export default function ProductSingleFocusVariantSwap({
       if (optionName.toLowerCase() === "color" || optionName.toLowerCase() === "size") {
         if (value.toLowerCase().includes("gold") || value.toLowerCase().includes("large")) {
           setActiveImage("https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600");
-          setActivePrice("₨ 38,000");
+          setActivePrice("$380");
           setActiveStock("Low Stock (3 items left)");
         } else if (value.toLowerCase().includes("blue") || value.toLowerCase().includes("medium")) {
           setActiveImage("https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600");
-          setActivePrice("₨ 34,500");
+          setActivePrice("$345");
           setActiveStock("In Stock (9 items left)");
         } else {
           setActiveImage(imageUrl);

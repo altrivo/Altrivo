@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Check } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
@@ -194,8 +195,8 @@ export function WalletTopUpModal({ isOpen, onClose, onTopUpSuccess }: Props) {
         {/* State 3: Success Result */}
         {flowState === "success" && (
           <div className="py-4 text-center space-y-5 animate-fadeIn">
-            <div className="w-20 h-20 mx-auto rounded-full bg-success-100 text-success-600 flex items-center justify-center text-3xl shadow-lg ring-8 ring-success-50">
-              ✓
+            <div className="w-20 h-20 mx-auto rounded-full bg-success-100 text-success-600 flex items-center justify-center shadow-lg ring-8 ring-success-50">
+              <Check size={36} strokeWidth={2.5} />
             </div>
 
             <div className="space-y-1">
@@ -255,7 +256,14 @@ export function WalletTopUpModal({ isOpen, onClose, onTopUpSuccess }: Props) {
                   onClick={handleCopyLink}
                   className="px-4 h-11 rounded-xl bg-primary-500 text-on-primary text-xs font-bold shrink-0 hover:bg-primary-600 transition-colors"
                 >
-                  {copiedLink ? "Copied! ✓" : "Copy Link"}
+                  {copiedLink ? (
+                    <span className="flex items-center gap-1">
+                      <span>Copied!</span>
+                      <Check size={14} />
+                    </span>
+                  ) : (
+                    "Copy Link"
+                  )}
                 </button>
               </div>
             </div>

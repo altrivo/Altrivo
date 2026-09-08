@@ -3,7 +3,7 @@ import { verifyVendorJwt } from "@/lib/auth/jwtAuth";
 
 export async function GET(req: NextRequest) {
   const start = performance.now();
-  const auth = verifyVendorJwt(req);
+  const auth = await verifyVendorJwt(req);
 
   if (!auth) {
     return NextResponse.json(

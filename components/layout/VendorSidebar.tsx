@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +16,7 @@ import {
   Sparkles,
   Bell,
 } from "lucide-react";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 export interface NavItem {
   name: string;
@@ -49,6 +48,8 @@ export function VendorSidebar({ collapsed, onToggleCollapse }: VendorSidebarProp
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
 
+  const { activeStore } = useVendorStore();
+
   // Expanded whenever cursor is over the sidebar OR if pinned open manually
   const isExpanded = isHovered || !collapsed;
 
@@ -62,7 +63,9 @@ export function VendorSidebar({ collapsed, onToggleCollapse }: VendorSidebarProp
   return (
     <aside
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+      }}
       className={`relative hidden xl:flex flex-col border-r border-white/10 text-white transition-all duration-300 ease-in-out z-sticky select-none cursor-pointer ${
         isExpanded ? "w-sidebar" : "w-sidebar-collapsed"
       }`}
@@ -73,29 +76,29 @@ export function VendorSidebar({ collapsed, onToggleCollapse }: VendorSidebarProp
       }}
     >
       {/* Brand Header */}
-      <div className="h-navbar flex items-center justify-between px-4 border-b border-white/10 bg-black/20 backdrop-blur-md">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-3 overflow-hidden group focus:outline-none cursor-pointer"
-        >
-          <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-accent-300 via-primary-400 to-accent-500 p-[1px] shadow-[0_4px_12px_rgba(0,0,0,0.3)] group-hover:scale-105 transition-transform duration-fast">
+      <div className="h-navbar flex items-center justify-between px-3.5 border-b border-white/10 bg-black/20 backdrop-blur-md relative">
+        <div className="flex items-center gap-2.5 overflow-hidden flex-1">
+          {/* Store Initial Avatar */}
+          <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-accent-300 via-primary-400 to-accent-500 p-[1px] shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
             <div className="w-full h-full rounded-[11px] bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center text-white">
-              <Sparkles className="w-5 h-5 text-accent-200 animate-pulse" />
+              {activeStore ? (
+                <span className="font-display font-black text-base text-accent-200 leading-none">
+                  {activeStore.name.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <Sparkles className="w-5 h-5 text-accent-200 animate-pulse" />
+              )}
             </div>
-            <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-[11px] pointer-events-none" />
           </div>
 
           {isExpanded && (
-            <div className="flex flex-col transition-opacity duration-normal">
-              <span className="font-display font-extrabold text-lg leading-tight text-white tracking-tight">
-                Altrivo
-              </span>
-              <span className="text-[10px] font-semibold tracking-wider text-accent-200/80 uppercase">
-                Vendor Studio
+            <div className="flex items-center flex-1 min-w-0 px-2 py-1.5 text-left">
+              <span className="font-display font-extrabold text-sm leading-tight text-white tracking-tight truncate">
+                {activeStore ? activeStore.name : "Altrivo"}
               </span>
             </div>
           )}
-        </Link>
+        </div>
 
         {/* Manual Pin / Collapse Toggle Button */}
         {isExpanded && (
@@ -105,12 +108,12 @@ export function VendorSidebar({ collapsed, onToggleCollapse }: VendorSidebarProp
               onToggleCollapse();
             }}
             aria-label={collapsed ? "Pin sidebar open" : "Collapse sidebar"}
-            className="hidden xl:flex items-center justify-center w-8 h-8 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white shadow-xs active:scale-95 transition-all duration-fast cursor-pointer"
+            className="hidden xl:flex items-center justify-center w-7 h-7 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 text-white shadow-xs active:scale-95 transition-all duration-fast cursor-pointer ml-1"
           >
             {collapsed ? (
-              <ChevronRight className="w-4 h-4 text-white" />
+              <ChevronRight className="w-3.5 h-3.5 text-white" />
             ) : (
-              <ChevronLeft className="w-4 h-4 text-white" />
+              <ChevronLeft className="w-3.5 h-3.5 text-white" />
             )}
           </button>
         )}

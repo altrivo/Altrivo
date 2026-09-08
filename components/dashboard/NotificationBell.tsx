@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Bell, Check, ShoppingBag, Truck, AlertTriangle, Sparkles, X, CheckCheck } from "lucide-react";
+import { Bell, Check, ShoppingBag, Truck, AlertTriangle, Sparkles, X, CheckCheck, ArrowRight } from "lucide-react";
 import { Notification } from "@/types/notifications";
 
 export default function NotificationBell() {
@@ -176,9 +176,10 @@ export default function NotificationBell() {
             <Link
               href="/orders"
               onClick={() => setIsOpen(false)}
-              className="text-xs font-bold text-slate-600 hover:text-emerald-600 transition-colors inline-block"
+              className="text-xs font-bold text-slate-600 hover:text-emerald-600 transition-colors inline-flex items-center gap-1"
             >
-              View Order Manager →
+              <span>View Order Manager</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>

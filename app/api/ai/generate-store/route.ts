@@ -11,7 +11,8 @@ import { createSnapshot } from '@/lib/store/version-manager';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { prompt, selectedTemplateId, selectedSections, chosenSections, chosenTemplateId, customComponents, themeColors, typography, plan: providedPlan } = body;
+    const { prompt, selectedTemplateId, selectedSections, chosenSections, chosenTemplateId, customComponents, themeColors, typography, plan: providedPlan, vendorId, vendor_id } = body;
+    const targetVendorId = vendorId || vendor_id;
 
     const effectiveSections = selectedSections || chosenSections;
     const effectiveTemplateId = selectedTemplateId || chosenTemplateId;
@@ -23,6 +24,13 @@ export async function POST(req: Request) {
     // Mode 1: Custom Section Blueprint Assembly (Vendor chose individual components + custom components)
     if (effectiveSections) {
       const plan = providedPlan || (await planStore(prompt)).plan;
+      if (body.storeName && body.storeName.trim()) {
+        plan.suggestedName = body.storeName.trim();
+      }
+      if (body.niche && body.niche !== 'general') {
+        plan.industry = body.niche;
+      }
+
       const [contentResult, media] = await Promise.all([
         generateStoreContent(plan),
         generateStoreMedia(plan),
@@ -58,7 +66,7 @@ export async function POST(req: Request) {
           freeShippingThreshold: 5000,
           escrowEnabled: true,
         },
-      });
+      }, targetVendorId);
 
       try {
         await createSnapshot(store.id, 'ai_generate', `Custom Blueprint Store: ${plan.suggestedName}`);
@@ -69,12 +77,25 @@ export async function POST(req: Request) {
       const totalTokens = 3500 + contentResult.tokensUsed;
       const totalCost = 0.0035 + contentResult.costUsd;
 
-      return NextResponse.json({ store, tokensUsed: totalTokens, costUsd: totalCost }, { status: 201 });
+      const response = NextResponse.json({ store, tokensUsed: totalTokens, costUsd: totalCost }, { status: 201 });
+      response.cookies.set("active_store_id", store.id, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+      });
+      return response;
     }
 
     // Mode 2: Standard Template Previews Mode
     if (!effectiveTemplateId) {
       const { plan, tokensUsed: planTokens, costUsd: planCost } = await planStore(prompt);
+      if (body.storeName && body.storeName.trim()) {
+        plan.suggestedName = body.storeName.trim();
+      }
+      if (body.niche && body.niche !== 'general') {
+        plan.industry = body.niche;
+      }
+
       const { previews, tokensUsed, costUsd } = await generateTemplatePreviews(plan);
       return NextResponse.json({
         previews,
@@ -87,6 +108,12 @@ export async function POST(req: Request) {
     
     // Mode 3: Preset Template Final Mode
     const plan = providedPlan || (await planStore(prompt)).plan;
+    if (body.storeName && body.storeName.trim()) {
+      plan.suggestedName = body.storeName.trim();
+    }
+    if (body.niche && body.niche !== 'general') {
+      plan.industry = body.niche;
+    }
     const { store: generated, tokensUsed, costUsd } = await generateFinalStore(plan, effectiveTemplateId);
     
     const slug = await generateUniqueSlug(generated.name);
@@ -99,7 +126,7 @@ export async function POST(req: Request) {
       layout_config: generated.layoutConfig,
       seo_config: generated.seoConfig,
       commerce_config: generated.commerceConfig,
-    });
+    }, targetVendorId);
 
     try {
       await createSnapshot(store.id, 'ai_generate', `AI generated store: ${generated.name}`);
@@ -107,7 +134,13 @@ export async function POST(req: Request) {
       // Non-fatal in dev mode
     }
 
-    return NextResponse.json({ store, tokensUsed, costUsd }, { status: 201 });
+    const response = NextResponse.json({ store, tokensUsed, costUsd }, { status: 201 });
+    response.cookies.set("active_store_id", store.id, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+    });
+    return response;
   } catch (error: any) {
     console.error('Error generating store:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { 
@@ -242,8 +242,8 @@ export default function CustomerOrdersTrackingModal({
         );
       case "shipped":
         return (
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>In Transit (TCS Courier)</span>
           </span>
         );
@@ -352,7 +352,7 @@ export default function CustomerOrdersTrackingModal({
                   className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>← Back to All Orders</span>
+                  <span>Back to All Orders</span>
                 </button>
 
                 {/* Top Status & Summary Card */}
@@ -390,7 +390,7 @@ export default function CustomerOrdersTrackingModal({
                     <div>
                       <span className="text-slate-400 block text-[10px]">Total Amount</span>
                       <span className="font-black text-emerald-400 text-sm">
-                        ₨ {selectedOrder.totalAmount?.toLocaleString()}
+                        â‚¨ {selectedOrder.totalAmount?.toLocaleString()}
                       </span>
                     </div>
 
@@ -428,12 +428,12 @@ export default function CustomerOrdersTrackingModal({
                     {/* Step 1: Order Placed */}
                     <div className="flex items-start gap-3">
                       <div className="w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
-                        ✓
+                        <Check className="w-3.5 h-3.5" />
                       </div>
                       <div>
                         <p className="font-bold text-xs text-slate-900">Order Placed &amp; Verified</p>
                         <p className="text-[11px] text-slate-500">
-                          {new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System recorded order
+                          {new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} â€¢ System recorded order
                         </p>
                       </div>
                     </div>
@@ -445,7 +445,7 @@ export default function CustomerOrdersTrackingModal({
                           ? "bg-emerald-500 text-slate-950"
                           : "bg-slate-200 text-slate-500"
                       }`}>
-                        {selectedOrder.deliveryStatus !== "pending" ? "✓" : "2"}
+                        {selectedOrder.deliveryStatus !== "pending" ? <Check className="w-3.5 h-3.5" /> : "2"}
                       </div>
                       <div>
                         <p className={`font-bold text-xs ${selectedOrder.deliveryStatus !== "pending" ? "text-slate-900" : "text-slate-400"}`}>
@@ -461,10 +461,10 @@ export default function CustomerOrdersTrackingModal({
                     <div className="flex items-start gap-3">
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
                         selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
-                          ? "bg-purple-500 text-white animate-pulse"
+                          ? "bg-emerald-500 text-white animate-pulse"
                           : "bg-slate-200 text-slate-500"
                       }`}>
-                        {selectedOrder.deliveryStatus === "delivered" ? "✓" : "3"}
+                        {selectedOrder.deliveryStatus === "delivered" ? <Check className="w-3.5 h-3.5" /> : "3"}
                       </div>
                       <div>
                         <p className={`font-bold text-xs ${
@@ -475,7 +475,7 @@ export default function CustomerOrdersTrackingModal({
                           Handed over to TCS Express Courier
                         </p>
                         <p className="text-[11px] text-slate-500">
-                          Waybill #TCS-{Math.floor(100000 + Math.random() * 900000)} • Transit to destination hub
+                          Waybill #TCS-{Math.floor(100000 + Math.random() * 900000)} â€¢ Transit to destination hub
                         </p>
                       </div>
                     </div>
@@ -487,7 +487,7 @@ export default function CustomerOrdersTrackingModal({
                           ? "bg-emerald-500 text-slate-950"
                           : "bg-slate-200 text-slate-500"
                       }`}>
-                        {selectedOrder.deliveryStatus === "delivered" ? "✓" : "4"}
+                        {selectedOrder.deliveryStatus === "delivered" ? <Check className="w-3.5 h-3.5" /> : "4"}
                       </div>
                       <div>
                         <p className={`font-bold text-xs ${selectedOrder.deliveryStatus === "delivered" ? "text-slate-900" : "text-slate-400"}`}>
@@ -533,7 +533,7 @@ export default function CustomerOrdersTrackingModal({
                         </div>
 
                         <span className="font-extrabold text-xs text-slate-900">
-                          ₨ {((item.price || selectedOrder.totalAmount) * (item.quantity || 1)).toLocaleString()}
+                          â‚¨ {((item.price || selectedOrder.totalAmount) * (item.quantity || 1)).toLocaleString()}
                         </span>
                       </div>
                     ))}
@@ -559,7 +559,7 @@ export default function CustomerOrdersTrackingModal({
                     href={`https://wa.me/923001234567?text=Hi,%20I%20need%20an%20update%20regarding%20my%20order%20${selectedOrder.orderNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>WhatsApp Vendor</span>
@@ -597,8 +597,8 @@ export default function CustomerOrdersTrackingModal({
 
                       <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
                         <span className="font-bold text-slate-600">
-                          {ord.items?.length || 1} {ord.items?.length === 1 ? "Product" : "Products"} •{" "}
-                          <span className="text-slate-900 font-extrabold">₨ {ord.totalAmount?.toLocaleString()}</span>
+                          {ord.items?.length || 1} {ord.items?.length === 1 ? "Product" : "Products"} â€¢{" "}
+                          <span className="text-slate-900 font-extrabold">â‚¨ {ord.totalAmount?.toLocaleString()}</span>
                         </span>
 
                         <button className="text-emerald-600 font-extrabold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
@@ -628,7 +628,7 @@ export default function CustomerOrdersTrackingModal({
                             onClose();
                             setIsCustomerAuthOpen(true);
                           }}
-                          className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm cursor-pointer"
+                          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm cursor-pointer"
                         >
                           Sign In to Account
                         </button>
@@ -662,7 +662,7 @@ export default function CustomerOrdersTrackingModal({
                     
                     <button
                       type="submit"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-sm active:scale-95 transition-all"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs shadow-sm active:scale-95 transition-all"
                     >
                       Track Now
                     </button>

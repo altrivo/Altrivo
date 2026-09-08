@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     if (apiKey) {
       // Full AI Integration: Send request to Gemini API
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -77,9 +77,8 @@ export async function POST(req: Request) {
       updatedLayout.theme.colors.secondary = "#d97706";
     }
 
-    // 2. Primary/Secondary color shifts (e.g. "change button to emerald", "make primary color gold")
-    if (instruction.includes("emerald") || instruction.includes("green")) {
-      updatedLayout.theme.colors.primary = "#10b981";
+    if (instruction.includes("purple") || instruction.includes("violet") || instruction.includes("brand")) {
+      updatedLayout.theme.colors.primary = "#694873";
     } else if (instruction.includes("gold") || instruction.includes("amber")) {
       updatedLayout.theme.colors.primary = "#d97706";
     } else if (instruction.includes("blue") || instruction.includes("cobalt")) {

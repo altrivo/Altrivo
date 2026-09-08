@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Check, AlertTriangle, Laptop } from "lucide-react";
 import { SecuritySession } from "@/lib/settings";
 
 interface Props {
@@ -79,13 +80,15 @@ export function SecurityTab({ sessions, onUpdateSessions }: Props) {
 
         {passwordStatus && (
           <div className="p-3.5 rounded-xl bg-success-50 border border-success-200 text-success-800 text-xs font-semibold flex items-center gap-2">
-            ✓ {passwordStatus}
+            <Check size={16} />
+            <span>{passwordStatus}</span>
           </div>
         )}
 
         {passwordError && (
           <div className="p-3.5 rounded-xl bg-error-50 border border-error-200 text-error-800 text-xs font-semibold flex items-center gap-2">
-            ⚠ {passwordError}
+            <AlertTriangle size={16} />
+            <span>{passwordError}</span>
           </div>
         )}
 
@@ -183,7 +186,8 @@ export function SecurityTab({ sessions, onUpdateSessions }: Props) {
 
         {revokedNotice && (
           <div className="p-3.5 rounded-xl bg-success-50 border border-success-200 text-success-800 text-xs font-semibold flex items-center gap-2">
-            ✓ Revoked all other active sessions successfully!
+            <Check size={16} />
+            <span>Revoked all other active sessions successfully!</span>
           </div>
         )}
 
@@ -194,8 +198,8 @@ export function SecurityTab({ sessions, onUpdateSessions }: Props) {
               className="p-4 rounded-xl border border-default bg-page flex items-center justify-between gap-4"
             >
               <div className="flex items-center gap-3.5">
-                <div className="p-2.5 rounded-xl bg-card border border-default text-xl">
-                  💻
+                <div className="p-2.5 rounded-xl bg-card border border-default text-subtle">
+                  <Laptop size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">

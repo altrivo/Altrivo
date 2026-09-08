@@ -8,6 +8,7 @@ import { INITIAL_ORDERS, getOrderById } from "@/utils/ordersMock";
 import { printPackingSlip } from "@/utils/packingSlip";
 import { VendorLayout } from "@/components/vendor/VendorLayout";
 import { Badge, StatusPill, Button, Card } from "@/components/shared";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 export default function OrderDetailPage() {
   const resolvedParams = useParams() as { id: string };
@@ -157,7 +158,8 @@ export default function OrderDetailPage() {
               href="/orders"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-heading hover:text-primary-600 hover:underline mb-2"
             >
-              ← Back to All Orders
+              <ArrowLeft size={14} />
+              <span>Back to All Orders</span>
             </Link>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-extrabold text-heading font-mono tracking-tight">
@@ -258,7 +260,7 @@ export default function OrderDetailPage() {
                         : "bg-neutral-100 border-neutral-300 text-heading"
                     }`}
                   >
-                    {isCompleted ? "✓" : idx + 1}
+                    {isCompleted ? <Check size={16} /> : idx + 1}
                   </div>
 
                   <div>
@@ -400,8 +402,9 @@ export default function OrderDetailPage() {
             <Card className="p-6 space-y-4">
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-heading font-display flex items-center justify-between">
                 <span>👤 Customer Details</span>
-                <button onClick={handleContactWhatsApp} className="text-xs font-bold text-success-700 hover:underline">
-                  WhatsApp →
+                <button onClick={handleContactWhatsApp} className="inline-flex items-center gap-1 text-xs font-bold text-success-700 hover:underline">
+                  <span>WhatsApp</span>
+                  <ArrowRight size={12} />
                 </button>
               </h2>
 

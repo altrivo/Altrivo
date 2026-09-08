@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Check } from "lucide-react";
 
 import { Step1BusinessInfo } from "@/components/onboarding/Step1BusinessInfo";
 import { Step2ProductPrompt } from "@/components/onboarding/Step2ProductPrompt";
@@ -122,7 +123,7 @@ function OnboardingWizardInner() {
                         : "bg-muted text-subtle"
                     } ${isLocked ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
-                    {stepNum < currentStep ? "✓" : stepNum}
+                    {stepNum < currentStep ? <Check size={14} /> : stepNum}
                   </button>
                 );
               })}

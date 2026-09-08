@@ -1,6 +1,5 @@
 import type { InventoryItem } from "@/types/inventory";
 
-import { mockProducts } from "./mock-products";
 import { getStoredProducts, getStoredProductFormData } from "./product-storage";
 
 const INVENTORY_STORAGE_KEY = "artrivo_vendor_inventory";
@@ -15,7 +14,7 @@ function isValidThumb(url: string | null | undefined): boolean {
 }
 
 export function generateMockInventory(): InventoryItem[] {
-  const products = typeof window !== "undefined" ? getStoredProducts() : mockProducts;
+  const products = typeof window !== "undefined" ? getStoredProducts() : [];
   const items: InventoryItem[] = [];
 
   products.slice(0, 200).forEach((product, idx) => {

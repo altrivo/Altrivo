@@ -609,7 +609,6 @@ export function assembleCustomStore(
         id: comp.id || `custom-section-${idx + 1}`,
         type: "CustomComponent",
         props: {
-          badge: comp.badge,
           title: comp.title,
           subtitle: comp.subtitle,
           ctaText: comp.primaryCtaText,

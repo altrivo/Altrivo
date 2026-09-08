@@ -41,8 +41,8 @@ export function computePasswordStrength(password: string): PasswordStrengthInfo 
       score: 0,
       level: "low",
       label: "Enter password",
-      colorClass: "text-[#5c3d5c]",
-      bgClass: "bg-gray-200",
+      colorClass: "text-subtle",
+      bgClass: "bg-neutral-200",
       widthPercent: "w-0",
       isStrong: false,
     };
@@ -58,8 +58,8 @@ export function computePasswordStrength(password: string): PasswordStrengthInfo 
       score: 4,
       level: "strong",
       label: "Strong",
-      colorClass: "text-emerald-700",
-      bgClass: "bg-emerald-600",
+      colorClass: "text-emerald-600",
+      bgClass: "bg-emerald-500",
       widthPercent: "w-full",
       isStrong: true,
     };
@@ -74,8 +74,8 @@ export function computePasswordStrength(password: string): PasswordStrengthInfo 
       hasMinLength,
       score: criteriaCount,
       level: "normal",
-      label: "Normal",
-      colorClass: "text-amber-700",
+      label: "Moderate",
+      colorClass: "text-amber-600",
       bgClass: "bg-amber-500",
       widthPercent: "w-2/3",
       isStrong: false,
@@ -90,8 +90,8 @@ export function computePasswordStrength(password: string): PasswordStrengthInfo 
     hasMinLength,
     score: criteriaCount,
     level: "low",
-    label: "Low",
-    colorClass: "text-red-700",
+    label: "Weak",
+    colorClass: "text-red-500",
     bgClass: "bg-red-500",
     widthPercent: "w-1/3",
     isStrong: false,
@@ -99,7 +99,7 @@ export function computePasswordStrength(password: string): PasswordStrengthInfo 
 }
 
 interface PasswordInputProps {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
@@ -107,10 +107,12 @@ interface PasswordInputProps {
   id?: string;
   placeholder?: string;
   autoComplete?: string;
+  className?: string;
+  rightLabelAction?: React.ReactNode;
 }
 
 export function PasswordInput({
-  label,
+  label = "Password",
   value,
   onChange,
   error,
@@ -118,21 +120,29 @@ export function PasswordInput({
   id,
   placeholder = "Enter your password",
   autoComplete = "current-password",
+  className = "",
+  rightLabelAction,
 }: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
   const inputId = id || label.toLowerCase().replace(/\s+/g, "-");
+  const strength = computePasswordStrength(value);
 
   return (
-    <div className="space-y-1.5">
-      <label
-        htmlFor={inputId}
-        className="block text-xs font-semibold text-black tracking-wide"
-      >
-        {label}
-      </label>
+    <div className={`space-y-1.5 ${className}`}>
+      <div className="flex items-center justify-between">
+        {label && (
+          <label
+            htmlFor={inputId}
+            className="block text-xs font-semibold text-heading uppercase tracking-wider"
+          >
+            {label}
+          </label>
+        )}
+        {rightLabelAction}
+      </div>
 
       <div className="relative">
-        <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5c3d5c]">
+        <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle">
           <Lock className="w-4 h-4" />
         </div>
 
@@ -143,25 +153,37 @@ export function PasswordInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className={`w-full h-10 pl-10 pr-10 rounded-xl border bg-white text-xs text-black placeholder:text-[#5c3d5c]/60 transition-colors focus:outline-none ${
+          className={`w-full h-input pl-10 pr-10 rounded-xl border bg-input text-sm text-heading placeholder:text-subtle transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${
             error
-              ? "border-red-500 focus:border-red-600"
-              : "border-[#5c3d5c]/30 focus:border-[#3e2845]"
+              ? "border-error-500 focus:border-error-500 focus:ring-error-500/20"
+              : "border-default focus:border-focus"
           }`}
         />
 
         <button
           type="button"
           onClick={() => setVisible(!visible)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#5c3d5c] hover:text-[#3e2845] transition-colors rounded-md cursor-pointer"
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-subtle hover:text-heading transition-colors rounded-md cursor-pointer"
           aria-label={visible ? "Hide password" : "Show password"}
         >
-          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-[#5c3d5c]" />}
+          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
 
+      {showStrength && value && (
+        <div className="space-y-1 pt-1">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-subtle">Password strength:</span>
+            <span className={`font-semibold ${strength.colorClass}`}>{strength.label}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-neutral-100 overflow-hidden">
+            <div className={`h-full transition-all duration-300 ${strength.bgClass} ${strength.widthPercent}`} />
+          </div>
+        </div>
+      )}
+
       {error && (
-        <p className="flex items-center gap-1 text-xs text-red-600 mt-1 font-medium">
+        <p className="flex items-center gap-1 text-xs text-error-500 mt-1 font-medium">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
           <span>{error}</span>
         </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 import { useCart } from "./CartContext";
 
 export default function CartDrawer() {
@@ -172,9 +172,10 @@ export default function CartDrawer() {
                   <a
                     href="#catalog"
                     onClick={() => setIsCartOpen(false)}
-                    className="hover:underline text-slate-600 font-semibold"
+                    className="hover:underline text-slate-600 font-semibold inline-flex items-center gap-1.5"
                   >
-                    ← Continue Shopping
+                    <ArrowLeft size={13} />
+                    <span>Continue Shopping</span>
                   </a>
                   <button
                     onClick={() => {

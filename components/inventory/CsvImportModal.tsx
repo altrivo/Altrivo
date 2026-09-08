@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { ArrowLeft, Check, AlertTriangle } from "lucide-react";
 
 import type { InventoryItem } from "@/types/inventory";
 import {
@@ -242,9 +243,10 @@ export function CsvImportModal({ open, onClose, onConfirmImport }: CsvImportModa
                   <button
                     type="button"
                     onClick={() => setParseResult(null)}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold"
+                    className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold inline-flex items-center gap-1.5"
                   >
-                    ← Re-upload / Change File
+                    <ArrowLeft size={14} />
+                    <span>Re-upload / Change File</span>
                   </button>
                 </div>
               </div>
@@ -328,11 +330,13 @@ export function CsvImportModal({ open, onClose, onConfirmImport }: CsvImportModa
                         <td className="py-2 px-3">
                           {r.isValid ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                              ✓ Valid
+                              <Check size={12} className="mr-1" />
+                              <span>Valid</span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
-                              ⚠ Error
+                              <AlertTriangle size={12} className="mr-1" />
+                              <span>Error</span>
                             </span>
                           )}
                         </td>

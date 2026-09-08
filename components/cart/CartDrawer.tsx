@@ -210,10 +210,9 @@ export function CartDrawer() {
                 </Button>
               </Link>
 
-              <Link href="/cart" onClick={closeDrawer} className="block text-center">
-                <span className="text-xs font-extrabold text-primary-700 hover:underline">
-                  View Full Cart Review Page →
-                </span>
+              <Link href="/cart" onClick={closeDrawer} className="inline-flex items-center justify-center gap-1 w-full text-center text-xs font-extrabold text-primary-700 hover:underline">
+                <span>View Full Cart Review Page</span>
+                <ArrowRight size={13} />
               </Link>
             </div>
 

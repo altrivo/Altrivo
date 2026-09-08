@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, ShoppingBag, Check } from "lucide-react";
 import { useCart } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 
 export interface ProductCardProps {
   id: string;
@@ -50,7 +51,7 @@ export default function ProductCard({
       return;
     }
     if (storeSlug) {
-      router.push(`/preview/${storeSlug}/product/${id}`);
+      router.push(`/store/${storeSlug}/product/${id}`);
       return;
     }
     router.push(`/product/${id}`);
@@ -63,8 +64,8 @@ export default function ProductCard({
     addToCart({
       id,
       name,
-      price,
-      originalPrice,
+      price: formatPrice(price),
+      originalPrice: formatCutPrice(price, originalPrice),
       image,
     });
     if (onAddToCart) {
@@ -106,10 +107,10 @@ export default function ProductCard({
           <div className="absolute inset-x-0 bottom-0 z-10 translate-y-full p-2 sm:p-3 transition-transform duration-300 group-hover:translate-y-0 hidden sm:block">
             <button
               onClick={handleAddToCart}
-              className={`w-full py-2 sm:py-2.5 rounded-xl text-xs font-bold shadow-xs transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer text-white active:scale-95 ${
+              className={`w-full py-2 sm:py-2.5 rounded-xl text-xs font-bold shadow-xs transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 ${
                 isAdded 
-                  ? "bg-emerald-600" 
-                  : "bg-[var(--color-primary,#0f172a)] hover:brightness-110"
+                  ? "bg-emerald-500 text-slate-950" 
+                  : "bg-[var(--color-primary,#0f172a)] hover:bg-emerald-500 text-white hover:text-slate-950"
               }`}
             >
               {isAdded ? (
@@ -149,24 +150,22 @@ export default function ProductCard({
 
       {/* Pricing & Footer Actions */}
       <div className="mt-2 sm:mt-3 border-t border-slate-100 pt-2 sm:pt-3 flex items-center justify-between px-0.5 sm:px-1 gap-1.5">
-        <div className="flex flex-col min-w-0">
+        <div className="flex items-baseline gap-1.5 min-w-0">
           <span className="text-xs sm:text-base font-extrabold text-[var(--color-text,#1e293b)] leading-tight truncate">
-            {price}
+            {formatPrice(price)}
           </span>
-          {originalPrice && (
-            <span className="text-[9px] sm:text-[11px] text-slate-400 line-through mt-0.5 truncate">
-              {originalPrice}
-            </span>
-          )}
+          <span className="text-[10px] sm:text-xs text-slate-400 line-through truncate font-medium">
+            {formatCutPrice(price, originalPrice)}
+          </span>
         </div>
 
         {/* Static Cart Button */}
         <button
           onClick={handleAddToCart}
-          className={`h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center cursor-pointer text-white flex-shrink-0 active:scale-95 ${
+          className={`h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl shadow-xs transition-all duration-200 flex items-center justify-center cursor-pointer flex-shrink-0 active:scale-95 ${
             isAdded 
-              ? "bg-emerald-600" 
-              : "bg-[var(--color-primary,#0f172a)] hover:brightness-110"
+              ? "bg-emerald-500 text-slate-950" 
+              : "bg-[var(--color-primary,#0f172a)] hover:bg-emerald-500 text-white hover:text-slate-950"
           }`}
           aria-label="Add to cart"
         >

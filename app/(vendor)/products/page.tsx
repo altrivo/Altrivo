@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 import {
   Button,
@@ -15,6 +16,7 @@ import {
 } from "@/components/shared";
 import { ProductQuickViewModal } from "@/components/products/ProductQuickViewModal";
 import { useProducts } from "@/hooks/useProducts";
+import { useVendorStore } from "@/context/VendorStoreContext";
 import type { Product, ProductStatus, ProductSortField } from "@/types/product";
 
 const statusConfig: Record<
@@ -152,6 +154,8 @@ function formatCurrency(amount: number) {
 
 export default function ProductsPage() {
   const router = useRouter();
+  const { stores, activeStore, activeStoreId, setActiveStoreId } = useVendorStore();
+
   const {
     filters,
     updateFilter,
@@ -176,7 +180,7 @@ export default function ProductsPage() {
     bulkChangeCategory,
     bulkChangeStatus,
     categories,
-  } = useProducts();
+  } = useProducts(activeStoreId || undefined);
 
   const [confirmAction, setConfirmAction] = useState<{
     title: string;
@@ -340,6 +344,7 @@ export default function ProductsPage() {
           </div>
         </div>
 
+
         {/* Filters Bar */}
         <div className="bg-card rounded-xl border border-default shadow-card">
           <div className="p-4 border-b border-default">
@@ -488,10 +493,18 @@ export default function ProductsPage() {
 
           {/* Table */}
           {filteredCount === 0 ? (
-            <div className="p-12">
+            <div className="p-12 text-center">
               <EmptyState
-                title="No products found"
-                description="Try adjusting your search or filters to find what you're looking for."
+                title={
+                  hasActiveFilters
+                    ? "No products found"
+                    : `No products in "${activeStore?.name || "this store"}" yet`
+                }
+                description={
+                  hasActiveFilters
+                    ? "Try adjusting your search or filters to find what you're looking for."
+                    : `This store catalog is currently empty. Add products specifically for ${activeStore?.name || "this store"}.`
+                }
                 icon={
                   <svg
                     width="48"
@@ -531,13 +544,22 @@ export default function ProductsPage() {
                   </svg>
                 }
               />
-              {hasActiveFilters && (
-                <div className="mt-4 flex justify-center">
+              <div className="mt-4 flex justify-center gap-3">
+                {hasActiveFilters ? (
                   <Button variant="ghost" size="sm" onClick={resetFilters}>
                     Reset all filters
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => router.push("/products/new")}
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    Add Product to {activeStore?.name || "Store"}
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">

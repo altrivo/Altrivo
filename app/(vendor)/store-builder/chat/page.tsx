@@ -177,7 +177,7 @@ function StoreBuilderChatContent() {
           </button>
           
           <a 
-            href={`/preview/${storeData.slug}`}
+            href={`/store/${storeData.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-extrabold text-white bg-gradient-to-r from-accent-500 to-accent-600 hover:brightness-110 rounded-xl shadow-xs transition-all active:scale-95"
@@ -309,7 +309,7 @@ function StoreBuilderChatContent() {
           {/* Iframe View */}
           <div className="flex-1 p-4 overflow-hidden">
             <iframe 
-              src={`/preview/${storeData.slug}`} 
+              src={`/store/${storeData.slug}`} 
               className="w-full h-full rounded-2xl bg-card border border-default shadow-md"
               title="Storefront Preview"
             />

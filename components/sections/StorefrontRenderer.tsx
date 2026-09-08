@@ -2,14 +2,15 @@
 
 import React from "react";
 import { CartProvider } from "./CartContext";
+import { formatPrice, formatCutPrice } from "@/lib/storefront/priceUtils";
 import StorefrontGlobalModals from "./StorefrontGlobalModals";
 import StorefrontOfferModal from "./StorefrontOfferModal";
 import ProductSaleHighlight from "./ProductSaleHighlight";
-import { mockProducts } from "@/lib/mock-products";
 
 // Import all sections in library
 import HeaderStandard from "./HeaderStandard";
 import FooterDetailed from "./FooterDetailed";
+import { AboutPageView, ShopPageView, ContactPageView } from "./StorefrontPageViews";
 import HeroSplitImage from "./HeroSplitImage";
 import HeroCenteredOverlay from "./HeroCenteredOverlay";
 import PromoBanner from "./PromoBanner";
@@ -163,6 +164,7 @@ import { Pencil, MoveUp, MoveDown, Trash2 } from "lucide-react";
 export interface StorefrontRendererProps {
   config: {
     storeName?: string;
+    niche?: string;
     categories?: { name: string; href: string }[];
     socialLinks?: { name: string; href: string; icon: string }[];
     theme: {
@@ -178,11 +180,19 @@ export interface StorefrontRendererProps {
       };
     };
     sections: SectionConfig[];
+    pages?: {
+      about?: any;
+      shop?: any;
+      contact?: any;
+    };
   };
   products?: any[];
   categories?: any[];
   isEditorMode?: boolean;
   activeSectionId?: string | null;
+  deviceMode?: "desktop" | "tablet" | "mobile";
+  activePage?: "home" | "about" | "shop" | "contact";
+  onNavigatePage?: (page: string) => void;
   onSelectSection?: (sectionId: string) => void;
   onMoveSection?: (sectionId: string, direction: "up" | "down") => void;
   onDeleteSection?: (sectionId: string) => void;
@@ -194,13 +204,58 @@ export default function StorefrontRenderer({
   categories = [],
   isEditorMode = false,
   activeSectionId = null,
+  deviceMode = "desktop",
+  activePage: activePageProp,
+  onNavigatePage,
   onSelectSection,
   onMoveSection,
   onDeleteSection,
 }: StorefrontRendererProps) {
   const { theme, sections = [] } = config;
   const storeIdentifier = (config as any).slug || (config as any).subdomain || config.storeName || "store_default";
-  const catalogProducts = (products && products.length > 0) ? products : (config as any).products || [];
+  const rawCatalog = (products && Array.isArray(products) && products.length > 0)
+    ? products
+    : (Array.isArray((config as any).products) && (config as any).products.length > 0)
+    ? (config as any).products
+    : [];
+  const catalogProducts = rawCatalog.map((p: any) => ({
+    ...p,
+    price: formatPrice(p.price),
+    originalPrice: formatCutPrice(p.price, p.originalPrice),
+  }));
+
+  const [internalPage, setInternalPage] = React.useState<string>(activePageProp || "home");
+
+  React.useEffect(() => {
+    if (activePageProp) {
+      setInternalPage(activePageProp);
+    }
+  }, [activePageProp]);
+
+  // Synchronize with URL hash on live storefront (e.g. /store/[slug]#about)
+  React.useEffect(() => {
+    const handleHashCheck = () => {
+      if (typeof window !== "undefined") {
+        const h = window.location.hash.replace("#", "").toLowerCase();
+        if (["home", "about", "shop", "contact"].includes(h)) {
+          setInternalPage(h);
+        }
+      }
+    };
+    handleHashCheck();
+    window.addEventListener("hashchange", handleHashCheck);
+    return () => window.removeEventListener("hashchange", handleHashCheck);
+  }, []);
+
+  const currentPage = activePageProp || internalPage || "home";
+
+  const handlePageChange = (p: string) => {
+    setInternalPage(p);
+    onNavigatePage?.(p);
+    if (typeof window !== "undefined") {
+      window.location.hash = `#${p}`;
+    }
+  };
 
   return (
     <CartProvider storeId={storeIdentifier}>
@@ -221,20 +276,23 @@ export default function StorefrontRenderer({
             onClickCapture={() => onSelectSection?.("navbar-header")}
             className={`relative group/navbar transition-all duration-200 cursor-pointer ${
               activeSectionId === "navbar-header"
-                ? "ring-4 ring-emerald-500 shadow-2xl z-20"
-                : "hover:ring-2 hover:ring-sky-400 hover:ring-offset-2"
+                ? "ring-4 ring-[#312038] shadow-2xl z-20"
+                : "hover:ring-2 hover:ring-[#312038]/50 hover:ring-offset-2"
             }`}
           >
             <div className="absolute top-2 left-4 z-30 pointer-events-none">
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-[10px] shadow-lg flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-full bg-[#312038] text-white font-extrabold text-[10px] shadow-lg flex items-center gap-1.5">
                 <Pencil className="w-3 h-3" />
-                <span>✏️ Header & Navigation Bar</span>
+                <span>Header &amp; Navigation Bar</span>
               </span>
             </div>
             <HeaderStandard 
               logoText={config["storeName"] || "Artisanal Store"} 
               navigation={config["categories"] || []}
               products={catalogProducts}
+              deviceMode={deviceMode}
+              activePage={currentPage}
+              onNavigatePage={handlePageChange}
             />
           </div>
         ) : (
@@ -242,11 +300,52 @@ export default function StorefrontRenderer({
             logoText={config["storeName"] || "Artisanal Store"} 
             navigation={config["categories"] || []}
             products={catalogProducts}
+            deviceMode={deviceMode}
+            activePage={currentPage}
+            onNavigatePage={handlePageChange}
           />
         )}
 
         <main className="pb-16">
-          {sections.map((section, idx) => {
+          {/* ABOUT PAGE */}
+          {currentPage === "about" && (
+            <AboutPageView
+              storeName={config["storeName"] || "Artisanal Store"}
+              niche={config.niche || (config as any)._niche || "apparel"}
+              config={config.pages?.about}
+              isEditorMode={isEditorMode}
+              activeSectionId={activeSectionId}
+              onSelectSection={onSelectSection}
+            />
+          )}
+
+          {/* SHOP PAGE */}
+          {currentPage === "shop" && (
+            <ShopPageView
+              storeName={config["storeName"] || "Artisanal Store"}
+              products={catalogProducts}
+              categories={config.categories || categories}
+              config={config.pages?.shop}
+              isEditorMode={isEditorMode}
+              activeSectionId={activeSectionId}
+              onSelectSection={onSelectSection}
+            />
+          )}
+
+          {/* CONTACT PAGE */}
+          {currentPage === "contact" && (
+            <ContactPageView
+              storeName={config["storeName"] || "Artisanal Store"}
+              niche={config.niche || (config as any)._niche || "apparel"}
+              config={config.pages?.contact}
+              isEditorMode={isEditorMode}
+              activeSectionId={activeSectionId}
+              onSelectSection={onSelectSection}
+            />
+          )}
+
+          {/* HOME PAGE: Standard Sections Pipeline */}
+          {currentPage === "home" && sections.map((section, idx) => {
             const Component = REGISTRY[section.type] as any;
             if (!Component) return null;
 
@@ -259,22 +358,17 @@ export default function StorefrontRenderer({
               section.type.includes("Product")
             ) {
               const secProducts = section.props?.products;
-              const storeProducts = (products && products.length > 0) ? products : (config as any).products;
-              dynamicProps.products = (secProducts && secProducts.length > 0)
+              const storeProducts = (products && Array.isArray(products)) ? products : (config as any).products;
+              const rawGridProducts = (secProducts && secProducts.length > 0)
                 ? secProducts
-                : (storeProducts && storeProducts.length > 0)
+                : (storeProducts && Array.isArray(storeProducts) && storeProducts.length > 0)
                 ? storeProducts
-                : mockProducts.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    price: `₨ ${p.price.toLocaleString()}`,
-                    originalPrice: p.compareAtPrice ? `₨ ${p.compareAtPrice.toLocaleString()}` : "",
-                    discount: p.badge || (p.compareAtPrice ? `${Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100)}% OFF` : ""),
-                    rating: p.rating || 4.9,
-                    image: p.thumbnail,
-                    tag: p.category,
-                    inStock: true,
-                  }));
+                : [];
+              dynamicProps.products = rawGridProducts.map((p: any) => ({
+                ...p,
+                price: formatPrice(p.price),
+                originalPrice: formatCutPrice(p.price, p.originalPrice),
+              }));
               dynamicProps.limit = section.props?.limit || (dynamicProps.products.length > 0 ? dynamicProps.products.length : 12);
               dynamicProps.storeSlug = storeIdentifier;
             } else if (section.type === "CategoryCarousel" || section.type.startsWith("CategoryCarousel")) {
@@ -292,8 +386,8 @@ export default function StorefrontRenderer({
                   }}
                   className={`relative group/section transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? "ring-4 ring-emerald-500 shadow-2xl z-20"
-                      : "hover:ring-2 hover:ring-sky-400 hover:ring-offset-2"
+                      ? "ring-4 ring-[#312038] shadow-2xl z-20"
+                      : "hover:ring-2 hover:ring-[#312038]/50 hover:ring-offset-2"
                   }`}
                 >
                   {/* Floating In-Place Section Header & Quick Action Pill */}
@@ -304,12 +398,12 @@ export default function StorefrontRenderer({
                     }}
                     className={`absolute top-3 left-3 z-30 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all shadow-2xl cursor-pointer ${
                       isSelected
-                        ? "bg-emerald-500 text-slate-950 opacity-100 ring-2 ring-emerald-400 scale-105"
-                        : "bg-slate-950/90 text-white border border-slate-700 opacity-90 group-hover/section:opacity-100 group-hover/section:bg-sky-500 group-hover/section:text-slate-950"
+                        ? "bg-[#312038] text-white opacity-100 ring-2 ring-white/30 scale-105"
+                        : "bg-slate-950/90 text-white border border-slate-700 opacity-90 group-hover/section:opacity-100 group-hover/section:bg-[#312038] group-hover/section:text-white"
                     }`}
                   >
                     <Pencil className="w-3.5 h-3.5" />
-                    <span>{isSelected ? `✏️ Editing: ${section.props?.title || section.type}` : `✏️ Edit ${section.type}`}</span>
+                    <span>{isSelected ? `Editing: ${section.props?.title || section.type}` : `Edit ${section.type}`}</span>
                   </div>
 
                   {/* Quick Floating Actions on Right */}

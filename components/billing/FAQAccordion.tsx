@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ArrowRight, X, Check } from "lucide-react";
 
 const FAQS = [
   {
@@ -90,9 +91,10 @@ export function FAQAccordion() {
         <button
           type="button"
           onClick={() => setShowSalesModal(true)}
-          className="px-6 py-3 rounded-xl bg-accent-200 hover:bg-white text-primary-950 font-bold text-xs shadow-md transition-all shrink-0 cursor-pointer"
+          className="px-6 py-3 rounded-xl bg-accent-200 hover:bg-white text-primary-950 font-bold text-xs shadow-md transition-all shrink-0 cursor-pointer inline-flex items-center gap-1.5"
         >
-          Contact Sales Team &rarr;
+          <span>Contact Sales Team</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
@@ -108,16 +110,17 @@ export function FAQAccordion() {
                   setShowSalesModal(false);
                   setSalesSent(false);
                 }}
-                className="text-subtle hover:text-heading font-bold"
+                className="text-subtle hover:text-heading p-1"
+                aria-label="Close modal"
               >
-                &times;
+                <X size={18} />
               </button>
             </div>
 
             {salesSent ? (
               <div className="py-6 text-center space-y-3">
-                <div className="w-12 h-12 mx-auto rounded-full bg-success-100 text-success-600 flex items-center justify-center text-xl font-bold">
-                  ✓
+                <div className="w-12 h-12 mx-auto rounded-full bg-success-100 text-success-600 flex items-center justify-center">
+                  <Check size={24} />
                 </div>
                 <h4 className="font-bold text-heading">Request Submitted!</h4>
                 <p className="text-xs text-subtle">

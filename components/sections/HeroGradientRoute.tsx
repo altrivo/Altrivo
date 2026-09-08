@@ -15,7 +15,7 @@ export interface HeroGradientProps {
 const PALETTES = {
   sunset: ["#ea580c", "#db2777", "#4f46e5"], // Sunset Orange & Purple
   indigo: ["#1e1b4b", "#311042", "#0f172a"], // Midnight Indigo & Slate
-  forest: ["#065f46", "#047857", "#111827"], // Forest Emerald & Grey
+  forest: ["#2C1C31", "#3B2742", "#111827"], // Deep Royal Purple & Slate
 };
 
 type PaletteKey = keyof typeof PALETTES;

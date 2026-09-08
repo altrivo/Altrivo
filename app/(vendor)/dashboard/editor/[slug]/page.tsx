@@ -13,6 +13,7 @@ import {
   Plus,
   Eye,
   Monitor,
+  Tablet,
   Smartphone,
   Check,
   MoveUp,
@@ -51,9 +52,12 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Home,
+  Info,
+  Phone,
 } from "lucide-react";
 import StorefrontRenderer from "@/components/sections/StorefrontRenderer";
-import { mockProducts } from "@/lib/mock-products";
+import { getStoredProducts, toStorefrontProduct } from "@/lib/product-storage";
 
 // ---------------------------------------------------------------------------
 // Multi-Niche AI Asset Library & Curated Presets
@@ -95,12 +99,7 @@ const NICHE_PRESETS: Record<string, NichePreset> = {
       { label: "Handcrafted Peshawari Chappal", url: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80" },
       { label: "Leather Chelsea Boots", url: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=800&q=80" },
     ],
-    products: [
-      { id: "s1", name: "Royal Oxford Calfskin Shoes", price: "₨ 7,800", originalPrice: "₨ 9,500", discount: "18% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80", tag: "Bestseller", inStock: true },
-      { id: "s2", name: "Handcrafted Suede Loafers", price: "₨ 6,400", originalPrice: "₨ 7,800", discount: "18% OFF", rating: 4.8, image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80", tag: "Trending", inStock: true },
-      { id: "s3", name: "Peshawari Chappal - Pure Leather", price: "₨ 5,200", originalPrice: "₨ 6,500", discount: "20% OFF", rating: 5.0, image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80", tag: "Traditional", inStock: true },
-      { id: "s4", name: "Urban Streetwear Sneakers", price: "₨ 8,900", originalPrice: "₨ 11,000", discount: "20% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80", tag: "Limited Drop", inStock: true },
-    ],
+    products: [],
   },
   clothing: {
     id: "clothing",
@@ -116,12 +115,7 @@ const NICHE_PRESETS: Record<string, NichePreset> = {
       { label: "Minimalist Streetwear Hoodie", url: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80" },
       { label: "Classic Khaki Kurta", url: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&w=800&q=80" },
     ],
-    products: [
-      { id: "c1", name: "Tailored Oxford Formal Shirt", price: "₨ 3,800", originalPrice: "₨ 4,800", discount: "21% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80", tag: "Bestseller", inStock: true },
-      { id: "c2", name: "Breathable Pure Linen Shirt", price: "₨ 4,200", originalPrice: "₨ 5,500", discount: "24% OFF", rating: 4.8, image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80", tag: "Summer Drop", inStock: true },
-      { id: "c3", name: "Royal Navy Executive Shirt", price: "₨ 3,900", originalPrice: "₨ 4,900", discount: "20% OFF", rating: 5.0, image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=600&q=80", tag: "Formal", inStock: true },
-      { id: "c4", name: "Heavyweight Streetwear Tee", price: "₨ 2,400", originalPrice: "₨ 3,200", discount: "25% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80", tag: "Streetwear", inStock: true },
-    ],
+    products: [],
   },
   watches: {
     id: "watches",
@@ -135,10 +129,7 @@ const NICHE_PRESETS: Record<string, NichePreset> = {
       { label: "18K Gold Plated Bracelet", url: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80" },
       { label: "Minimalist Leather Watch", url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80" },
     ],
-    products: [
-      { id: "w1", name: "Aero Chronograph Luxury Watch", price: "₨ 18,500", originalPrice: "₨ 24,000", discount: "23% OFF", rating: 5.0, image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=600&q=80", tag: "VIP Edition", inStock: true },
-      { id: "w2", name: "Handcrafted 18K Gold Band", price: "₨ 12,000", originalPrice: "₨ 15,000", discount: "20% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80", tag: "Exclusive", inStock: true },
-    ],
+    products: [],
   },
   tech: {
     id: "tech",
@@ -152,10 +143,7 @@ const NICHE_PRESETS: Record<string, NichePreset> = {
       { label: "Mechanical RGB Keyboard", url: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80" },
       { label: "Smart Fitness Watch", url: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80" },
     ],
-    products: [
-      { id: "t1", name: "Pro ANC Wireless Earbuds", price: "₨ 6,999", originalPrice: "₨ 8,999", discount: "22% OFF", rating: 4.8, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80", tag: "Top Rated", inStock: true },
-      { id: "t2", name: "Cyber RGB Mechanical Keyboard", price: "₨ 8,500", originalPrice: "₨ 11,000", discount: "23% OFF", rating: 4.9, image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80", tag: "Gaming Drop", inStock: true },
-    ],
+    products: [],
   },
 };
 
@@ -180,29 +168,31 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Most Popular",
     description: "2-column layout with high-impact product photo on right, headline, description, and dual action buttons.",
     diagram: (
-      <div className="w-full h-20 bg-slate-950 rounded-lg border border-slate-800 p-2 flex items-center gap-2">
+      <div className="w-full h-20 bg-slate-100 rounded-xl border border-slate-200 p-2 flex items-center gap-2">
         <div className="flex-1 space-y-1">
-          <div className="h-2.5 w-3/4 bg-emerald-500 rounded" />
-          <div className="h-1.5 w-full bg-slate-700 rounded" />
+          <div className="h-2.5 w-3/4 bg-slate-700 rounded" />
+          <div className="h-1.5 w-full bg-slate-300 rounded" />
           <div className="flex gap-1 pt-1">
-            <div className="h-3 w-8 bg-emerald-400 rounded" />
             <div className="h-3 w-8 bg-slate-700 rounded" />
+            <div className="h-3 w-8 bg-slate-300 rounded" />
           </div>
         </div>
-        <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center border border-slate-700 text-[9px] text-slate-400">
+        <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border border-slate-200 text-[9px] text-slate-500 font-bold shadow-2xs">
           Photo
         </div>
       </div>
     ),
     defaultProps: {
-      title: "Walk With Royal Distinction",
-      subtitle: "100% pure full-grain leather shoes handcrafted in Pakistan with ergonomic comfort.",
+      title: "Handcrafted Luxury & Bespoke Distinction",
+      subtitle: "Curated premium materials and master craftsmanship tailored for refined tastes.",
       ctaText: "Shop Collection",
       ctaLink: "#catalog",
       secondaryCtaText: "Learn Heritage",
       secondaryCtaLink: "#about",
       imageAlignment: "right",
-      imageUrl: NICHE_PRESETS.shoes.images[0].url,
+      imageAspect: "square",
+      imagePosition: "right",
+      imageUrl: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=800&q=80",
     },
   },
   {
@@ -212,13 +202,13 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Trending 2026",
     description: "Multi-card bento box showcasing flagship product, discount chip, and live customer reviews.",
     diagram: (
-      <div className="w-full h-20 bg-slate-950 rounded-lg border border-slate-800 p-1.5 grid grid-cols-3 gap-1">
-        <div className="col-span-2 bg-emerald-950/60 border border-emerald-500/30 rounded p-1 space-y-1">
-          <div className="h-2 w-1/2 bg-emerald-400 rounded" />
-          <div className="h-1 w-3/4 bg-slate-700 rounded" />
+      <div className="w-full h-20 bg-slate-100 rounded-xl border border-slate-200 p-1.5 grid grid-cols-3 gap-1">
+        <div className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-1 space-y-1">
+          <div className="h-2 w-1/2 bg-[#5A3D63] rounded" />
+          <div className="h-1 w-3/4 bg-slate-300 rounded" />
         </div>
-        <div className="bg-slate-800 rounded flex items-center justify-center text-[8px] text-slate-400">Tile 2</div>
-        <div className="col-span-3 h-4 bg-slate-900 border border-slate-800 rounded flex items-center px-2 text-[7px] text-emerald-400">
+        <div className="bg-white border border-slate-200 rounded-lg flex items-center justify-center text-[8px] text-slate-500 font-semibold shadow-2xs">Tile 2</div>
+        <div className="col-span-3 h-4 bg-white border border-slate-200 rounded-lg flex items-center px-2 text-[7px] text-purple-700 font-bold shadow-2xs">
           ★ 4.9/5 Rating Banner
         </div>
       </div>
@@ -228,11 +218,11 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
       subline: "Designed for individuals who refuse ordinary quality.",
       primaryCtaText: "Explore Bento Drop",
       primaryCtaLink: "#catalog",
-      secondaryCtaText: "Watch Cobbler Video",
+      secondaryCtaText: "Watch Video",
       secondaryCtaLink: "#about",
       badgeText: "Handcrafted Edition",
-      accentTag: "100% Full-Grain",
-      heroImage: NICHE_PRESETS.shoes.images[1].url,
+      accentTag: "100% Premium",
+      heroImage: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
     },
   },
   {
@@ -242,8 +232,8 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "High Conversion",
     description: "Eye-catching top ribbon displaying free shipping threshold, coupon code, and COD guarantee.",
     diagram: (
-      <div className="w-full h-12 bg-amber-500/20 border border-amber-500/40 rounded-lg flex items-center justify-center px-2 text-center">
-        <span className="text-[9px] font-bold text-amber-300 truncate">🎉 Free Delivery on orders over ₨ 5,000 across Pakistan!</span>
+      <div className="w-full h-12 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center px-2 text-center shadow-2xs">
+        <span className="text-[9px] font-bold text-amber-800 truncate">🎉 Free Delivery on orders over ₨ 5,000 across Pakistan!</span>
       </div>
     ),
     defaultProps: {
@@ -258,12 +248,12 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Core Commerce",
     description: "3-column responsive product card grid with quick Add-to-Cart buttons, wishlist hearts, and discount badges.",
     diagram: (
-      <div className="w-full h-20 bg-slate-950 rounded-lg border border-slate-800 p-1.5 grid grid-cols-3 gap-1">
+      <div className="w-full h-20 bg-slate-100 rounded-xl border border-slate-200 p-1.5 grid grid-cols-3 gap-1">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-slate-900 border border-slate-800 rounded p-1 space-y-0.5">
-            <div className="h-7 w-full bg-slate-800 rounded" />
-            <div className="h-1.5 w-3/4 bg-slate-600 rounded" />
-            <div className="h-1.5 w-1/2 bg-emerald-400 rounded" />
+          <div key={i} className="bg-white border border-slate-200 rounded-lg p-1 space-y-0.5 shadow-2xs">
+            <div className="h-7 w-full bg-slate-200 rounded" />
+            <div className="h-1.5 w-3/4 bg-slate-300 rounded" />
+            <div className="h-1.5 w-1/2 bg-slate-700 rounded" />
           </div>
         ))}
       </div>
@@ -282,22 +272,21 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Interactive",
     description: "Visual category slider showcasing sub-collections with high-res photos and product counts.",
     diagram: (
-      <div className="w-full h-20 bg-slate-950 rounded-lg border border-slate-800 p-1.5 flex items-center gap-1.5 overflow-hidden">
-        <div className="w-12 h-14 bg-slate-800 rounded opacity-60 flex-shrink-0" />
-        <div className="w-20 h-16 bg-emerald-900/60 border border-emerald-500/50 rounded flex-shrink-0 flex flex-col justify-end p-1">
-          <span className="text-[7px] font-bold text-white">Formals</span>
+      <div className="w-full h-20 bg-slate-100 rounded-xl border border-slate-200 p-1.5 flex items-center gap-1.5 overflow-hidden">
+        <div className="w-12 h-14 bg-slate-200 rounded-lg opacity-60 flex-shrink-0" />
+        <div className="w-20 h-16 bg-purple-100 border border-purple-300 rounded-lg flex-shrink-0 flex flex-col justify-end p-1 shadow-2xs">
+          <span className="text-[7px] font-bold text-purple-800">Featured</span>
         </div>
-        <div className="w-12 h-14 bg-slate-800 rounded opacity-60 flex-shrink-0" />
+        <div className="w-12 h-14 bg-slate-200 rounded-lg opacity-60 flex-shrink-0" />
       </div>
     ),
     defaultProps: {
-      title: "Explore Shoe Collections",
+      title: "Explore Collections",
       layout: "card",
       categories: [
-        { title: "Oxford & Formals", count: "24 items", image: NICHE_PRESETS.shoes.images[0].url },
-        { title: "Casual Loafers", count: "18 items", image: NICHE_PRESETS.shoes.images[2].url },
-        { title: "Sneakers & Street", count: "32 items", image: NICHE_PRESETS.shoes.images[3].url },
-        { title: "Peshawari Chappal", count: "12 items", image: NICHE_PRESETS.shoes.images[4].url },
+        { title: "Exclusive Edition", count: "24 items", image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600" },
+        { title: "Casual Pret", count: "18 items", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600" },
+        { title: "Seasonal Drops", count: "32 items", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600" },
       ],
     },
   },
@@ -308,10 +297,10 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Trust Booster",
     description: "Highlights Cash on Delivery, TCS Delivery, 100% Escrow Buyer Protection, and 7-Day Exchange.",
     diagram: (
-      <div className="w-full h-16 bg-slate-950 rounded-lg border border-slate-800 p-1 grid grid-cols-4 gap-1">
-        {["COD", "Escrow", "Exchange", "Pure Leather"].map((t, i) => (
-          <div key={i} className="bg-slate-900 rounded flex flex-col items-center justify-center p-1 text-center">
-            <span className="text-[7px] font-bold text-emerald-400">{t}</span>
+      <div className="w-full h-16 bg-slate-100 rounded-xl border border-slate-200 p-1 grid grid-cols-4 gap-1">
+        {["COD", "Escrow", "Exchange", "100% Pure"].map((t, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-lg flex flex-col items-center justify-center p-1 text-center shadow-2xs">
+            <span className="text-[7px] font-bold text-purple-700">{t}</span>
           </div>
         ))}
       </div>
@@ -321,8 +310,8 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
       items: [
         { icon: "truck", title: "Cash on Delivery", description: "Pay at your doorstep anywhere in Pakistan via TCS" },
         { icon: "shield-check", title: "100% Escrow Protection", description: "Guaranteed buyer security on every order" },
-        { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free size replacement with zero hassle" },
-        { icon: "award", title: "Pure Full-Grain Leather", description: "Hand-inspected natural leather by master craftsmen" },
+        { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement with zero hassle" },
+        { icon: "award", title: "Certified Authentic", description: "Hand-inspected natural materials by master craftsmen" },
       ],
     },
   },
@@ -333,21 +322,21 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Brand Vibe",
     description: "Deep narrative section telling the story of craftsmanship, dedication, and handmade pride.",
     diagram: (
-      <div className="w-full h-20 bg-slate-950 rounded-lg border border-slate-800 p-2 flex items-center gap-2">
-        <div className="w-14 h-14 bg-slate-800 rounded border border-slate-700 flex-shrink-0" />
+      <div className="w-full h-20 bg-slate-100 rounded-xl border border-slate-200 p-2 flex items-center gap-2">
+        <div className="w-14 h-14 bg-slate-200 rounded-lg border border-slate-300 flex-shrink-0" />
         <div className="flex-1 space-y-1">
-          <div className="h-2 w-3/4 bg-slate-300 rounded" />
-          <div className="h-1.5 w-full bg-slate-700 rounded" />
+          <div className="h-2 w-3/4 bg-slate-700 rounded" />
+          <div className="h-1.5 w-full bg-slate-300 rounded" />
         </div>
       </div>
     ),
     defaultProps: {
-      title: "The Legacy of Master Cobblers",
+      title: "The Art of Bespoke Craftsmanship",
       paragraphs: [
-        "Every pair of StepCraft shoes begins with hand-selected hides of top-tier full-grain leather. Our craftsmen spend over 36 hours shaping and stitching each silhouette.",
-        "We reject synthetic shortcuts. Every detail is engineered to ensure timeless luxury.",
+        "Every piece is shaped by hand with meticulous care and dedication. Our artisans spend hours perfecting every line, seam, and detail.",
+        "We reject synthetic shortcuts. Every detail is engineered to ensure timeless elegance.",
       ],
-      imageUrl: NICHE_PRESETS.shoes.images[5].url,
+      imageUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80",
     },
   },
   {
@@ -357,21 +346,21 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Social Proof",
     description: "Customer testimonials with 5-star ratings, buyer location, and verified badges.",
     diagram: (
-      <div className="w-full h-16 bg-slate-950 rounded-lg border border-slate-800 p-2 flex gap-2">
+      <div className="w-full h-16 bg-slate-100 rounded-xl border border-slate-200 p-2 flex gap-2">
         {[1, 2].map((i) => (
-          <div key={i} className="flex-1 bg-slate-900 border border-slate-800 rounded p-1.5 space-y-1">
-            <div className="text-[7px] text-amber-400">★★★★★</div>
-            <div className="h-1 w-full bg-slate-700 rounded" />
+          <div key={i} className="flex-1 bg-white border border-slate-200 rounded-lg p-1.5 space-y-1 shadow-2xs">
+            <div className="text-[7px] text-amber-500 font-bold">★★★★★</div>
+            <div className="h-1 w-full bg-slate-300 rounded" />
           </div>
         ))}
       </div>
     ),
     defaultProps: {
-      title: "What Pakistani Gentlemen Say",
+      title: "What Our Buyers Say",
       layout: "carousel",
       testimonials: [
-        { id: "1", name: "Hamza Tariq (Lahore)", text: "Ordered the Black Oxford for my brother's wedding. Unmatched leather quality!", rating: 5, role: "Verified Buyer" },
-        { id: "2", name: "Dr. Bilal Khan (Islamabad)", text: "COD was delivered in 2 days. Arch support is so comfortable.", rating: 5, role: "Verified Buyer" },
+        { id: "1", name: "Hamza Tariq (Lahore)", text: "Ordered for my brother's wedding. Quality and finish is unmatched!", rating: 5, role: "Verified Buyer" },
+        { id: "2", name: "Dr. Bilal Khan (Islamabad)", text: "COD was delivered in 2 days. Fit and comfort is remarkable.", rating: 5, role: "Verified Buyer" },
       ],
     },
   },
@@ -382,17 +371,17 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     badge: "Lead Capture",
     description: "Progressive signup box offering instant discount incentive for new subscribers.",
     diagram: (
-      <div className="w-full h-14 bg-gradient-to-r from-emerald-950 to-slate-950 border border-emerald-500/30 rounded-lg p-2 flex items-center justify-between">
+      <div className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl p-2 flex items-center justify-between shadow-2xs">
         <div className="space-y-0.5">
-          <div className="text-[8px] font-bold text-white">Join VIP Club</div>
-          <div className="text-[7px] text-slate-400">Get 10% OFF</div>
+          <div className="text-[8px] font-bold text-slate-900">Join VIP Club</div>
+          <div className="text-[7px] text-slate-500">Get 10% OFF</div>
         </div>
-        <div className="h-5 w-16 bg-emerald-500 rounded flex items-center justify-center text-[7px] font-bold text-slate-950">Claim 10%</div>
+        <div className="h-5 w-16 bg-[#5A3D63] rounded-lg flex items-center justify-center text-[7px] font-bold text-white shadow-xs">Claim 10%</div>
       </div>
     ),
     defaultProps: {
-      title: "Join The StepCraft Inner Circle",
-      subtitle: "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
+      title: "Join The VIP Inner Circle",
+      subtitle: "Get exclusive access to private drops and enjoy instant 10% OFF your first order.",
       buttonText: "Claim 10% Discount",
     },
   },
@@ -401,28 +390,28 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
     title: "Custom Designed Section",
     category: "hero",
     badge: "Custom Studio",
-    description: "Fully customizable section with badge, heading, description, dual action buttons, and image position options.",
+    description: "Fully customizable section with badge, heading, description, dual action buttons, and image position/ratio options.",
     diagram: (
-      <div className="w-full h-14 bg-gradient-to-r from-slate-900 to-amber-950/40 border border-amber-500/30 rounded-lg p-2 flex items-center justify-between">
+      <div className="w-full h-14 bg-slate-100 border border-slate-200 rounded-xl p-2 flex items-center justify-between shadow-2xs">
         <div className="space-y-0.5">
-          <div className="text-[8px] font-bold text-amber-300">✨ Custom Hero/Banner</div>
-          <div className="text-[7px] text-slate-400">Dual CTA + Custom Photo</div>
+          <div className="text-[8px] font-bold text-slate-800">✨ Custom Hero / Spotlight</div>
+          <div className="text-[7px] text-slate-500">Dual CTA + Custom Photo</div>
         </div>
-        <div className="h-5 w-14 bg-amber-400 rounded flex items-center justify-center text-[7px] font-bold text-slate-950">Explore</div>
+        <div className="h-5 w-14 bg-slate-900 rounded-lg flex items-center justify-center text-[7px] font-bold text-white shadow-xs">Explore</div>
       </div>
     ),
     defaultProps: {
-      badge: "✨ EXCLUSIVE DROP",
       title: "Limited Edition Handcrafted Collection",
       subtitle: "Engineered with precision and premium craftsmanship for connoisseurs of timeless luxury.",
       ctaText: "Discover Now",
       ctaLink: "/shop",
       secondaryCtaText: "Learn Heritage",
       secondaryCtaLink: "#story",
-      imageUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80",
       imagePosition: "right",
+      imageAspect: "landscape",
       bgTheme: "slate",
-      buttonTheme: "emerald",
+      buttonTheme: "purple",
     },
   },
 ];
@@ -448,6 +437,7 @@ export default function VisualLayoutEditor() {
     storeName?: string;
     categories?: Array<{ name: string; href: string }>;
     products?: any[];
+    pages?: any;
     theme: {
       colors: { primary: string; secondary: string; background: string; text: string };
       typography: { heading: string; body: string };
@@ -570,10 +560,79 @@ export default function VisualLayoutEditor() {
     ],
   });
 
-  // Custom Products list
-  const [productsList, setProductsList] = useState(NICHE_PRESETS.shoes.products);
+  // Custom Products list - strictly empty by default until vendor adds products
+  const [productsList, setProductsList] = useState<any[]>([]);
+  // Real Store Catalog Products strictly scoped to this store ID & slug
+  const [storeCatalogProducts, setStoreCatalogProducts] = useState<any[]>([]);
+  const [skuFeedback, setSkuFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>("navbar-header");
-  const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [deviceMode, setDeviceMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [activePage, setActivePage] = useState<"home" | "about" | "shop" | "contact">("home");
+  const [sidebarWidth, setSidebarWidth] = useState<number>(380);
+  const [isDraggingSidebar, setIsDraggingSidebar] = useState<boolean>(false);
+
+  // Drag-to-resize listener for sidebar & canvas width
+  useEffect(() => {
+    if (!isDraggingSidebar) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Clamp between 270px and 580px
+      const newWidth = Math.min(Math.max(e.clientX - 64, 270), 580);
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingSidebar(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingSidebar]);
+
+  // Page props change helper
+  const handlePagePropChange = (
+    page: "about" | "shop" | "contact",
+    sectionKey: string,
+    field: string,
+    value: any
+  ) => {
+    setLayoutConfig((prev) => {
+      const pages = prev.pages || {};
+      const pageData = (pages as any)[page] || {};
+      if (sectionKey) {
+        const secData = pageData[sectionKey] || {};
+        return {
+          ...prev,
+          pages: {
+            ...pages,
+            [page]: {
+              ...pageData,
+              [sectionKey]: {
+                ...secData,
+                [field]: value,
+              },
+            },
+          },
+        };
+      } else {
+        return {
+          ...prev,
+          pages: {
+            ...pages,
+            [page]: {
+              ...pageData,
+              [field]: value,
+            },
+          },
+        };
+      }
+    });
+  };
+
   const [sidebarTab, setSidebarTab] = useState<"sections" | "props" | "catalog" | "colors" | "ai_chat">("props");
 
   // Click-to-edit Selector Mode
@@ -610,10 +669,18 @@ export default function VisualLayoutEditor() {
   // AI Assistant Chat inside Editor
   const [aiInput, setAiInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiChatMessages, setAiChatMessages] = useState<Array<{ role: "ai" | "user"; text: string }>>([
+  const [aiChatMessages, setAiChatMessages] = useState<
+    Array<{
+      role: "ai" | "user";
+      text: string;
+      summary?: string;
+      time?: string;
+    }>
+  >([
     {
       role: "ai",
-      text: "Salam! Main aapka DigiShop AI Studio Assistant hun. Aap bol kar store ka content, shoes/shirts ki prices, color schemes ya components tabdeel karwa sakte hain.",
+      text: "Hello! I am your Altrivo Assistant. Tell me what changes you would like to make to your store — such as updating hero titles, changing theme colors, adding promotional banners, or customizing layout sections.",
+      time: "Just now",
     },
   ]);
 
@@ -650,9 +717,82 @@ export default function VisualLayoutEditor() {
     }
   };
 
+  // AI Component Generator inside Component Catalog Modal
+  const [aiComponentPrompt, setAiComponentPrompt] = useState("");
+  const [isGeneratingComponent, setIsGeneratingComponent] = useState(false);
+
+  const handleGenerateAiComponent = async () => {
+    if (!aiComponentPrompt.trim()) return;
+    setIsGeneratingComponent(true);
+    try {
+      const preset = currentNichePreset || NICHE_PRESETS.clothing;
+      let generatedImg = preset.images[0]?.url || "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80";
+
+      // Attempt AI image generation specifically tailored to this prompt and niche
+      try {
+        const imgRes = await fetch("/api/ai/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: `${aiComponentPrompt}, ${preset.name} commercial studio photography`,
+            niche: activeNiche,
+            aspect: "landscape",
+          }),
+        });
+        if (imgRes.ok) {
+          const imgData = await imgRes.json();
+          if (imgData.imageUrl) generatedImg = imgData.imageUrl;
+        }
+      } catch (imgErr) {
+        console.warn("[Editor] AI Image sub-fetch:", imgErr);
+      }
+
+      const newId = `custom-ai-${Date.now()}`;
+      const words = aiComponentPrompt.trim().split(" ");
+      const cleanTitle = words
+        .slice(0, 6)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+
+      const newSection: Section = {
+        id: newId,
+        type: "CustomComponent",
+        props: {
+          title: cleanTitle || "Exclusive AI Spotlight",
+          subtitle: `Custom tailored for ${storeName}. ${aiComponentPrompt}`,
+          ctaText: "Explore Now",
+          ctaLink: "#catalog",
+          secondaryCtaText: "Learn Heritage",
+          secondaryCtaLink: "#about",
+          imageUrl: generatedImg,
+          heroImage: generatedImg,
+          imagePosition: "right",
+          imageAspect: "landscape",
+          bgTheme: "slate",
+          buttonTheme: "purple",
+        },
+      };
+
+      setLayoutConfig((prev) => ({
+        ...prev,
+        sections: [...prev.sections, newSection],
+      }));
+      setActiveSectionId(newId);
+      setSidebarTab("props");
+      setShowComponentCatalogModal(false);
+      setAiComponentPrompt("");
+    } catch (err) {
+      console.error("[Editor] Failed to generate AI component:", err);
+    } finally {
+      setIsGeneratingComponent(false);
+    }
+  };
+
   // Saving state
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [draftSuccess, setDraftSuccess] = useState(false);
 
   // -------------------------------------------------------------------------
   // File Upload Handler (PC / Local Drive)
@@ -693,68 +833,176 @@ export default function VisualLayoutEditor() {
   useEffect(() => {
     async function loadStore() {
       try {
-        const res = await fetch("/api/stores");
-        if (res.ok) {
-          const { stores } = await res.json();
-          const found = stores?.find(
-            (s: any) =>
-              s.slug?.toLowerCase() === slug ||
-              s.subdomain?.toLowerCase() === slug ||
-              s.id === slug
-          );
+        let storeData: any = null;
 
-          if (found && found.layout_config?.sections?.length > 0) {
-            setLayoutConfig({
-              ...found.layout_config,
-              categories: found.layout_config.categories || [
-                { name: "Oxford & Formals", href: "#catalog" },
-                { name: "Casual Loafers", href: "#catalog" },
-                { name: "Sneakers & Street", href: "#catalog" },
-                { name: "Peshawari Chappal", href: "#catalog" },
-              ],
-            });
-            setStoreName(found.name || found.layout_config.storeName || "My Store");
-            setStoreId(found.id);
-            if (found.niche) setActiveNiche(found.niche);
-            if (found.layout_config.products && found.layout_config.products.length > 0) {
-              setProductsList(found.layout_config.products);
-            } else if (found.commerce_config?.products && found.commerce_config.products.length > 0) {
-              setProductsList(found.commerce_config.products);
+        // 1. Direct fetch by slug or ID from backend
+        try {
+          const directRes = await fetch(`/api/stores/${slug}`);
+          if (directRes.ok) {
+            const directJson = await directRes.json();
+            if (directJson.store) {
+              storeData = directJson.store;
             }
-            if (found.layout_config.sections?.[0]) {
-              setActiveSectionId(found.layout_config.sections[0].id);
-            }
-            return;
+          }
+        } catch {}
+
+        // 2. Fallback to stores list if direct fetch did not return
+        if (!storeData) {
+          const res = await fetch("/api/stores");
+          if (res.ok) {
+            const { stores } = await res.json();
+            storeData = stores?.find(
+              (s: any) =>
+                s.slug?.toLowerCase() === slug ||
+                s.subdomain?.toLowerCase() === slug ||
+                s.id === slug
+            );
           }
         }
 
-        // Check localStorage fallback
-        const local = localStorage.getItem("digishop_stores");
-        if (local) {
-          const parsed = JSON.parse(local);
-          const foundLocal = parsed.find(
-            (s: any) =>
-              s.slug?.toLowerCase() === slug ||
-              s.subdomain?.toLowerCase() === slug ||
-              s.id === slug
-          );
-          if (foundLocal && foundLocal.layout_config?.sections?.length > 0) {
-            setLayoutConfig({
-              ...foundLocal.layout_config,
-              categories: foundLocal.layout_config.categories || [
-                { name: "Oxford & Formals", href: "#catalog" },
-                { name: "Casual Loafers", href: "#catalog" },
-                { name: "Sneakers & Street", href: "#catalog" },
-                { name: "Peshawari Chappal", href: "#catalog" },
-              ],
-            });
-            setStoreName(foundLocal.name);
-            setStoreId(foundLocal.id);
-            if (foundLocal.layout_config.products && foundLocal.layout_config.products.length > 0) {
-              setProductsList(foundLocal.layout_config.products);
+        if (!storeData) {
+          const local = localStorage.getItem("digishop_stores");
+          if (local) {
+            try {
+              const parsed = JSON.parse(local);
+              storeData = parsed.find(
+                (s: any) =>
+                  s.slug?.toLowerCase() === slug ||
+                  s.subdomain?.toLowerCase() === slug ||
+                  s.id === slug
+              );
+            } catch {}
+          }
+        }
+
+        if (storeData) {
+          const sName = `${storeData.name || ""} ${storeData.slug || slug || ""}`.toLowerCase();
+          let detectedNiche = "shoes";
+          if (
+            sName.includes("cloth") ||
+            sName.includes("shirt") ||
+            sName.includes("fashion") ||
+            sName.includes("apparel") ||
+            sName.includes("wear") ||
+            sName.includes("garment") ||
+            storeData.niche === "clothing" ||
+            storeData.niche === "fashion"
+          ) {
+            detectedNiche = "clothing";
+          } else if (
+            sName.includes("watch") ||
+            sName.includes("time") ||
+            sName.includes("chrono") ||
+            sName.includes("horolog") ||
+            sName.includes("jewelry") ||
+            storeData.niche === "watches"
+          ) {
+            detectedNiche = "watches";
+          } else if (
+            sName.includes("tech") ||
+            sName.includes("gadget") ||
+            sName.includes("phone") ||
+            sName.includes("electron") ||
+            storeData.niche === "tech"
+          ) {
+            detectedNiche = "tech";
+          } else if (storeData.niche && NICHE_PRESETS[storeData.niche]) {
+            detectedNiche = storeData.niche;
+          }
+          setActiveNiche(detectedNiche);
+
+          const defaultCategoriesByNiche: Record<string, any[]> = {
+            clothing: [
+              { name: "Formal Oxford Shirts", href: "#catalog" },
+              { name: "Linen Casual Wear", href: "#catalog" },
+              { name: "Streetwear & Hoodies", href: "#catalog" },
+              { name: "Traditional Kurtas", href: "#catalog" },
+            ],
+            watches: [
+              { name: "Automatic Chronographs", href: "#catalog" },
+              { name: "Skeleton Mechanical", href: "#catalog" },
+              { name: "Luxury Dress Watches", href: "#catalog" },
+              { name: "Diver Timepieces", href: "#catalog" },
+            ],
+            tech: [
+              { name: "Wireless Audio", href: "#catalog" },
+              { name: "Smart Wearables", href: "#catalog" },
+              { name: "Mechanical Keyboards", href: "#catalog" },
+              { name: "Gaming Gear", href: "#catalog" },
+            ],
+            shoes: [
+              { name: "Oxford & Formals", href: "#catalog" },
+              { name: "Casual Loafers", href: "#catalog" },
+              { name: "Sneakers & Street", href: "#catalog" },
+              { name: "Peshawari Chappal", href: "#catalog" },
+            ],
+          };
+          const fallbackCats = defaultCategoriesByNiche[detectedNiche] || defaultCategoriesByNiche.shoes;
+
+          // -----------------------------------------------------------------
+          // Load Real Store Products strictly scoped to this store ID & slug
+          // -----------------------------------------------------------------
+          const localProducts = [
+            ...getStoredProducts(storeData.id),
+            ...getStoredProducts(storeData.slug || slug),
+          ];
+          const backendCommerceProducts = Array.isArray(storeData.commerce_config?.products)
+            ? storeData.commerce_config.products
+            : [];
+          const backendLayoutProducts = Array.isArray(storeData.layout_config?.products)
+            ? storeData.layout_config.products
+            : [];
+
+          // Merge & deduplicate products by id/sku
+          const productMap = new Map<string, any>();
+          [...localProducts, ...backendCommerceProducts, ...backendLayoutProducts].forEach((rawP) => {
+            if (!rawP) return;
+            const converted = toStorefrontProduct(rawP);
+            if (converted && converted.id) {
+              const key = (converted.sku || converted.id).toLowerCase();
+              if (!productMap.has(key)) {
+                productMap.set(key, converted);
+              }
             }
-            if (foundLocal.layout_config.sections?.[0]) {
-              setActiveSectionId(foundLocal.layout_config.sections[0].id);
+          });
+
+          const mergedStoreCatalog = Array.from(productMap.values());
+          setStoreCatalogProducts(mergedStoreCatalog);
+
+          // Dynamically derive real categories from store products
+          const productCategories = Array.from(
+            new Set(mergedStoreCatalog.map((p) => p.category || p.tag).filter(Boolean))
+          );
+          const realCategoryNav = productCategories.length > 0
+            ? productCategories.map((c) => ({ name: c, href: "#catalog" }))
+            : fallbackCats;
+
+          if (storeData.layout_config?.sections?.length > 0) {
+            setLayoutConfig({
+              ...storeData.layout_config,
+              categories: storeData.layout_config.categories || realCategoryNav,
+              products: mergedStoreCatalog,
+            });
+            setStoreName(storeData.name || storeData.layout_config.storeName || "My Store");
+            setStoreId(storeData.id);
+            
+            // Prefer existing layout products if populated, otherwise initialize with store catalog
+            if (backendLayoutProducts.length > 0) {
+              setProductsList(backendLayoutProducts.map(toStorefrontProduct));
+            } else if (mergedStoreCatalog.length > 0) {
+              setProductsList(mergedStoreCatalog);
+            } else {
+              setProductsList([]);
+            }
+            if (storeData.layout_config.sections?.[0]) {
+              setActiveSectionId(storeData.layout_config.sections[0].id);
+            }
+            return;
+          } else {
+            setStoreName(storeData.name || "My Store");
+            setStoreId(storeData.id);
+            if (mergedStoreCatalog.length > 0) {
+              setProductsList(mergedStoreCatalog);
             }
           }
         }
@@ -768,19 +1016,50 @@ export default function VisualLayoutEditor() {
   // -------------------------------------------------------------------------
   // Save Store Layout to Backend & LocalStorage (Persistent)
   // -------------------------------------------------------------------------
-  const handleSave = async () => {
-    setIsSaving(true);
+  // -------------------------------------------------------------------------
+  // Save Store Layout to Backend & LocalStorage (Live or Draft)
+  // -------------------------------------------------------------------------
+  const handleSave = async (publish: boolean = true) => {
+    if (publish) {
+      setIsSaving(true);
+    } else {
+      setIsDraftSaving(true);
+    }
+
     try {
-      const targetIdentifier = storeId || slug;
-      const payloadLayout = {
-        ...layoutConfig,
-        storeName,
-        categories: layoutConfig.categories || [
+      const defaultCategoriesByNiche: Record<string, any[]> = {
+        clothing: [
+          { name: "Formal Oxford Shirts", href: "#catalog" },
+          { name: "Linen Casual Wear", href: "#catalog" },
+          { name: "Streetwear & Hoodies", href: "#catalog" },
+          { name: "Traditional Kurtas", href: "#catalog" },
+        ],
+        watches: [
+          { name: "Automatic Chronographs", href: "#catalog" },
+          { name: "Skeleton Mechanical", href: "#catalog" },
+          { name: "Luxury Dress Watches", href: "#catalog" },
+          { name: "Diver Timepieces", href: "#catalog" },
+        ],
+        tech: [
+          { name: "Wireless Audio", href: "#catalog" },
+          { name: "Smart Wearables", href: "#catalog" },
+          { name: "Mechanical Keyboards", href: "#catalog" },
+          { name: "Gaming Gear", href: "#catalog" },
+        ],
+        shoes: [
           { name: "Oxford & Formals", href: "#catalog" },
           { name: "Casual Loafers", href: "#catalog" },
           { name: "Sneakers & Street", href: "#catalog" },
           { name: "Peshawari Chappal", href: "#catalog" },
         ],
+      };
+      const fallbackCats = defaultCategoriesByNiche[activeNiche] || defaultCategoriesByNiche.shoes;
+
+      const targetIdentifier = storeId || slug;
+      const payloadLayout = {
+        ...layoutConfig,
+        storeName,
+        categories: layoutConfig.categories || fallbackCats,
         products: productsList,
         sections: layoutConfig.sections.map((s) => {
           if (s.type === "ProductGridFeatured" || s.type.includes("ProductGrid")) {
@@ -803,7 +1082,7 @@ export default function VisualLayoutEditor() {
           name: storeName,
           layout_config: payloadLayout,
           commerce_config: { products: productsList },
-          is_published: true,
+          is_published: publish,
         }),
       });
 
@@ -821,7 +1100,7 @@ export default function VisualLayoutEditor() {
             name: storeName,
             layout_config: payloadLayout,
             commerce_config: { products: productsList },
-            is_published: true,
+            is_published: publish,
           }),
         }).catch(() => {});
       }
@@ -831,19 +1110,25 @@ export default function VisualLayoutEditor() {
         const local = JSON.parse(localStorage.getItem("digishop_stores") || "[]");
         const updated = local.map((s: any) =>
           s.slug === slug || s.id === storeId
-            ? { ...s, layout_config: payloadLayout, name: storeName, commerce_config: { products: productsList } }
+            ? { ...s, layout_config: payloadLayout, name: storeName, commerce_config: { products: productsList }, is_published: publish }
             : s
         );
         localStorage.setItem("digishop_stores", JSON.stringify(updated));
       } catch {}
 
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
+      if (publish) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2500);
+      } else {
+        setDraftSuccess(true);
+        setTimeout(() => setDraftSuccess(false), 2500);
+      }
     } catch (err: any) {
       console.error("Save failed", err);
       alert(`Save failed: ${err.message || "Unknown error"}`);
     } finally {
       setIsSaving(false);
+      setIsDraftSaving(false);
     }
   };
 
@@ -855,7 +1140,6 @@ export default function VisualLayoutEditor() {
     if (!preset) return;
 
     setActiveNiche(nicheKey);
-    setProductsList(preset.products);
     setLayoutConfig((prev) => ({
       ...prev,
       theme: {
@@ -932,10 +1216,92 @@ export default function VisualLayoutEditor() {
 
   const addComponentFromCatalog = (blueprint: VisualComponentBlueprint) => {
     const newId = `${blueprint.type.toLowerCase()}-${Date.now()}`;
+    const preset = currentNichePreset || NICHE_PRESETS[activeNiche] || NICHE_PRESETS.clothing;
+    const dynamicProps = { ...blueprint.defaultProps };
+
+    if (activeNiche === "clothing" || activeNiche === "fashion") {
+      if (blueprint.type === "HeroSplitImage") {
+        dynamicProps.title = "Bespoke Elegance & Modern Tailoring";
+        dynamicProps.subtitle = "Curated premium pret, formal oxford shirts, and contemporary designer wear.";
+        dynamicProps.ctaText = "Shop Collection";
+        dynamicProps.secondaryCtaText = "Explore Pret";
+        dynamicProps.imageUrl = preset.images[0]?.url || "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80";
+        dynamicProps.heroImage = dynamicProps.imageUrl;
+      } else if (blueprint.type === "HeroBento") {
+        dynamicProps.headline = "Haute Couture Meets Modern Pret";
+        dynamicProps.subline = "Handpicked luxurious fabrics and bespoke cuts for the discerning wardrobe.";
+        dynamicProps.primaryCtaText = "Explore Collection";
+        dynamicProps.secondaryCtaText = "View Lookbook";
+        dynamicProps.heroImage = preset.images[1]?.url || "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1200&q=80";
+      } else if (blueprint.type.includes("Category")) {
+        dynamicProps.title = `Explore ${storeName} Collections`;
+        dynamicProps.categories = [
+          { title: "Formal Oxford Shirts", count: "28 items", image: preset.images[0]?.url || "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600" },
+          { title: "Linen Casual Wear", count: "34 items", image: preset.images[1]?.url || "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600" },
+          { title: "Streetwear & Hoodies", count: "19 items", image: preset.images[3]?.url || "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600" },
+          { title: "Designer Pret", count: "22 items", image: preset.images[4]?.url || "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=600" },
+        ];
+      } else if (blueprint.type === "BrandStory") {
+        dynamicProps.title = "The Art of Master Weavers & Tailors";
+        dynamicProps.paragraphs = [
+          "Every garment is spun with high-grade Egyptian cotton and stitched with meticulous precision by master tailors.",
+          "We craft silhouettes that outlive seasonal trends with enduring refinement.",
+        ];
+        dynamicProps.imageUrl = preset.images[2]?.url || "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800";
+      } else if (blueprint.type === "CustomComponent") {
+        dynamicProps.title = "Contemporary Pret & Designer Wear";
+        dynamicProps.subtitle = "Exclusive drop featuring hand-finished collars, mother-of-pearl buttons, and structured fits.";
+        dynamicProps.imageUrl = preset.images[0]?.url;
+        dynamicProps.heroImage = preset.images[0]?.url;
+      }
+    } else if (activeNiche === "watches") {
+      if (blueprint.type === "HeroSplitImage") {
+        dynamicProps.title = "Precision Horology & Timeless Elegance";
+        dynamicProps.subtitle = "Swiss-grade chronograph movements and sapphire crystal timepieces crafted to perfection.";
+        dynamicProps.ctaText = "Shop Timepieces";
+        dynamicProps.secondaryCtaText = "Discover Heritage";
+        dynamicProps.imageUrl = preset.images[0]?.url || "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80";
+        dynamicProps.heroImage = dynamicProps.imageUrl;
+      } else if (blueprint.type === "HeroBento") {
+        dynamicProps.headline = "Mastery in Precision Timekeeping";
+        dynamicProps.subline = "Hand-assembled automatic chronographs engineered for a lifetime of prestige.";
+        dynamicProps.primaryCtaText = "Explore Chronographs";
+        dynamicProps.secondaryCtaText = "Horology Specs";
+        dynamicProps.heroImage = preset.images[1]?.url || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80";
+      } else if (blueprint.type.includes("Category")) {
+        dynamicProps.title = `Explore ${storeName} Collections`;
+        dynamicProps.categories = [
+          { title: "Automatic Chronographs", count: "16 items", image: preset.images[0]?.url || "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600" },
+          { title: "18K Gold Jewelry", count: "24 items", image: preset.images[1]?.url || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600" },
+          { title: "Minimalist Leather", count: "18 items", image: preset.images[2]?.url || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600" },
+        ];
+      } else if (blueprint.type === "BrandStory") {
+        dynamicProps.title = "The Art of Precision Horology";
+        dynamicProps.paragraphs = [
+          "Every timepiece undergoes 200 individual quality checks, utilizing high-grade stainless steel and sapphire glass.",
+          "Our dedication to mechanical precision ensures each second is an expression of luxury.",
+        ];
+        dynamicProps.imageUrl = preset.images[0]?.url;
+      } else if (blueprint.type === "CustomComponent") {
+        dynamicProps.title = "Handcrafted Luxury Heritage";
+        dynamicProps.subtitle = "Engineered with anti-reflective sapphire glass, 100m water resistance, and hand-finished dials.";
+        dynamicProps.imageUrl = preset.images[0]?.url;
+        dynamicProps.heroImage = preset.images[0]?.url;
+      }
+    } else if (activeNiche === "tech") {
+      if (blueprint.type === "HeroSplitImage") {
+        dynamicProps.title = "Next-Generation Audio & Gaming Gear";
+        dynamicProps.subtitle = "High-fidelity soundstages, mechanical precision switches, and ultra-low latency wireless tech.";
+        dynamicProps.ctaText = "Shop Tech Drop";
+        dynamicProps.imageUrl = preset.images[0]?.url || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800";
+        dynamicProps.heroImage = dynamicProps.imageUrl;
+      }
+    }
+
     const newSection: Section = {
       id: newId,
       type: blueprint.type,
-      props: { ...blueprint.defaultProps },
+      props: dynamicProps,
     };
 
     setLayoutConfig((prev) => ({ ...prev, sections: [...prev.sections, newSection] }));
@@ -944,53 +1310,44 @@ export default function VisualLayoutEditor() {
     setShowComponentCatalogModal(false);
   };
 
-  // Add Product by SKU or ID from the 50 Curated Catalog
+  // Add Product by SKU, ID or Name from Store Catalog
   const handleAddProductBySkuOrId = (inputVal: string) => {
     if (!inputVal.trim()) return;
     const query = inputVal.trim().toLowerCase();
-    const found = mockProducts.find(
+    
+    // Search in the vendor's real store catalog
+    const found = storeCatalogProducts.find(
       (p) =>
-        p.id.toLowerCase() === query ||
-        p.sku.toLowerCase() === query ||
-        p.name.toLowerCase().includes(query)
+        (p.sku && p.sku.toLowerCase() === query) ||
+        (p.id && p.id.toLowerCase() === query) ||
+        (p.name && p.name.toLowerCase().includes(query))
     );
+
     if (found) {
-      const alreadyInList = productsList.some((p) => p.id === found.id);
+      const alreadyInList = productsList.some((p) => p.id === found.id || (p.sku && p.sku === found.sku));
       if (!alreadyInList) {
-        const converted = {
-          id: found.id,
-          name: found.name,
-          price: `₨ ${found.price.toLocaleString()}`,
-          originalPrice: found.compareAtPrice ? `₨ ${found.compareAtPrice.toLocaleString()}` : "",
-          discount: found.badge || (found.compareAtPrice ? `${Math.round(((found.compareAtPrice - found.price) / found.compareAtPrice) * 100)}% OFF` : ""),
-          rating: found.rating || 4.9,
-          image: found.thumbnail,
-          tag: found.category,
-          inStock: true,
-        };
+        const converted = toStorefrontProduct(found);
         setProductsList([...productsList, converted]);
+        setSkuFeedback({ type: "success", message: `Added "${found.name}" (${found.sku || found.id}) to storefront!` });
+      } else {
+        setSkuFeedback({ type: "success", message: `"${found.name}" is already in the section.` });
       }
       setSkuInput("");
+    } else {
+      setSkuFeedback({
+        type: "error",
+        message: `No product found matching "${inputVal}". Please verify SKU or ID in your catalog.`,
+      });
     }
   };
 
-  // Toggle Product Inclusion from the 50 Catalog Items
+  // Toggle Product Inclusion from the Store Catalog Items
   const handleToggleProductFromCatalog = (catalogItem: any) => {
-    const exists = productsList.some((p) => p.id === catalogItem.id);
+    const exists = productsList.some((p) => p.id === catalogItem.id || (p.sku && p.sku === catalogItem.sku));
     if (exists) {
-      setProductsList(productsList.filter((p) => p.id !== catalogItem.id));
+      setProductsList(productsList.filter((p) => p.id !== catalogItem.id && (!catalogItem.sku || p.sku !== catalogItem.sku)));
     } else {
-      const converted = {
-        id: catalogItem.id,
-        name: catalogItem.name,
-        price: `₨ ${catalogItem.price.toLocaleString()}`,
-        originalPrice: catalogItem.compareAtPrice ? `₨ ${catalogItem.compareAtPrice.toLocaleString()}` : "",
-        discount: catalogItem.badge || (catalogItem.compareAtPrice ? `${Math.round(((catalogItem.compareAtPrice - catalogItem.price) / catalogItem.compareAtPrice) * 100)}% OFF` : ""),
-        rating: catalogItem.rating || 4.9,
-        image: catalogItem.thumbnail,
-        tag: catalogItem.category,
-        inStock: true,
-      };
+      const converted = toStorefrontProduct(catalogItem);
       setProductsList([...productsList, converted]);
     }
   };
@@ -1022,69 +1379,81 @@ export default function VisualLayoutEditor() {
   };
 
   // -------------------------------------------------------------------------
-  // Handle AI Chat Commands (Urdu / English)
+  // Handle AI Chat Commands (Urdu / English) via Gemini API
   // -------------------------------------------------------------------------
-  const handleAiCommand = async () => {
-    if (!aiInput.trim()) return;
-    const userMsg = aiInput.trim();
-    setAiChatMessages((prev) => [...prev, { role: "user", text: userMsg }]);
-    setAiInput("");
+  const handleAiCommand = async (customPrompt?: string) => {
+    const userMsg = (customPrompt || aiInput).trim();
+    if (!userMsg) return;
+
+    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setAiChatMessages((prev) => [...prev, { role: "user", text: userMsg, time: timeStr }]);
+    if (!customPrompt) setAiInput("");
     setIsAiLoading(true);
 
     try {
-      const lower = userMsg.toLowerCase();
-      let reply = "Aapki request ke mutabiq store update kar diya gaya hai!";
+      const res = await fetch("/api/ai/editor-assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          storeSlug: slug,
+          storeName,
+          currentLayout: layoutConfig,
+          userInstruction: userMsg,
+        }),
+      });
 
-      if (lower.includes("shirt") || lower.includes("cloth") || lower.includes("kapre")) {
-        handleSwitchNiche("clothing");
-        reply = "Store ko Shirts & Clothing Fashion collection me convert kar diya hai!";
-      } else if (lower.includes("shoe") || lower.includes("joot")) {
-        handleSwitchNiche("shoes");
-        reply = "Store ko Luxury Shoes & Footwear collection me convert kar diya hai!";
-      } else if (lower.includes("gold") || lower.includes("black") || lower.includes("dark")) {
-        setLayoutConfig((prev) => ({
-          ...prev,
-          theme: {
-            ...prev.theme,
-            colors: { primary: "#171717", secondary: "#D4AF37", background: "#0A0A0A", text: "#FFFFFF" },
-          },
-        }));
-        reply = "Theme ko Royal Black & Gold aesthetic me change kar diya hai!";
-      } else if (lower.includes("hero") && (lower.includes("title") || lower.includes("heading"))) {
-        const cleanTitle = userMsg.replace(/(change|hero|title|heading|to|kardo|krdo|kr dye|badlo|kar do)/gi, "").trim() || "Handcrafted Pure Leather Footwear";
-        setLayoutConfig((prev) => ({
-          ...prev,
-          sections: prev.sections.map((s) => (s.type.startsWith("Hero") ? { ...s, props: { ...s.props, title: cleanTitle } } : s)),
-        }));
-        reply = `Hero title update karke "${cleanTitle}" kar diya gaya hai!`;
-      } else if (lower.includes("discount") || lower.includes("offer") || lower.includes("banner")) {
-        const newBanner: Section = {
-          id: `promo-${Date.now()}`,
-          type: "PromoBanner",
-          props: { text: "🎉 Mega Sale: Flat 20% OFF on all items across Pakistan! Free Delivery over ₨ 5,000.", layout: "ribbon" },
-        };
-        setLayoutConfig((prev) => ({ ...prev, sections: [newBanner, ...prev.sections.filter((s) => s.type !== "PromoBanner")] }));
-        reply = "Top promo banner with 20% discount offer add kar diya gaya hai!";
-      } else {
-        const res = await fetch("/api/ai/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ storeId: storeId || slug, message: userMsg }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.updatedLayout) setLayoutConfig(data.updatedLayout);
-          reply = "AI ne layout update kar diya hai!";
+      if (res.ok) {
+        const data = await res.json();
+        if (data.updatedLayout) {
+          setLayoutConfig(data.updatedLayout);
+          if (data.updatedLayout.storeName && data.updatedLayout.storeName !== storeName) {
+            setStoreName(data.updatedLayout.storeName);
+          }
         }
+        setAiChatMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            text: data.reply || "Store successfully updated!",
+            summary: data.changesSummary,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setAiChatMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            text: errData.error || "Maazrat, request process nahi ho saki. Dobara try karein.",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
       }
-
-      setAiChatMessages((prev) => [...prev, { role: "ai", text: reply }]);
-    } catch {
-      setAiChatMessages((prev) => [...prev, { role: "ai", text: "Store update ho gaya hai!" }]);
+    } catch (err: any) {
+      console.error("[Editor Assistant Error]:", err);
+      setAiChatMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          text: "Connection error: Dobara koshish karein.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
     } finally {
       setIsAiLoading(false);
     }
   };
+
+  const AI_QUICK_ACTIONS = [
+    { label: "🎨 Royal Gold & Dark Theme", prompt: "Theme colors ko Royal Gold (#D4AF37) aur sleek dark background me change kardo" },
+    { label: "✨ Royal Purple & Slate", prompt: "Theme ko luxury deep purple (#2C1C31), soft lavender (#F5EFF7) aur royal purple (#694873) buttons me change kardo" },
+    { label: "🏷️ 20% Off Promo Banner", prompt: "Top par 20% discount aur Free Nationwide Delivery ka promo banner add kardo with coupon code ALT20" },
+    { label: "✍️ Luxury Hero Heading", prompt: `Hero section ki heading aur subtitle ko high-converting luxury boutique tone me rewrite kardo for ${storeName}` },
+    { label: "🚚 Trust & COD Highlights", prompt: "Features grid me Cash on Delivery, 100% Escrow Protection, aur TCS Express Shipping ke trust badges highlight kardo" },
+    { label: "⭐ Customer Testimonials", prompt: "Store me 5-star customer reviews aur testimonials slider section add kardo" },
+  ];
 
   const activeSection = layoutConfig.sections.find((s) => s.id === activeSectionId) || null;
   const currentNichePreset = NICHE_PRESETS[activeNiche] || NICHE_PRESETS.shoes;
@@ -1094,99 +1463,113 @@ export default function VisualLayoutEditor() {
       {/* ========================================================================= */}
       {/* 1. TOP HEADER TOOLBAR                                                     */}
       {/* ========================================================================= */}
-      <div className="h-14 border-b border-default bg-card shadow-2xs px-4 sm:px-5 flex items-center justify-between flex-shrink-0 z-30">
-        <div className="flex items-center gap-3">
+      {/* 1. CLEAN & SIMPLE TOP NAVIGATION BAR                                      */}
+      {/* ========================================================================= */}
+      <div className="h-14 border-b border-default bg-card shadow-2xs px-4 sm:px-6 flex items-center justify-between flex-shrink-0 z-30">
+        {/* Left: Back Link */}
+        <div className="flex items-center">
           <Link
             href="/my-stores"
-            className="p-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-subtle hover:text-heading border border-default transition-all"
+            className="p-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-subtle hover:text-heading border border-default transition-all cursor-pointer"
             title="Back to My Stores"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xs font-bold text-heading truncate max-w-xs">{storeName}</h1>
-              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-mono">
-                /{slug}
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400">Visual Layout &amp; AI Studio</p>
-          </div>
         </div>
 
-        {/* Viewport Toggles & Actions */}
+        {/* Center: Clean 4 Store Page Tabs (Home, About, Shop, Contact) */}
+        <div className="hidden sm:flex items-center bg-neutral-100 border border-default rounded-xl p-0.5 text-xs shadow-2xs">
+          {[
+            { id: "home", label: "Home", Icon: Home },
+            { id: "about", label: "About", Icon: Info },
+            { id: "shop", label: "Shop", Icon: ShoppingBag },
+            { id: "contact", label: "Contact", Icon: Phone },
+          ].map((p) => {
+            const isPActive = activePage === p.id;
+            const IconComp = p.Icon;
+            return (
+              <button
+                key={p.id}
+                onClick={() => {
+                  setActivePage(p.id as any);
+                  if (p.id === "about") setActiveSectionId("about-hero");
+                  else if (p.id === "shop") setActiveSectionId("shop-hero");
+                  else if (p.id === "contact") setActiveSectionId("contact-hero");
+                  else setActiveSectionId("navbar-header");
+                }}
+                className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isPActive
+                    ? "bg-card text-heading shadow-xs border border-default text-[#312038]"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <IconComp className={`w-3.5 h-3.5 ${isPActive ? "text-[#312038]" : "text-slate-400"}`} />
+                <span>{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: Actions (AI Assistant, Save Draft, Save Changes) */}
         <div className="flex items-center gap-2">
-          {/* Device Switcher */}
-          <div className="hidden sm:flex items-center bg-neutral-100 border border-default rounded-xl p-0.5">
-            <button
-              onClick={() => setIsMobilePreview(false)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${!isMobilePreview ? "bg-card text-heading shadow-xs font-bold" : "text-slate-500 hover:text-slate-300"}`}
-            >
-              <Monitor className="w-3.5 h-3.5" /> Desktop
-            </button>
-            <button
-              onClick={() => setIsMobilePreview(true)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${isMobilePreview ? "bg-card text-heading shadow-xs font-bold" : "text-slate-500 hover:text-slate-300"}`}
-            >
-              <Smartphone className="w-3.5 h-3.5" /> Mobile
-            </button>
-          </div>
-
-          {/* Click-to-Edit Pen Selector Toggle */}
-          <button
-            onClick={() => setIsSelectorMode(!isSelectorMode)}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 ${
-              isSelectorMode
-                ? "bg-emerald-500 text-slate-950 shadow-md ring-2 ring-emerald-400 font-extrabold"
-                : "bg-neutral-100 hover:bg-neutral-200 text-heading border border-default"
-            }`}
-            title="Click any section in the preview to select and edit its content in the sidebar"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            <span>{isSelectorMode ? "✏️ Selector Active" : "Enable Selector"}</span>
-          </button>
-
-          {/* Live Preview Direct Button */}
-          <a
-            href={`/preview/${slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 border border-default text-heading font-bold text-xs transition-all flex items-center gap-1.5"
-            title="Open Full Live Storefront in New Tab"
-          >
-            <Eye className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden md:inline">View Live Store</span>
-          </a>
-
           {/* AI Chat Tab Trigger */}
           <button
             onClick={() => setSidebarTab(sidebarTab === "ai_chat" ? "props" : "ai_chat")}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 ${sidebarTab === "ai_chat" ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg" : "bg-neutral-100 hover:bg-neutral-200 text-heading border border-default"}`}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+              sidebarTab === "ai_chat"
+                ? "bg-[#312038] text-white shadow-md"
+                : "bg-neutral-100 hover:bg-neutral-200 text-heading border border-default"
+            }`}
           >
-            <Wand2 className="w-3.5 h-3.5 text-violet-400" />
+            <Wand2 className="w-3.5 h-3.5 text-purple-600" />
             <span>AI Assistant</span>
           </button>
 
-          {/* Save Button */}
+          {/* Draft Button */}
           <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+            onClick={() => handleSave(false)}
+            disabled={isSaving || isDraftSaving}
+            className="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="Save changes as Draft without publishing"
+          >
+            {draftSuccess ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-700 font-bold">Draft Saved!</span>
+              </>
+            ) : isDraftSaving ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-600" />
+                <span>Saving Draft...</span>
+              </>
+            ) : (
+              <>
+                <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+                <span>Save Draft</span>
+              </>
+            )}
+          </button>
+
+          {/* Save Live Button */}
+          <button
+            onClick={() => handleSave(true)}
+            disabled={isSaving || isDraftSaving}
+            className="px-4 py-1.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-xs shadow-md shadow-[#312038]/20 transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+            title="Save and publish live to your storefront"
           >
             {saveSuccess ? (
               <>
-                <Check className="w-3.5 h-3.5 text-slate-950" />
+                <Check className="w-3.5 h-3.5 text-white" />
                 <span>Saved Live!</span>
               </>
             ) : isSaving ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-950" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                 <span>Saving...</span>
               </>
             ) : (
               <>
-                <Save className="w-3.5 h-3.5 text-slate-950" />
+                <Save className="w-3.5 h-3.5 text-white" />
                 <span>Save Changes</span>
               </>
             )}
@@ -1197,34 +1580,37 @@ export default function VisualLayoutEditor() {
       {/* ========================================================================= */}
       {/* 2. MAIN SPLIT WORKSPACE                                                   */}
       {/* ========================================================================= */}
-      <div className="flex-1 flex overflow-hidden w-full">
-        {/* Left Side: Controller Sidebar (360px) */}
-        <div className="w-80 md:w-96 border-r border-default bg-card flex flex-col flex-shrink-0 z-20 shadow-xs">
+      <div className="flex-1 flex overflow-hidden w-full select-none">
+        {/* Left Side: Controller Sidebar (Draggable width) */}
+        <div
+          style={{ width: `${sidebarWidth}px` }}
+          className="border-r border-default bg-card flex flex-col flex-shrink-0 z-20 shadow-xs transition-[width] duration-75 select-auto"
+        >
           {/* Sidebar Tabs */}
           <div className="grid grid-cols-4 p-1.5 bg-neutral-100 border-b border-default text-[11px] font-bold">
             <button
               onClick={() => setSidebarTab("sections")}
               className={`py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${sidebarTab === "sections" ? "bg-card text-heading shadow-xs font-extrabold" : "text-subtle hover:text-heading"}`}
             >
-              <Layers className="w-3 h-3 text-emerald-400" /> Sections
+              <Layers className={`w-3 h-3 ${sidebarTab === "sections" ? "text-[#312038]" : "text-slate-400"}`} /> Sections
             </button>
             <button
               onClick={() => setSidebarTab("props")}
               className={`py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${sidebarTab === "props" ? "bg-card text-heading shadow-xs font-extrabold" : "text-subtle hover:text-heading"}`}
             >
-              <Settings className="w-3 h-3 text-emerald-400" /> Props
+              <Settings className={`w-3 h-3 ${sidebarTab === "props" ? "text-[#312038]" : "text-slate-400"}`} /> Props
             </button>
             <button
               onClick={() => setSidebarTab("catalog")}
               className={`py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${sidebarTab === "catalog" ? "bg-card text-heading shadow-xs font-extrabold" : "text-subtle hover:text-heading"}`}
             >
-              <ShoppingBag className="w-3 h-3 text-emerald-400" /> Catalog
+              <ShoppingBag className={`w-3 h-3 ${sidebarTab === "catalog" ? "text-[#312038]" : "text-slate-400"}`} /> Catalog
             </button>
             <button
               onClick={() => setSidebarTab("colors")}
               className={`py-1.5 rounded-lg transition-all flex items-center justify-center gap-1 ${sidebarTab === "colors" ? "bg-card text-heading shadow-xs font-extrabold" : "text-subtle hover:text-heading"}`}
             >
-              <Palette className="w-3 h-3 text-emerald-400" /> Colors
+              <Palette className={`w-3 h-3 ${sidebarTab === "colors" ? "text-[#312038]" : "text-slate-400"}`} /> Colors
             </button>
           </div>
 
@@ -1238,10 +1624,10 @@ export default function VisualLayoutEditor() {
 
                 <button
                   onClick={() => setShowComponentCatalogModal(true)}
-                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                  className="px-2.5 py-1.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-[#312038]/20 active:scale-95 transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add Component</span>
+                  <span>Add Component</span>
                 </button>
               </div>
 
@@ -1255,13 +1641,13 @@ export default function VisualLayoutEditor() {
                   }}
                   className={`p-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
                     activeSectionId === "navbar-header"
-                      ? "bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs ring-1 ring-emerald-400"
+                      ? "bg-slate-100 border-[#312038] text-slate-900 shadow-xs ring-1 ring-[#312038]"
                       : "bg-neutral-50/90 border-default text-subtle hover:border-neutral-300 hover:bg-neutral-100 hover:text-heading shadow-2xs"
                   }`}
                 >
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-heading truncate">{storeName}</p>
-                    <p className="text-[10px] text-emerald-400 font-mono truncate">Header &amp; Navigation</p>
+                    <p className="text-[10px] text-slate-500 font-mono truncate">Header &amp; Navigation</p>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">Header</span>
                 </div>
@@ -1275,7 +1661,7 @@ export default function VisualLayoutEditor() {
                         setActiveSectionId(sect.id);
                         setSidebarTab("props");
                       }}
-                      className={`p-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive ? "bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs ring-1 ring-emerald-400" : "bg-neutral-50/90 border-default text-subtle hover:border-neutral-300 hover:bg-neutral-100 hover:text-heading shadow-2xs"}`}
+                      className={`p-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${isActive ? "bg-slate-100 border-[#312038] text-slate-900 shadow-xs ring-1 ring-[#312038]" : "bg-neutral-50/90 border-default text-subtle hover:border-neutral-300 hover:bg-neutral-100 hover:text-heading shadow-2xs"}`}
                     >
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-heading truncate">{sect.props?.title || sect.props?.headline || sect.type}</p>
@@ -1322,14 +1708,15 @@ export default function VisualLayoutEditor() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div>
-                      <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Active Element</span>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active Element</span>
                       <h3 className="text-sm font-bold text-heading">Header &amp; Navigation Bar</h3>
                     </div>
                     <button
                       onClick={() => setSidebarTab("sections")}
-                      className="text-[10px] text-slate-400 hover:text-white"
+                      className="text-[10px] text-slate-400 hover:text-white inline-flex items-center gap-1"
                     >
-                      ← Sections
+                      <ArrowLeft className="w-3 h-3" />
+                      <span>Sections</span>
                     </button>
                   </div>
 
@@ -1340,72 +1727,407 @@ export default function VisualLayoutEditor() {
                       type="text"
                       value={storeName}
                       onChange={(e) => setStoreName(e.target.value)}
-                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500"
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
                       placeholder="e.g. StepCraft Luxury Footwear"
                     />
                   </div>
 
-                  {/* Navigation Links Manager */}
-                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                  {/* Standard 4-Page Navigation Showcase & Quick Switcher */}
+                  <div className="space-y-2.5 pt-3 border-t border-slate-800">
                     <div className="flex items-center justify-between">
-                      <label className="text-slate-400 font-bold">Navbar Links ({layoutConfig.categories?.length || 0})</label>
+                      <label className="text-slate-400 font-bold text-xs">Standard Store Pages (4)</label>
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
+                        Centered Navbar
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Every store navbar is streamlined with strictly 4 centered pages with active underline navigation.
+                    </p>
+
+                    <div className="space-y-1.5 pt-1">
+                      {[
+                        { id: "home", name: "Home", desc: "Landing page & hero showcase", Icon: Home, secId: "navbar-header" },
+                        { id: "about", name: "About", desc: "AI brand story & craftsmanship", Icon: Info, secId: "about-hero" },
+                        { id: "shop", name: "Shop", desc: "Catalog grid, search & filters", Icon: ShoppingBag, secId: "shop-hero" },
+                        { id: "contact", name: "Contact", desc: "Phone, WhatsApp & inquiry form", Icon: Phone, secId: "contact-hero" },
+                      ].map((page) => (
+                        <button
+                          key={page.id}
+                          onClick={() => {
+                            setActivePage(page.id as any);
+                            setActiveSectionId(page.secId);
+                          }}
+                          className={`w-full p-2 rounded-xl border text-left transition-all flex items-center justify-between group cursor-pointer ${
+                            activePage === page.id ? "bg-slate-100 border-[#312038] text-slate-900 shadow-xs ring-1 ring-[#312038]/30 font-bold"
+                              : "bg-neutral-50/50 hover:bg-neutral-100 border-default text-heading"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 rounded-lg bg-card border border-default text-[#312038] shadow-2xs">
+                              <page.Icon className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-xs">{page.name}</p>
+                              <p className="text-[10px] text-subtle">{page.desc}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : activeSectionId === "about-hero" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">About Page</span>
+                      <h3 className="text-sm font-bold text-heading">About Hero Banner</h3>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">About</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Badge / Tag Text</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.about?.hero?.badge || "✨ Our Artisan Heritage"}
+                      onChange={(e) => handlePagePropChange("about", "hero", "badge", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Banner Title</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.about?.hero?.title || `The Craft of ${storeName}`}
+                      onChange={(e) => handlePagePropChange("about", "hero", "title", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Subtitle / Description</label>
+                    <textarea
+                      rows={3}
+                      value={layoutConfig.pages?.about?.hero?.subtitle || "Born from a passion for handcrafted quality and timeless elegance."}
+                      onChange={(e) => handlePagePropChange("about", "hero", "subtitle", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Banner Background Image URL</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.about?.hero?.imageUrl || ""}
+                      onChange={(e) => handlePagePropChange("about", "hero", "imageUrl", e.target.value)}
+                      placeholder="https://images.unsplash.com/..."
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
+                    />
+                  </div>
+                </div>
+              ) : activeSectionId === "about-story" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">About Page</span>
+                      <h3 className="text-sm font-bold text-heading">Brand Heritage Story</h3>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">Story</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Story Title</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.about?.story?.title || "Handcrafted Devotion"}
+                      onChange={(e) => handlePagePropChange("about", "story", "title", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Story Paragraph 1</label>
+                    <textarea
+                      rows={3}
+                      value={layoutConfig.pages?.about?.story?.paragraphs?.[0] || `${storeName} was founded with a singular conviction: luxury should carry authentic craftsmanship.`}
+                      onChange={(e) => {
+                        const cur = layoutConfig.pages?.about?.story?.paragraphs || ["", ""];
+                        handlePagePropChange("about", "story", "paragraphs", [e.target.value, cur[1] || ""]);
+                      }}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Story Paragraph 2</label>
+                    <textarea
+                      rows={3}
+                      value={layoutConfig.pages?.about?.story?.paragraphs?.[1] || "We reject synthetic shortcuts. Every detail is engineered to ensure timeless luxury."}
+                      onChange={(e) => {
+                        const cur = layoutConfig.pages?.about?.story?.paragraphs || ["", ""];
+                        handlePagePropChange("about", "story", "paragraphs", [cur[0] || "", e.target.value]);
+                      }}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Story Image URL</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.about?.story?.imageUrl || ""}
+                      onChange={(e) => handlePagePropChange("about", "story", "imageUrl", e.target.value)}
+                      placeholder="https://images.unsplash.com/..."
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
+                    />
+                  </div>
+                </div>
+              ) : activeSectionId === "about-values" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">About Page</span>
+                      <h3 className="text-sm font-bold text-heading">Core Values &amp; Guarantees</h3>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">Pillars</span>
+                  </div>
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                    These trust and authenticity pillars are automatically highlighted for {storeName} buyers, including COD protection and 7-day easy exchange.
+                  </p>
+                </div>
+              ) : activeSectionId === "shop-hero" || activeSectionId === "shop-catalog" || activePage === "shop" ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Shop Page</span>
+                      <h3 className="text-sm font-bold text-heading">Shop Catalog Settings</h3>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">Catalog</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Shop Headline</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.shop?.hero?.title || "Complete Store Catalog"}
+                      onChange={(e) => handlePagePropChange("shop", "hero", "title", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Shop Subtitle</label>
+                    <textarea
+                      rows={2}
+                      value={layoutConfig.pages?.shop?.hero?.subtitle || `Explore the entire collection handcrafted for ${storeName}. Nationwide Cash on Delivery & Escrow.`}
+                      onChange={(e) => handlePagePropChange("shop", "hero", "subtitle", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Shop Products & Catalog Controls */}
+                  <div className="pt-3 border-t border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] text-[#312038] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Shop Page Products</span>
+                      </label>
+                      <span className="text-[10px] font-bold text-slate-300 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800">
+                        {productsList.length} Active
+                      </span>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="w-full">
                       <button
-                        onClick={() => {
-                          const current = layoutConfig.categories || [];
-                          setLayoutConfig({
-                            ...layoutConfig,
-                            categories: [...current, { name: "New Category", href: "#catalog" }],
-                          });
-                        }}
-                        className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-bold flex items-center gap-1"
+                        type="button"
+                        onClick={() => setShowCatalogPickerModal(true)}
+                        className="w-full p-2.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#312038]/20 active:scale-95 transition-all cursor-pointer"
                       >
-                        <Plus className="w-3 h-3" /> Add Link
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Pick from Catalog</span>
                       </button>
                     </div>
 
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                      {(layoutConfig.categories || []).map((link, lIdx) => (
-                        <div key={lIdx} className="p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={link.name}
-                              onChange={(e) => {
-                                const updated = [...(layoutConfig.categories || [])];
-                                updated[lIdx].name = e.target.value;
-                                setLayoutConfig({ ...layoutConfig, categories: updated });
-                              }}
-                              className="flex-1 bg-card p-1.5 rounded text-heading text-xs font-bold border border-slate-800 focus:border-emerald-500"
-                              placeholder="Link Title (e.g. Oxford)"
-                            />
-                            <button
-                              onClick={() => {
-                                const updated = (layoutConfig.categories || []).filter((_, i) => i !== lIdx);
-                                setLayoutConfig({ ...layoutConfig, categories: updated });
-                              }}
-                              className="p-1 rounded text-slate-500 hover:text-rose-400"
-                              title="Delete Link"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                    {/* Quick Add by SKU / ID */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-slate-400 font-bold block">Quick Add to Shop by SKU or ID:</label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          value={skuInput}
+                          onChange={(e) => {
+                            setSkuInput(e.target.value);
+                            if (skuFeedback) setSkuFeedback(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddProductBySkuOrId(skuInput);
+                            }
+                          }}
+                          placeholder="e.g. BDY-6437 or Ladies Shirt"
+                          className="flex-1 p-2 rounded-xl bg-card border border-default text-heading text-xs placeholder-slate-500 focus:outline-none focus:border-[#312038] font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddProductBySkuOrId(skuInput)}
+                          className="px-4 py-2 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      {skuFeedback && (
+                        <p className={`text-[10px] font-semibold ${skuFeedback.type === "success" ? "text-purple-600" : "text-rose-400"}`}>
+                          {skuFeedback.message}
+                        </p>
+                      )}
                     </div>
+
+                    {/* Active Products List in Shop */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                        <span>Active in Shop Page ({productsList.length})</span>
+                        {productsList.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setProductsList([])}
+                            className="text-rose-400 hover:text-rose-300 cursor-pointer"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                        {productsList.length > 0 ? (
+                          productsList.map((prod, idx) => (
+                            <div
+                              key={prod.id || idx}
+                              className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <img
+                                  src={prod.image || prod.thumbnail}
+                                  alt={prod.name}
+                                  className="w-8 h-8 rounded-lg object-cover bg-slate-800 border border-slate-700 flex-shrink-0"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-white truncate">{prod.name}</p>
+                                  <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                                    <span className="font-mono text-slate-500">{prod.sku || prod.id}</span>
+                                    <span>•</span>
+                                    <span>{prod.price}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setProductsList(productsList.filter((_, i) => i !== idx))}
+                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer"
+                                title="Remove from Shop"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-center rounded-xl bg-slate-900/50 border border-dashed border-slate-800 text-slate-400 text-xs">
+                            No products added to shop page yet.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (activeSectionId === "contact-hero" || activeSectionId === "contact-details" || activeSectionId === "contact-form") ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Contact Page</span>
+                      <h3 className="text-sm font-bold text-heading">Vendor Contact &amp; Location</h3>
+                    </div>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">Contact</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Contact Page Title</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.contact?.hero?.title || `Contact ${storeName}`}
+                      onChange={(e) => handlePagePropChange("contact", "hero", "title", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Support Phone Number</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.contact?.phone || "+92 300 8472910"}
+                      onChange={(e) => handlePagePropChange("contact", "", "phone", e.target.value)}
+                      placeholder="+92 300 1234567"
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">WhatsApp Number (For Direct Chat Button)</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.contact?.whatsappNumber || "+92 300 8472910"}
+                      onChange={(e) => handlePagePropChange("contact", "", "whatsappNumber", e.target.value)}
+                      placeholder="+92 300 1234567"
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Official Email Address</label>
+                    <input
+                      type="email"
+                      value={layoutConfig.pages?.contact?.email || `support@${storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}.pk`}
+                      onChange={(e) => handlePagePropChange("contact", "", "email", e.target.value)}
+                      placeholder="support@store.com"
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Store / Workshop Address</label>
+                    <textarea
+                      rows={2}
+                      value={layoutConfig.pages?.contact?.address || "Main Boulevard, Gulberg III, Lahore, Punjab, Pakistan"}
+                      onChange={(e) => handlePagePropChange("contact", "", "address", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-bold block">Operating Hours</label>
+                    <input
+                      type="text"
+                      value={layoutConfig.pages?.contact?.businessHours || "Mon - Sat: 10:00 AM - 9:00 PM | Sunday: Closed"}
+                      onChange={(e) => handlePagePropChange("contact", "", "businessHours", e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
+                    />
                   </div>
                 </div>
               ) : activeSection ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div>
-                      <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Active Section</span>
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active Section</span>
                       <h3 className="text-sm font-bold text-heading">{activeSection.type}</h3>
                     </div>
                     <button
                       onClick={() => setSidebarTab("sections")}
-                      className="text-[10px] text-slate-400 hover:text-white"
+                      className="text-[10px] text-slate-400 hover:text-white inline-flex items-center gap-1"
                     >
-                      ← Sections
+                      <ArrowLeft className="w-3 h-3" />
+                      <span>Sections</span>
                     </button>
                   </div>
 
@@ -1419,7 +2141,7 @@ export default function VisualLayoutEditor() {
                         value={activeSection.props.badge || ""}
                         onChange={(e) => handlePropChange("badge", e.target.value)}
                         placeholder="e.g. ✨ NEW DROP or 🔥 EXCLUSIVE"
-                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500"
+                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
                       />
                     </div>
                   )}
@@ -1435,7 +2157,7 @@ export default function VisualLayoutEditor() {
                           if (activeSection.props.headline !== undefined) handlePropChange("headline", e.target.value);
                           else handlePropChange("title", e.target.value);
                         }}
-                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500 font-bold"
+                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-bold"
                       />
                     </div>
                   )}
@@ -1451,7 +2173,7 @@ export default function VisualLayoutEditor() {
                           if (activeSection.props.subline !== undefined) handlePropChange("subline", e.target.value);
                           else handlePropChange("subtitle", e.target.value);
                         }}
-                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500 resize-none leading-relaxed"
+                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] resize-none leading-relaxed"
                       />
                     </div>
                   )}
@@ -1464,7 +2186,7 @@ export default function VisualLayoutEditor() {
                         type="text"
                         value={activeSection.props.text}
                         onChange={(e) => handlePropChange("text", e.target.value)}
-                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500"
+                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
                       />
                     </div>
                   )}
@@ -1472,7 +2194,7 @@ export default function VisualLayoutEditor() {
                   {/* Action Buttons & Links */}
                   {(activeSection.props.ctaText !== undefined || activeSection.props.primaryCtaText !== undefined || activeSection.props.secondaryCtaText !== undefined) && (
                     <div className="p-3.5 rounded-2xl bg-neutral-50 border border-default shadow-2xs space-y-2.5">
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Action Buttons &amp; URLs</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Action Buttons &amp; URLs</span>
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
@@ -1484,7 +2206,7 @@ export default function VisualLayoutEditor() {
                               if (activeSection.props.primaryCtaText !== undefined) handlePropChange("primaryCtaText", e.target.value);
                               else handlePropChange("ctaText", e.target.value);
                             }}
-                            className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500"
+                            className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
                           />
                         </div>
                         <div className="space-y-1">
@@ -1496,7 +2218,7 @@ export default function VisualLayoutEditor() {
                               if (activeSection.props.primaryCtaLink !== undefined) handlePropChange("primaryCtaLink", e.target.value);
                               else handlePropChange("ctaLink", e.target.value);
                             }}
-                            className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500 font-mono"
+                            className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-mono"
                           />
                         </div>
                       </div>
@@ -1510,7 +2232,7 @@ export default function VisualLayoutEditor() {
                               value={activeSection.props.secondaryCtaText || ""}
                               onChange={(e) => handlePropChange("secondaryCtaText", e.target.value)}
                               placeholder="e.g. View Catalog"
-                              className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500"
+                              className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038]"
                             />
                           </div>
                           <div className="space-y-1">
@@ -1520,7 +2242,7 @@ export default function VisualLayoutEditor() {
                               value={activeSection.props.secondaryCtaLink || "#story"}
                               onChange={(e) => handlePropChange("secondaryCtaLink", e.target.value)}
                               placeholder="e.g. #story"
-                              className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500 font-mono"
+                              className="w-full p-2 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-mono"
                             />
                           </div>
                         </div>
@@ -1531,7 +2253,7 @@ export default function VisualLayoutEditor() {
                   {/* Background & Button Styling (For Custom Components) */}
                   {(activeSection.props.bgTheme !== undefined || activeSection.type === "CustomComponent") && (
                     <div className="p-3.5 rounded-2xl bg-neutral-50 border border-default shadow-2xs space-y-2.5">
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Layout &amp; Color Theme</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Layout &amp; Color Theme</span>
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
@@ -1539,7 +2261,7 @@ export default function VisualLayoutEditor() {
                           <select
                             value={activeSection.props.bgTheme || "slate"}
                             onChange={(e) => handlePropChange("bgTheme", e.target.value)}
-                            className="w-full p-2 rounded-lg bg-card border border-default text-heading text-xs focus:border-emerald-500"
+                            className="w-full p-2 rounded-lg bg-card border border-default text-heading text-xs focus:border-[#312038]"
                           >
                             <option value="slate">Dark Slate</option>
                             <option value="gold">Royal Gold</option>
@@ -1552,11 +2274,11 @@ export default function VisualLayoutEditor() {
                         <div className="space-y-1">
                           <label className="text-[10px] text-slate-400 font-semibold block">Button Theme</label>
                           <select
-                            value={activeSection.props.buttonTheme || "emerald"}
+                            value={activeSection.props.buttonTheme || "purple"}
                             onChange={(e) => handlePropChange("buttonTheme", e.target.value)}
-                            className="w-full p-2 rounded-lg bg-card border border-default text-heading text-xs focus:border-emerald-500"
+                            className="w-full p-2 rounded-lg bg-card border border-default text-heading text-xs focus:border-[#312038]"
                           >
-                            <option value="emerald">Emerald Glow</option>
+                            <option value="purple">Royal Purple</option>
                             <option value="gold">Royal Gold</option>
                             <option value="white">Monochrome White</option>
                             <option value="outline">Outline Ghost</option>
@@ -1574,7 +2296,7 @@ export default function VisualLayoutEditor() {
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setShowImagePickerFor(activeSection.id)}
-                            className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-bold flex items-center gap-1"
+                            className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 text-[10px] font-bold flex items-center gap-1"
                           >
                             <Sparkles className="w-3 h-3" /> AI Photos
                           </button>
@@ -1596,7 +2318,7 @@ export default function VisualLayoutEditor() {
                           if (activeSection.props.heroImage !== undefined) handlePropChange("heroImage", e.target.value);
                           else handlePropChange("imageUrl", e.target.value);
                         }}
-                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-emerald-500 font-mono"
+                        className="w-full p-2.5 rounded-lg border border-slate-800 bg-card text-heading text-xs focus:outline-none focus:border-[#312038] font-mono"
                       />
                       {(activeSection.props.imageUrl || activeSection.props.heroImage) && (
                         <div className="space-y-2">
@@ -1615,7 +2337,7 @@ export default function VisualLayoutEditor() {
                               <select
                                 value={activeSection.props.imageAspect || "portrait"}
                                 onChange={(e) => handlePropChange("imageAspect", e.target.value)}
-                                className="w-full p-1.5 rounded-lg bg-card border border-default text-heading text-[11px] font-semibold focus:border-emerald-500"
+                                className="w-full p-1.5 rounded-lg bg-card border border-default text-heading text-[11px] font-semibold focus:border-[#312038]"
                               >
                                 <option value="portrait">Portrait (4:5 Standard)</option>
                                 <option value="square">Square (1:1)</option>
@@ -1632,7 +2354,7 @@ export default function VisualLayoutEditor() {
                                   handlePropChange("imagePosition", e.target.value);
                                   handlePropChange("imageAlignment", e.target.value);
                                 }}
-                                className="w-full p-1.5 rounded-lg bg-card border border-default text-heading text-[11px] font-semibold focus:border-emerald-500"
+                                className="w-full p-1.5 rounded-lg bg-card border border-default text-heading text-[11px] font-semibold focus:border-[#312038]"
                               >
                                 <option value="right">Right Side</option>
                                 <option value="left">Left Side</option>
@@ -1647,63 +2369,57 @@ export default function VisualLayoutEditor() {
                     </div>
                   )}
 
-                  {/* SPECIAL SECTION: PRODUCT GRID PROPS (50 CATALOG DATABASE ENGINE) */}
+                  {/* SPECIAL SECTION: PRODUCT GRID PROPS (STORE CATALOG ENGINE) */}
                   {(activeSection.type === "ProductGridFeatured" || activeSection.type.includes("ProductGrid")) && (
                     <div className="pt-3 border-t border-slate-800 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
                           <span className="font-bold text-white text-xs block">Section Products ({productsList.length})</span>
-                          <span className="text-[10px] text-slate-400">Linked to 50 Curated Database Products</span>
+                          <span className="text-[10px] text-slate-400">
+                            Linked to Store Catalog ({storeCatalogProducts.length} Total)
+                          </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => setShowCatalogPickerModal(true)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-[11px] flex items-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-[11px] flex items-center gap-1 shadow-md shadow-[#312038]/20 active:scale-95 transition-all cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
-                          <span>+ Pick from Catalog</span>
+                          <span>Pick from Catalog</span>
                         </button>
                       </div>
 
-                      {/* Quick Collection Populator */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] text-slate-400 font-bold block">Quick Fill by Category:</label>
-                        <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-                          {[
-                            { label: "All (50)", cat: "all" },
-                            { label: "Footwear", cat: "Footwear" },
-                            { label: "Leather", cat: "Leather Goods" },
-                            { label: "Apparel", cat: "Apparel" },
-                            { label: "Accessories", cat: "Accessories" },
-                            { label: "Home Decor", cat: "Home Decor" },
-                          ].map((item) => (
+                      {/* Quick Collection Populator derived dynamically from storeCatalogProducts */}
+                      {storeCatalogProducts.length > 0 && (
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-slate-400 font-bold block">Quick Fill by Category:</label>
+                          <div className="flex flex-wrap gap-1.5 text-[10px]">
                             <button
-                              key={item.label}
                               type="button"
-                              onClick={() => {
-                                const filtered = item.cat === "all"
-                                  ? mockProducts
-                                  : mockProducts.filter((p) => p.category === item.cat);
-                                const converted = filtered.map((found) => ({
-                                  id: found.id,
-                                  name: found.name,
-                                  price: `₨ ${found.price.toLocaleString()}`,
-                                  originalPrice: found.compareAtPrice ? `₨ ${found.compareAtPrice.toLocaleString()}` : "",
-                                  discount: found.badge || (found.compareAtPrice ? `${Math.round(((found.compareAtPrice - found.price) / found.compareAtPrice) * 100)}% OFF` : ""),
-                                  rating: found.rating || 4.9,
-                                  image: found.thumbnail,
-                                  tag: found.category,
-                                  inStock: true,
-                                }));
-                                setProductsList(converted);
-                              }}
-                              className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 text-slate-300 text-center font-bold transition-colors cursor-pointer"
+                              onClick={() => setProductsList([...storeCatalogProducts])}
+                              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 text-slate-300 font-bold transition-colors cursor-pointer"
                             >
-                              {item.label}
+                              All ({storeCatalogProducts.length})
                             </button>
-                          ))}
+                            {Array.from(new Set(storeCatalogProducts.map((p) => p.category || p.tag).filter(Boolean))).map((catName) => {
+                              const count = storeCatalogProducts.filter((p) => (p.category || p.tag) === catName).length;
+                              return (
+                                <button
+                                  key={catName}
+                                  type="button"
+                                  onClick={() => {
+                                    const filtered = storeCatalogProducts.filter((p) => (p.category || p.tag) === catName);
+                                    setProductsList(filtered);
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 text-slate-300 font-bold transition-colors cursor-pointer"
+                                >
+                                  {catName} ({count})
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Add by SKU or ID Input */}
                       <div className="space-y-1">
@@ -1712,24 +2428,32 @@ export default function VisualLayoutEditor() {
                           <input
                             type="text"
                             value={skuInput}
-                            onChange={(e) => setSkuInput(e.target.value)}
+                            onChange={(e) => {
+                              setSkuInput(e.target.value);
+                              if (skuFeedback) setSkuFeedback(null);
+                            }}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
                                 handleAddProductBySkuOrId(skuInput);
                               }
                             }}
-                            placeholder="e.g. prod_0001 or SKU-SHOE-0001"
-                            className="flex-1 p-2 rounded-xl bg-card border border-default text-heading text-xs placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                            placeholder="e.g. BDY-6437 or Ladies Shirt"
+                            className="flex-1 p-2 rounded-xl bg-card border border-default text-heading text-xs placeholder-slate-500 focus:outline-none focus:border-[#312038] font-mono"
                           />
                           <button
                             type="button"
                             onClick={() => handleAddProductBySkuOrId(skuInput)}
-                            className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs cursor-pointer active:scale-95 transition-all"
+                            className="px-4 py-2 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
                           >
                             Add
                           </button>
                         </div>
+                        {skuFeedback && (
+                          <p className={`text-[10px] font-semibold ${skuFeedback.type === "success" ? "text-purple-600" : "text-rose-400"}`}>
+                            {skuFeedback.message}
+                          </p>
+                        )}
                       </div>
 
                       {/* Selected Product items list */}
@@ -1741,7 +2465,7 @@ export default function VisualLayoutEditor() {
                               <div className="min-w-0">
                                 <p className="font-bold text-white text-xs truncate">{prod.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-emerald-400 font-bold text-[11px]">{prod.price}</span>
+                                  <span className="text-slate-800 font-bold text-[11px]">{prod.price}</span>
                                   {prod.discount && (
                                     <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 text-[9px] font-bold">
                                       {prod.discount}
@@ -1787,7 +2511,7 @@ export default function VisualLayoutEditor() {
                             };
                             handlePropChange("categories", [...current, newCat]);
                           }}
-                          className="px-2 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-extrabold flex items-center gap-1 shadow"
+                          className="px-2.5 py-1 rounded-lg bg-[#312038] hover:bg-[#432c4d] text-white text-[10px] font-extrabold flex items-center gap-1 shadow"
                         >
                           <Plus className="w-3 h-3" /> Add Category
                         </button>
@@ -1802,7 +2526,7 @@ export default function VisualLayoutEditor() {
                             onClick={() => handlePropChange("itemShape", "card")}
                             className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all ${
                               (activeSection.props.itemShape || "card") === "card"
-                                ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                                ? "bg-purple-500/10 border-[#312038] text-purple-600"
                                 : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
                             }`}
                           >
@@ -1813,7 +2537,7 @@ export default function VisualLayoutEditor() {
                             onClick={() => handlePropChange("itemShape", "circle")}
                             className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all ${
                               activeSection.props.itemShape === "circle"
-                                ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                                ? "bg-purple-500/10 border-[#312038] text-purple-600"
                                 : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
                             }`}
                           >
@@ -1842,7 +2566,7 @@ export default function VisualLayoutEditor() {
                                     up[cIdx].name = e.target.value;
                                     handlePropChange("categories", up);
                                   }}
-                                  className="w-full bg-card p-1.5 rounded text-heading text-xs font-bold border border-slate-800 focus:border-emerald-500"
+                                  className="w-full bg-card p-1.5 rounded text-heading text-xs font-bold border border-slate-800 focus:border-[#312038]"
                                   placeholder="Category Name"
                                 />
                                 <input
@@ -1906,7 +2630,7 @@ export default function VisualLayoutEditor() {
                                     handlePropChange("categories", up);
                                   }
                                 }}
-                                className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold text-[10px]"
+                                className="flex items-center gap-1 text-purple-600 hover:text-purple-300 font-bold text-[10px]"
                               >
                                 <Sparkles className="w-3 h-3" /> AI Suggest Photo
                               </button>
@@ -1933,7 +2657,7 @@ export default function VisualLayoutEditor() {
                 </div>
                 <button
                   onClick={openAddProductModal}
-                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-extrabold text-[11px] flex items-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                  className="px-2.5 py-1.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-extrabold text-[11px] flex items-center gap-1 shadow-md shadow-[#312038]/20 active:scale-95 transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Product
                 </button>
@@ -1947,7 +2671,7 @@ export default function VisualLayoutEditor() {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-white text-xs truncate">{prod.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-emerald-400 font-bold text-[11px]">{prod.price}</span>
+                          <span className="text-slate-800 font-bold text-[11px]">{prod.price}</span>
                           {prod.discount && (
                             <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold">
                               {prod.discount}
@@ -1962,7 +2686,7 @@ export default function VisualLayoutEditor() {
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
                           title="Edit in Modal"
                         >
-                          <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
+                          <Edit3 className="w-3.5 h-3.5 text-purple-600" />
                         </button>
                         <button
                           onClick={() => setProductsList(productsList.filter((_, i) => i !== pIdx))}
@@ -1984,7 +2708,7 @@ export default function VisualLayoutEditor() {
                           onChange={(e) => handleFileUpload(e, `product_${pIdx}`)}
                         />
                       </label>
-                      <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                      <span className="flex items-center gap-1 text-purple-600 font-bold">
                         <ShoppingBag className="w-3 h-3" /> Quick Cart
                       </span>
                       <span className="flex items-center gap-1 text-rose-400 font-bold">
@@ -2011,7 +2735,7 @@ export default function VisualLayoutEditor() {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { name: "Royal Black & Gold", primary: "#171717", secondary: "#D4AF37", bg: "#FFFFFF", text: "#0A0A0A" },
-                    { name: "Emerald & Gold", primary: "#064E3B", secondary: "#F59E0B", bg: "#FFFFFF", text: "#0F172A" },
+                    { name: "Royal Amethyst & Gold", primary: "#2C1C31", secondary: "#B588C2", bg: "#FFFFFF", text: "#0F172A" },
                     { name: "Midnight Navy & Sky", primary: "#0F172A", secondary: "#0284C7", bg: "#FFFFFF", text: "#0F172A" },
                     { name: "Imperial Dark Mode", primary: "#171717", secondary: "#D4AF37", bg: "#0A0A0A", text: "#FFFFFF" },
                     { name: "Warm Cream & Leather", primary: "#451A03", secondary: "#D97706", bg: "#FAF7F2", text: "#291809" },
@@ -2033,7 +2757,7 @@ export default function VisualLayoutEditor() {
                           },
                         }))
                       }
-                      className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 text-left space-y-1.5 transition-all"
+                      className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-[#312038] text-left space-y-1.5 transition-all"
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="w-3.5 h-3.5 rounded-full border border-slate-700" style={{ backgroundColor: p.primary }} />
@@ -2061,7 +2785,7 @@ export default function VisualLayoutEditor() {
                         },
                       }))
                     }
-                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
+                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-[#312038]"
                   >
                     <option value="Playfair Display">🏛️ Playfair Display (Luxury &amp; Heritage)</option>
                     <option value="Plus Jakarta Sans">⚡ Plus Jakarta Sans (Modern &amp; Clean)</option>
@@ -2086,7 +2810,7 @@ export default function VisualLayoutEditor() {
                         },
                       }))
                     }
-                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
+                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-[#312038]"
                   >
                     <option value="Inter">Inter (Ultra Legible)</option>
                     <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
@@ -2214,52 +2938,108 @@ export default function VisualLayoutEditor() {
             </div>
           )}
 
-          {/* TAB 5: AI CHAT ASSISTANT */}
+          {/* TAB 5: AI CHAT ASSISTANT (STATE-OF-THE-ART REDESIGNED UI/UX) */}
           {sidebarTab === "ai_chat" && (
-            <div className="flex-1 flex flex-col overflow-hidden bg-slate-950">
-              <div className="p-3 bg-gradient-to-r from-violet-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Wand2 className="w-4 h-4 text-violet-400 animate-pulse" />
-                  <span className="text-xs font-bold text-heading">AI Store Assistant</span>
+            <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
+              {/* Top Bar Header */}
+              <div className="p-3.5 bg-white border-b border-slate-200/80 shadow-xs flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-violet-500/20 flex-shrink-0">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-bold text-slate-900">Altrivo Assistant</h3>
+                    <p className="text-[10px] text-slate-500 font-medium truncate">
+                      Store: <span className="font-semibold text-slate-800">{storeName}</span>
+                    </p>
+                  </div>
                 </div>
-                <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[9px] font-bold">Live AI</span>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setSidebarTab("props")}
+                    title="Close AI Assistant"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-2.5 text-xs">
+              {/* Chat Message Stream */}
+              <div className="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs">
                 {aiChatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`p-3 rounded-xl max-w-[88%] leading-relaxed ${msg.role === "user" ? "ml-auto bg-violet-600 text-white rounded-br-none" : "bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none"}`}
-                  >
-                    {msg.text}
+                  <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`max-w-[92%] p-3.5 rounded-2xl shadow-xs leading-relaxed space-y-2 ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-tr-none font-medium shadow-sm shadow-violet-500/10"
+                          : "bg-white border border-slate-200/90 text-slate-800 rounded-tl-none shadow-xs"
+                      }`}
+                    >
+                      {msg.role === "ai" && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-violet-600 mb-0.5">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Altrivo Assistant</span>
+                        </div>
+                      )}
+
+                      <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                      {msg.summary && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-semibold mt-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                          <span>{msg.summary}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <span className="text-[9px] text-slate-400 mt-1 px-1">{msg.time}</span>
                   </div>
                 ))}
+
                 {isAiLoading && (
-                  <div className="flex items-center gap-2 p-3.5 rounded-xl bg-neutral-50 border border-default shadow-2xs text-violet-400 text-xs">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> AI updating layout...
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-violet-50 border border-violet-200 text-violet-700 text-xs shadow-xs animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin text-violet-600 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold text-[11px]">Gemini 3.6 is designing...</p>
+                      <p className="text-[10px] text-violet-600/80">Updating live storefront layout & content</p>
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="p-3 border-t border-slate-800 bg-slate-900">
+              {/* Bottom Input Area */}
+              <div className="p-3 bg-white border-t border-slate-200">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleAiCommand();
                   }}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-transparent focus-within:bg-white transition-all shadow-inner"
                 >
                   <input
                     type="text"
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
-                    placeholder="E.g. Shirts collection bana do, colors black & gold..."
-                    className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    placeholder="Describe changes: e.g. change hero title, update colors..."
+                    disabled={isAiLoading}
+                    className="flex-1 bg-transparent py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
+                  {aiInput && (
+                    <button
+                      type="button"
+                      onClick={() => setAiInput("")}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
                   <button
                     type="submit"
                     disabled={!aiInput.trim() || isAiLoading}
-                    className="p-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-50 transition-all"
+                    className="p-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white disabled:opacity-40 transition-all shadow-sm active:scale-95 flex-shrink-0"
+                    title="Send to AI Assistant"
                   >
                     <Send className="w-3.5 h-3.5" />
                   </button>
@@ -2269,15 +3049,35 @@ export default function VisualLayoutEditor() {
           )}
         </div>
 
+        {/* Draggable Vertical Divider Resizer */}
+        <div
+          onMouseDown={() => setIsDraggingSidebar(true)}
+          onDoubleClick={() => setSidebarWidth(380)}
+          title="Click & drag to resize sidebar and test store responsiveness. Double-click to reset."
+          className={`w-2.5 hover:w-3 cursor-col-resize z-30 flex items-center justify-center select-none group transition-all relative flex-shrink-0 ${
+            isDraggingSidebar
+              ? "bg-purple-500 shadow-md ring-2 ring-purple-400"
+              : "bg-slate-200 hover:bg-[#432c4d] border-x border-slate-300"
+          }`}
+        >
+          <div className="w-1 h-8 rounded-full bg-slate-400 group-hover:bg-slate-950 flex flex-col items-center justify-center gap-0.5 pointer-events-none">
+            <span className="w-0.5 h-0.5 rounded-full bg-white" />
+            <span className="w-0.5 h-0.5 rounded-full bg-white" />
+            <span className="w-0.5 h-0.5 rounded-full bg-white" />
+          </div>
+        </div>
+
         {/* ========================================================================= */}
         {/* 3. RIGHT MAIN VIEWPORT (LIVE STORE RENDER)                                */}
         {/* ========================================================================= */}
         <div className="flex-1 bg-slate-200/70 overflow-y-auto flex items-start justify-center p-4 sm:p-6">
           <div
-            className={`transition-all duration-300 w-full ${
-              isMobilePreview
-                ? "max-w-[385px] border-[8px] border-slate-800 rounded-[36px] shadow-2xl overflow-hidden my-4 bg-white"
-                : "max-w-6xl rounded-2xl shadow-2xl overflow-hidden bg-white"
+            className={`transition-all duration-300 ${
+              deviceMode === "mobile"
+                ? "w-[385px] max-w-[385px] border-[8px] border-slate-800 rounded-[36px] shadow-2xl overflow-hidden my-4 bg-white ring-1 ring-slate-900/10"
+                : deviceMode === "tablet"
+                ? "w-[768px] max-w-[768px] border-[10px] border-slate-800 rounded-[28px] shadow-2xl overflow-hidden my-4 bg-white ring-1 ring-slate-900/10"
+                : "w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden bg-white"
             }`}
           >
             {/* Live Storefront Component Renderer */}
@@ -2285,21 +3085,32 @@ export default function VisualLayoutEditor() {
               config={{
                 ...layoutConfig,
                 storeName,
-                categories: layoutConfig.categories || [
-                  { name: "Oxford & Formals", href: "#catalog" },
-                  { name: "Casual Loafers", href: "#catalog" },
-                  { name: "Sneakers & Street", href: "#catalog" },
-                  { name: "Peshawari Chappal", href: "#catalog" },
-                ],
+                categories: Array.from(new Set((storeCatalogProducts.length > 0 ? storeCatalogProducts : productsList).map((p) => p.category || p.tag).filter(Boolean))).length > 0
+                  ? Array.from(new Set((storeCatalogProducts.length > 0 ? storeCatalogProducts : productsList).map((p) => p.category || p.tag).filter(Boolean))).map((c) => ({ name: c, href: "#catalog" }))
+                  : layoutConfig.categories || [
+                      { name: "All", href: "#catalog" },
+                    ],
                 socialLinks: [
                   { name: "Instagram", href: "https://instagram.com", icon: "instagram" },
                   { name: "WhatsApp Store", href: "https://wa.me/923001234567", icon: "whatsapp" },
                 ],
+                pages: layoutConfig.pages,
               } as any}
               products={productsList as any}
               categories={
-                layoutConfig.sections.find((s) => s.type.includes("Category"))?.props?.categories || []
+                Array.from(new Set((storeCatalogProducts.length > 0 ? storeCatalogProducts : productsList).map((p) => p.category || p.tag).filter(Boolean))).length > 0
+                  ? Array.from(new Set((storeCatalogProducts.length > 0 ? storeCatalogProducts : productsList).map((p) => p.category || p.tag).filter(Boolean))).map((c) => ({ name: c, href: "#catalog" }))
+                  : layoutConfig.sections.find((s) => s.type.includes("Category"))?.props?.categories || []
               }
+              deviceMode={deviceMode}
+              activePage={activePage}
+              onNavigatePage={(pageKey) => {
+                setActivePage(pageKey as any);
+                if (pageKey === "about") setActiveSectionId("about-hero");
+                else if (pageKey === "shop") setActiveSectionId("shop-hero");
+                else if (pageKey === "contact") setActiveSectionId("contact-hero");
+                else setActiveSectionId("navbar-header");
+              }}
               isEditorMode={isSelectorMode}
               activeSectionId={activeSectionId}
               onSelectSection={(secId) => {
@@ -2320,7 +3131,7 @@ export default function VisualLayoutEditor() {
 
       {/* ========================================================================= */}
       {/* ========================================================================= */}
-      {/* 4. 50 CURATED CATALOG PRODUCTS PICKER MODAL                               */}
+      {/* 4. STORE CATALOG PRODUCTS PICKER MODAL (REAL STORE PRODUCTS STRICTLY)       */}
       {/* ========================================================================= */}
       {showCatalogPickerModal && (
         <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -2329,11 +3140,11 @@ export default function VisualLayoutEditor() {
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-emerald-400" />
-                  <span>Pick Products from Catalog ({mockProducts.length} Total)</span>
+                  <ShoppingBag className="w-5 h-5 text-[#312038]" />
+                  <span>Pick Products from Store Catalog ({storeCatalogProducts.length} Total)</span>
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Select which products to display in this storefront section.
+                  Select which verified products from {storeName} to display in this storefront section.
                 </p>
               </div>
               <button
@@ -2347,23 +3158,22 @@ export default function VisualLayoutEditor() {
 
             {/* Filter Bar: Category Tabs + Search */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              {/* Category Pills */}
+              {/* Category Pills dynamically generated from storeCatalogProducts */}
               <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 text-xs">
                 {[
-                  { id: "all", label: "All (50)" },
-                  { id: "Footwear", label: "Footwear" },
-                  { id: "Leather Goods", label: "Leather" },
-                  { id: "Apparel", label: "Apparel" },
-                  { id: "Accessories", label: "Accessories" },
-                  { id: "Home Decor", label: "Home" },
+                  { id: "all", label: `All (${storeCatalogProducts.length})` },
+                  ...Array.from(new Set(storeCatalogProducts.map((p) => p.category || p.tag).filter(Boolean))).map((cat) => ({
+                    id: String(cat),
+                    label: String(cat),
+                  })),
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setCatalogFilterCategory(tab.id)}
                     className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex-shrink-0 ${
-                      catalogFilterCategory === tab.id
-                        ? "bg-emerald-500 text-slate-950 shadow-md"
+                      catalogFilterCategory.toLowerCase() === tab.id.toLowerCase()
+                        ? "bg-[#312038] text-white shadow-md font-bold"
                         : "bg-slate-800 text-slate-400 hover:text-white"
                     }`}
                   >
@@ -2378,37 +3188,26 @@ export default function VisualLayoutEditor() {
                   type="text"
                   value={catalogSearchQuery}
                   onChange={(e) => setCatalogSearchQuery(e.target.value)}
-                  placeholder="Search products by title, SKU, or tag..."
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  placeholder="Search store products by title, SKU, or category..."
+                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#312038]"
                 />
               </div>
             </div>
 
             {/* Quick Actions Counter */}
             <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-              <span className="font-bold text-emerald-400">
+              <span className="font-bold text-[#312038]">
                 {productsList.length} products currently active in this section
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    const allConverted = mockProducts.map((p) => ({
-                      id: p.id,
-                      name: p.name,
-                      price: `₨ ${p.price.toLocaleString()}`,
-                      originalPrice: p.compareAtPrice ? `₨ ${p.compareAtPrice.toLocaleString()}` : "",
-                      discount: p.badge || (p.compareAtPrice ? `${Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100)}% OFF` : ""),
-                      rating: p.rating || 4.9,
-                      image: p.thumbnail,
-                      tag: p.category,
-                      inStock: true,
-                    }));
-                    setProductsList(allConverted);
+                    setProductsList([...storeCatalogProducts]);
                   }}
                   className="text-[11px] text-sky-400 hover:text-sky-300 font-bold cursor-pointer"
                 >
-                  Select All 50
+                  Select All ({storeCatalogProducts.length})
                 </button>
                 <span>•</span>
                 <button
@@ -2421,35 +3220,36 @@ export default function VisualLayoutEditor() {
               </div>
             </div>
 
-            {/* Catalog 50 Items Grid */}
+            {/* Store Products Grid */}
             <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pr-1 max-h-[55vh]">
-              {mockProducts
+              {storeCatalogProducts
                 .filter((p) => {
+                  const cat = p.category || p.tag || "";
                   const matchCat =
-                    catalogFilterCategory === "all" || p.category === catalogFilterCategory;
+                    catalogFilterCategory === "all" || cat.toLowerCase() === catalogFilterCategory.toLowerCase();
                   const matchQuery =
                     !catalogSearchQuery.trim() ||
-                    p.name.toLowerCase().includes(catalogSearchQuery.toLowerCase()) ||
-                    p.sku.toLowerCase().includes(catalogSearchQuery.toLowerCase()) ||
-                    p.category.toLowerCase().includes(catalogSearchQuery.toLowerCase());
+                    (p.name && p.name.toLowerCase().includes(catalogSearchQuery.toLowerCase())) ||
+                    (p.sku && p.sku.toLowerCase().includes(catalogSearchQuery.toLowerCase())) ||
+                    (cat && cat.toLowerCase().includes(catalogSearchQuery.toLowerCase()));
                   return matchCat && matchQuery;
                 })
                 .map((item) => {
-                  const isSelected = productsList.some((p) => p.id === item.id);
+                  const isSelected = productsList.some((p) => p.id === item.id || (p.sku && item.sku && p.sku === item.sku));
                   return (
                     <div
-                      key={item.id}
+                      key={item.id || item.sku}
                       onClick={() => handleToggleProductFromCatalog(item)}
                       className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
                         isSelected
-                          ? "bg-emerald-950/40 border-emerald-500 shadow-md ring-1 ring-emerald-500/50"
+                          ? "bg-slate-100 border-[#312038] shadow-md ring-1 ring-[#312038]/40"
                           : "bg-slate-950/80 border-slate-800 hover:border-slate-700"
                       }`}
                     >
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
-                        <img src={item.thumbnail} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={item.thumbnail || item.image} alt={item.name} className="w-full h-full object-cover" />
                         {isSelected && (
-                          <div className="absolute inset-0 bg-emerald-600/60 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-[#312038]/70 flex items-center justify-center">
                             <Check className="w-5 h-5 text-white stroke-[3]" />
                           </div>
                         )}
@@ -2458,20 +3258,22 @@ export default function VisualLayoutEditor() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                            {item.category}
+                            {item.category || item.tag}
                           </span>
-                          <span className="text-[9px] font-mono text-slate-500 ml-auto">
-                            {item.sku}
-                          </span>
+                          {item.sku && (
+                            <span className="text-[9px] font-mono text-slate-500 ml-auto font-bold">
+                              {item.sku}
+                            </span>
+                          )}
                         </div>
                         <p className="font-bold text-white text-xs truncate mt-0.5">{item.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-emerald-400 font-extrabold text-xs">
-                            ₨ {item.price.toLocaleString()}
+                          <span className="text-slate-900 font-extrabold text-xs">
+                            {item.price}
                           </span>
-                          {item.badge && (
+                          {item.discount && (
                             <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 text-[9px] font-bold">
-                              {item.badge}
+                              {item.discount}
                             </span>
                           )}
                         </div>
@@ -2479,6 +3281,43 @@ export default function VisualLayoutEditor() {
                     </div>
                   );
                 })}
+
+              {storeCatalogProducts.length === 0 && (
+                <div className="col-span-full py-12 text-center space-y-3">
+                  <ShoppingBag className="w-10 h-10 text-slate-500 mx-auto" />
+                  <p className="text-white font-bold text-sm">No products found in this store's catalog</p>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Products added in your store inventory will automatically appear here.
+                  </p>
+                </div>
+              )}
+
+              {storeCatalogProducts.length > 0 &&
+                storeCatalogProducts.filter((p) => {
+                  const cat = p.category || p.tag || "";
+                  const matchCat =
+                    catalogFilterCategory === "all" || cat.toLowerCase() === catalogFilterCategory.toLowerCase();
+                  const matchQuery =
+                    !catalogSearchQuery.trim() ||
+                    (p.name && p.name.toLowerCase().includes(catalogSearchQuery.toLowerCase())) ||
+                    (p.sku && p.sku.toLowerCase().includes(catalogSearchQuery.toLowerCase())) ||
+                    (cat && cat.toLowerCase().includes(catalogSearchQuery.toLowerCase()));
+                  return matchCat && matchQuery;
+                }).length === 0 && (
+                  <div className="col-span-full py-10 text-center space-y-2 text-slate-400 text-xs">
+                    <p>No products match your filter or search query.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCatalogFilterCategory("all");
+                        setCatalogSearchQuery("");
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-xs hover:bg-slate-700 cursor-pointer"
+                    >
+                      Reset Filters
+                    </button>
+                  </div>
+                )}
             </div>
 
             {/* Modal Footer */}
@@ -2489,7 +3328,7 @@ export default function VisualLayoutEditor() {
               <button
                 type="button"
                 onClick={() => setShowCatalogPickerModal(false)}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-black text-xs shadow-lg shadow-[#312038]/30 active:scale-95 transition-all cursor-pointer"
               >
                 Apply Selection ({productsList.length} Items)
               </button>
@@ -2499,48 +3338,134 @@ export default function VisualLayoutEditor() {
       )}
 
       {/* ========================================================================= */}
-      {/* 5. VISUAL COMPONENT CATALOG MODAL WITH DIAGRAMS & WIREFRAMES              */}
+      {/* 5. VISUAL COMPONENT CATALOG MODAL WITH DIAGRAMS & WIREFRAMES (LIGHT MODE) */}
       {/* ========================================================================= */}
       {showComponentCatalogModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-4xl w-full bg-card border border-default rounded-3xl p-6 space-y-5 shadow-2xl text-heading max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-2xl text-slate-900 max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <h2 className="text-lg font-bold text-heading flex items-center gap-2">
-                  <Layout className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Layout className="w-5 h-5 text-[#312038]" />
                   Visual Component Blueprint Catalog
                 </h2>
-                <p className="text-xs text-slate-400">
-                  Select a section component. See exact visual wireframe diagram before adding to your store.
+                <p className="text-xs text-slate-500">
+                  Select a section component or generate one with AI. See exact visual wireframe diagram before adding to your store.
                 </p>
               </div>
               <button
                 onClick={() => setShowComponentCatalogModal(false)}
-                className="text-slate-400 hover:text-white text-sm font-bold p-2"
+                className="text-slate-400 hover:text-slate-800 text-sm font-bold p-2 cursor-pointer transition-colors"
               >
                 ✕ Close
               </button>
             </div>
 
-            {/* Component Cards Grid */}
+            {/* AI Component Generator Box */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs space-y-3 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-[#312038] text-white flex items-center justify-center shadow-xs">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900">AI Component Studio Generator</h3>
+                    <p className="text-[10px] text-slate-600">Type what section you want, and AI will generate and add it matching your store niche</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-white text-purple-800 border border-purple-300 text-[10px] font-bold shadow-2xs">
+                  Active Niche: {currentNichePreset.name}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiComponentPrompt}
+                  onChange={(e) => setAiComponentPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleGenerateAiComponent();
+                    }
+                  }}
+                  placeholder={`e.g. Create a ${activeNiche === 'watches' ? 'luxury automatic chronograph showcase with dual CTA buttons' : 'festive designer pret banner with coupon discount chip'}...`}
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#312038] shadow-2xs"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateAiComponent}
+                  disabled={!aiComponentPrompt.trim() || isGeneratingComponent}
+                  className="px-4 py-2.5 rounded-xl bg-[#5A3D63] hover:bg-[#4A3252] text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50 transition-all shadow-sm active:scale-95 cursor-pointer flex-shrink-0"
+                >
+                  {isGeneratingComponent ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-3.5 h-3.5" />
+                      <span>Generate with AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Quick Suggestion Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[10px] text-slate-500 font-semibold">Suggested for {currentNichePreset.name}:</span>
+                {(activeNiche === "clothing" || activeNiche === "fashion"
+                  ? [
+                      "Luxury Pret Designer Showcase",
+                      "Summer Clearance 25% OFF Banner",
+                      "Master Tailors Heritage Story",
+                      "Formal Oxford Shirts Split Hero",
+                    ]
+                  : activeNiche === "watches"
+                  ? [
+                      "Automatic Chronograph Split Showcase",
+                      "Sapphire Crystal 100m Guarantee",
+                      "Swiss Horology Heritage Story",
+                      "Gold Edition VIP Collectors Banner",
+                    ]
+                  : [
+                      "Limited Edition Flash Sale Banner",
+                      "Brand Story & Artisan Craftsmanship",
+                      "Featured Flagship Product Spotlight",
+                    ]
+                ).map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => setAiComponentPrompt(chip)}
+                    className="px-2 py-0.5 rounded-lg bg-white/90 hover:bg-white border border-slate-200 hover:border-purple-400 text-slate-700 hover:text-purple-700 text-[10px] font-medium transition-all shadow-2xs cursor-pointer"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Component Cards Grid in Light Mode */}
             <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4 pr-1">
               {VISUAL_COMPONENT_CATALOG.map((item) => (
                 <div
                   key={item.type}
-                  className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:border-emerald-500/80 transition-all space-y-3 flex flex-col justify-between group"
+                  className="p-4 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200 hover:border-purple-400 hover:shadow-md transition-all space-y-3 flex flex-col justify-between group"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold">
                         {item.badge}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono">{item.type}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{item.type}</span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-heading group-hover:text-emerald-400 transition-colors">
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#312038] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{item.description}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">{item.description}</p>
 
                     {/* Visual Diagram */}
                     <div className="pt-2">{item.diagram}</div>
@@ -2548,7 +3473,7 @@ export default function VisualLayoutEditor() {
 
                   <button
                     onClick={() => addComponentFromCatalog(item)}
-                    className="w-full py-2.5 rounded-xl bg-slate-800 group-hover:bg-emerald-500 text-slate-200 group-hover:text-slate-950 font-bold text-xs transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-[#432c4d] text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add to Store</span>
@@ -2568,7 +3493,7 @@ export default function VisualLayoutEditor() {
           <div className="max-w-2xl w-full bg-card border border-default rounded-2xl p-6 space-y-4 shadow-2xl text-heading">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <Sparkles className="w-5 h-5 text-[#312038]" />
                 <h3 className="text-base font-bold text-white">AI High-Res Image Suggestions ({currentNichePreset.name})</h3>
               </div>
               <button
@@ -2619,9 +3544,9 @@ export default function VisualLayoutEditor() {
             </div>
 
             {/* Direct Upload Box from PC / Drive */}
-            <div className="p-3.5 rounded-xl border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/60 text-center space-y-1 transition-all">
+            <div className="p-3.5 rounded-xl border-2 border-dashed border-slate-700 hover:border-[#312038] bg-slate-950/60 text-center space-y-1 transition-all">
               <label className="cursor-pointer block">
-                <Upload className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+                <Upload className="w-5 h-5 text-[#312038] mx-auto mb-1" />
                 <span className="text-xs font-bold text-heading block">📁 Upload Image from PC / Drive</span>
                 <span className="text-[10px] text-slate-500 block">Select any JPG, PNG, WEBP file directly from your computer</span>
                 <input
@@ -2645,7 +3570,7 @@ export default function VisualLayoutEditor() {
                     handlePropChange("heroImage", img.url);
                     setShowImagePickerFor(null);
                   }}
-                  className="group rounded-xl border border-slate-800 overflow-hidden cursor-pointer hover:border-emerald-500 transition-all"
+                  className="group rounded-xl border border-slate-800 overflow-hidden cursor-pointer hover:border-[#312038] transition-all"
                 >
                   <div className="h-28 overflow-hidden relative">
                     <img src={img.url} alt={img.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />

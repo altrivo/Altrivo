@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Check, Circle, AlertTriangle } from "lucide-react";
 
 import type { ProductStatus } from "@/types/product";
 
@@ -119,9 +120,10 @@ export function BulkActionsBar({
                   onBulkStatusChange("published");
                   setStatusMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 text-xs text-emerald-400 hover:bg-slate-700"
+                className="w-full text-left px-3 py-1.5 text-xs text-emerald-400 hover:bg-slate-700 flex items-center gap-2"
               >
-                ✓ Mark Published
+                <Check size={14} />
+                <span>Mark Published</span>
               </button>
               <button
                 type="button"
@@ -129,9 +131,10 @@ export function BulkActionsBar({
                   onBulkStatusChange("draft");
                   setStatusMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700"
+                className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 flex items-center gap-2"
               >
-                ● Mark Draft
+                <Circle size={8} className="fill-slate-400 text-slate-400" />
+                <span>Mark Draft</span>
               </button>
               <button
                 type="button"
@@ -139,9 +142,10 @@ export function BulkActionsBar({
                   onBulkStatusChange("out-of-stock");
                   setStatusMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-slate-700"
+                className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-slate-700 flex items-center gap-2"
               >
-                ⚠ Disable / Out of Stock
+                <AlertTriangle size={14} />
+                <span>Disable / Out of Stock</span>
               </button>
             </div>
           )}

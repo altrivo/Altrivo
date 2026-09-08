@@ -26,10 +26,14 @@ function ForgotPasswordForm() {
 
     setLoading(true);
     try {
-      if (supabase) {
-        await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/auth/reset-password`,
-        });
+      const res = await fetch("/api/auth/vendor/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to send password reset email.");
       }
       setSubmitted(true);
     } catch (err: any) {

@@ -47,7 +47,7 @@ function SearchForm({ searchQuery, setSearchQuery, handleSearchSubmit }: {
         aria-label="Search storefront catalog"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search handcrafted vases, canvas art, lamps..."
+        placeholder="Search products..."
         className="w-full h-input pl-10 pr-24 rounded-xl bg-input border border-default text-xs text-heading placeholder:text-subtle shadow-xs focus:outline-none focus:border-focus focus:ring-2 focus:ring-primary-500/20 transition-all"
       />
       <button
@@ -197,7 +197,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
               aria-label="Mobile search storefront catalog"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search store catalog..."
+              placeholder="Search products..."
               className="w-full h-input pl-10 pr-4 rounded-xl bg-input border border-default text-xs text-heading"
             />
           </form>

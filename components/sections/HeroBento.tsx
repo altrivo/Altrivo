@@ -42,7 +42,7 @@ export default function HeroBento({
       case "sparkles":
         return <Sparkles className="h-5 w-5 text-indigo-500" />;
       case "shield":
-        return <Shield className="h-5 w-5 text-emerald-500" />;
+        return <Shield className="h-5 w-5 text-emerald-400" />;
       case "helpcircle":
         return <HelpCircle className="h-5 w-5 text-amber-500" />;
       default:

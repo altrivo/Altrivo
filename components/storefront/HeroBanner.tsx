@@ -1,4 +1,4 @@
-import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -23,10 +23,6 @@ export function HeroBanner({ config }: HeroBannerProps) {
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Headline & CTAs (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-accent-200 text-xs font-bold backdrop-blur-md shadow-xs">
-            <Sparkles className="w-4 h-4 text-accent-300 animate-pulse" />
-            <span>{hero.badge}</span>
-          </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight leading-tight text-white">
             {hero.headline}

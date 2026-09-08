@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, Image as ImageIcon } from "lucide-react";
 
 export interface CustomComponentProps {
   badge?: string;
@@ -13,11 +13,21 @@ export interface CustomComponentProps {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   imageUrl?: string;
+  heroImage?: string;
   imagePosition?: "right" | "left" | "center" | "background" | "none";
   imageAlignment?: "right" | "left" | "center" | "background" | "none";
+  imageAspect?: "portrait" | "square" | "landscape" | "tall" | "wide";
   bgTheme?: "slate" | "gold" | "glass" | "black" | "minimal";
-  buttonTheme?: "emerald" | "gold" | "white" | "outline";
+  buttonTheme?: "purple" | "emerald" | "gold" | "white" | "outline";
 }
+
+const aspectClasses: Record<string, string> = {
+  portrait: "aspect-[4/5]",
+  square: "aspect-square",
+  landscape: "aspect-[16/9]",
+  tall: "aspect-[3/4]",
+  wide: "aspect-[21/9]",
+};
 
 export default function CustomComponent({
   badge,
@@ -28,37 +38,44 @@ export default function CustomComponent({
   secondaryCtaText,
   secondaryCtaLink = "#story",
   imageUrl,
+  heroImage,
   imagePosition = "right",
   imageAlignment,
+  imageAspect = "landscape",
   bgTheme = "slate",
-  buttonTheme = "emerald",
+  buttonTheme = "purple",
 }: CustomComponentProps) {
   const effectivePosition = imageAlignment || imagePosition || "right";
+  const effectiveImg = imageUrl || heroImage;
+  const currentAspect = aspectClasses[imageAspect] || "aspect-[16/9]";
 
   // Theme style classes
-  const themeClasses = {
-    gold: "bg-gradient-to-r from-amber-950/60 via-slate-900 to-amber-950/40 border-y border-amber-500/30 text-amber-50",
-    glass: "bg-slate-900/70 backdrop-blur-xl border-y border-emerald-500/30 text-slate-100",
-    black: "bg-black border-y border-slate-800 text-white",
-    minimal: "bg-slate-950 border-y border-dashed border-slate-800 text-slate-200",
-    slate: "bg-slate-950 border-y border-slate-800 text-slate-100",
-  }[bgTheme] || "bg-slate-950 border-y border-slate-800 text-slate-100";
+  const themeClasses =
+    {
+      gold: "bg-gradient-to-r from-amber-950/60 via-slate-900 to-amber-950/40 border-y border-amber-500/30 text-amber-50",
+      glass: "bg-slate-900/70 backdrop-blur-xl border-y border-emerald-500/30 text-slate-100",
+      black: "bg-black border-y border-slate-800 text-white",
+      minimal: "bg-slate-950 border-y border-dashed border-slate-800 text-slate-200",
+      slate: "bg-slate-950 border-y border-slate-800 text-slate-100",
+    }[bgTheme] || "bg-slate-950 border-y border-slate-800 text-slate-100";
 
   // Button theme classes
-  const primaryBtnClasses = {
-    gold: "bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-amber-500/20",
-    white: "bg-white text-slate-950 hover:bg-slate-100 shadow-white/10",
-    outline: "bg-transparent border border-emerald-400 text-emerald-400 hover:bg-emerald-500/10",
+  const primaryBtnClasses =
+    {
+      gold: "bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-amber-500/20",
+      white: "bg-white text-slate-950 hover:bg-slate-100 shadow-white/10",
+      outline: "bg-transparent border border-emerald-400 text-emerald-400 hover:bg-emerald-500/10",
+      purple: "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20",
     emerald: "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20",
-  }[buttonTheme] || "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20";
+    }[buttonTheme] || "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20";
 
   return (
     <section className={`py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden transition-all ${themeClasses}`}>
       {/* Background Photo Overlay Mode */}
-      {effectivePosition === "background" && imageUrl && (
+      {effectivePosition === "background" && effectiveImg && (
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{ backgroundImage: `url(${imageUrl})` }}
+          className="absolute inset-0 bg-cover bg-center opacity-30 scale-105 transition-transform duration-1000"
+          style={{ backgroundImage: `url(${effectiveImg})` }}
         />
       )}
 
@@ -75,14 +92,7 @@ export default function CustomComponent({
           }`}
         >
           {/* Text & Content Block */}
-          <div className="flex-1 space-y-4 max-w-2xl min-w-0">
-            {badge && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold uppercase tracking-wider shadow-sm">
-                <Sparkles className="w-3 h-3" />
-                <span>{badge}</span>
-              </span>
-            )}
-
+          <div className={`flex-1 space-y-4 max-w-2xl min-w-0 ${effectivePosition === "center" || effectivePosition === "background" ? "mx-auto" : ""}`}>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
               {title}
             </h2>
@@ -126,11 +136,11 @@ export default function CustomComponent({
 
           {/* Standalone Image Block */}
           {effectivePosition !== "none" && effectivePosition !== "background" && (
-            <div className="flex-1 w-full max-w-lg lg:max-w-none flex items-center justify-center">
-              <div className="w-full aspect-[4/3] rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl relative group">
-                {imageUrl ? (
+            <div className={`flex-1 w-full ${effectivePosition === "center" ? "max-w-3xl mx-auto" : "max-w-lg lg:max-w-none"} flex items-center justify-center`}>
+              <div className={`w-full ${currentAspect} rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl relative group`}>
+                {effectiveImg ? (
                   <img
-                    src={imageUrl}
+                    src={effectiveImg}
                     alt={title || "Custom Component Image"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

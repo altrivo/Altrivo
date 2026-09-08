@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Order, OrderStatus, PaymentStatus } from "@/types/orders";
 import { Badge, StatusPill, Button, EmptyState } from "@/components/shared";
+import { ArrowRight } from "lucide-react";
 
 interface OrderTableProps {
   orders: Order[];
@@ -21,14 +22,21 @@ const paymentStatusVariantMap: Record<PaymentStatus, "success" | "warning" | "er
   pending: "warning",
   failed: "error",
   refunded: "info",
+  cancelled: "gray",
+  processing: "warning",
+  partially_refunded: "info",
 };
 
-const deliveryStatusPillMap: Record<OrderStatus, "todo" | "in-progress" | "in-review" | "done" | "blocked"> = {
+const deliveryStatusPillMap: Record<string, "todo" | "in-progress" | "in-review" | "done" | "blocked"> = {
   pending: "todo",
   processing: "in-progress",
   shipped: "in-review",
   delivered: "done",
   cancelled: "blocked",
+  completed: "done",
+  confirmed: "todo",
+  packed: "in-progress",
+  ready_to_ship: "in-progress",
 };
 
 function getInitials(name: string): string {
@@ -200,7 +208,7 @@ export function OrderTable({
 
                     {/* Fulfillment Status */}
                     <td className="py-4 px-4">
-                      <StatusPill status={deliveryStatusPillMap[order.deliveryStatus]} className="font-bold" />
+                      <StatusPill status={deliveryStatusPillMap[order.deliveryStatus] || "todo"} className="font-bold" />
                       <div className="text-xs font-semibold text-body capitalize mt-1">
                         {order.deliveryMethod.replace("_", " ")}
                       </div>
@@ -234,9 +242,10 @@ export function OrderTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => onViewOrderDetails(order)}
-                          className="px-3 py-1.5 text-xs font-extrabold border-strong cursor-pointer"
+                          className="px-3 py-1.5 text-xs font-extrabold border-strong cursor-pointer inline-flex items-center gap-1"
                         >
-                          View Details →
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </Button>
 
                         {/* Status Update Menu Dropdown */}

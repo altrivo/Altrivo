@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { getStoreById } from "@/lib/store/store-service";
 
 export interface AnalyticsData {
   range: string;
   updatedAt: string;
+  storeName?: string;
   trafficOverview: {
     totalVisits: string;
     rawVisits: number;
@@ -61,23 +63,92 @@ export interface AnalyticsData {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const range = searchParams.get("range") || "7d";
+  const storeId = searchParams.get("storeId");
+
+  // Lookup store if storeId is provided
+  let storeName = "";
+  let niche = "decor";
+  if (storeId) {
+    try {
+      const store = await getStoreById(storeId);
+      if (store) {
+        storeName = store.name;
+        const text = `${store.name} ${store.slug} ${store.niche || ""}`.toLowerCase();
+        if (text.includes("cloth") || text.includes("fashion") || text.includes("apparel") || text.includes("wear")) {
+          niche = "clothing";
+        } else if (text.includes("watch") || text.includes("time") || text.includes("chron")) {
+          niche = "watches";
+        } else if (text.includes("shoe") || text.includes("footwear") || text.includes("stepcraft") || text.includes("sneaker")) {
+          niche = "shoes";
+        }
+      }
+    } catch {}
+  }
 
   // Simulate Network Latency
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  await new Promise((resolve) => setTimeout(resolve, 250));
 
   // Multiplier for ranges
-  const mult = range === "Today" ? 0.15 : range === "30d" ? 3.5 : range === "90d" ? 9.8 : 1.0;
+  const rangeMult = range === "Today" ? 0.15 : range === "30d" ? 3.5 : range === "90d" ? 9.8 : 1.0;
+
+  // Derive stable per-store variance so stores have unique numbers
+  let storeSeed = 1.0;
+  if (storeId) {
+    let hash = 0;
+    for (let i = 0; i < storeId.length; i++) {
+      hash = (hash * 31 + storeId.charCodeAt(i)) % 1000;
+    }
+    storeSeed = 0.8 + (hash / 1000) * 0.45; // between 0.8 and 1.25
+  }
+
+  const mult = rangeMult * storeSeed;
+
+  // Niche-tailored top products
+  let topProductsByTime = [
+    { rank: 1, name: "Ceramic Minimalist Vase (Handcrafted)", sku: "ART-VAS-001", avgTimeSpent: "4m 12s", totalViews: "14,280", category: "Decor" },
+    { rank: 2, name: "Abstract Canvas Painting 'Golden Dawn'", sku: "ART-CAN-089", avgTimeSpent: "3m 48s", totalViews: "11,620", category: "Art" },
+    { rank: 3, name: "Nordic Wooden Desk Lamp", sku: "ART-LMP-012", avgTimeSpent: "3m 15s", totalViews: "9,840", category: "Lighting" },
+    { rank: 4, name: "Handcrafted Genuine Leather Journal", sku: "ART-JRN-044", avgTimeSpent: "2m 50s", totalViews: "8,110", category: "Stationery" },
+    { rank: 5, name: "Velvet Accent Cushion Cover", sku: "ART-CSH-021", avgTimeSpent: "2m 20s", totalViews: "6,950", category: "Home Textiles" },
+  ];
+
+  if (niche === "clothing") {
+    topProductsByTime = [
+      { rank: 1, name: "Embroidered Raw Silk Kurta", sku: "CLO-KRT-001", avgTimeSpent: "4m 18s", totalViews: Math.round(15200 * mult).toLocaleString(), category: "Apparel" },
+      { rank: 2, name: "Luxury Chiffon Formal Dupatta", sku: "CLO-DUP-014", avgTimeSpent: "3m 50s", totalViews: Math.round(11800 * mult).toLocaleString(), category: "Formal" },
+      { rank: 3, name: "Pure Cotton Casual Tunic", sku: "CLO-TNC-022", avgTimeSpent: "3m 12s", totalViews: Math.round(9950 * mult).toLocaleString(), category: "Casual" },
+      { rank: 4, name: "Handcrafted Chikankari Shirt", sku: "CLO-CHK-088", avgTimeSpent: "2m 45s", totalViews: Math.round(8200 * mult).toLocaleString(), category: "Traditional" },
+      { rank: 5, name: "Velvet Winter Shawl Collection", sku: "CLO-SHW-023", avgTimeSpent: "2m 15s", totalViews: Math.round(6700 * mult).toLocaleString(), category: "Shawls" },
+    ];
+  } else if (niche === "watches") {
+    topProductsByTime = [
+      { rank: 1, name: "Heritage Royal Chronograph (Rose Gold)", sku: "WAT-ROY-001", avgTimeSpent: "5m 25s", totalViews: Math.round(16800 * mult).toLocaleString(), category: "Chronograph" },
+      { rank: 2, name: "Minimalist Sapphire Automatic", sku: "WAT-SAP-009", avgTimeSpent: "4m 15s", totalViews: Math.round(12400 * mult).toLocaleString(), category: "Automatic" },
+      { rank: 3, name: "Classic Obsidian Leather Timepiece", sku: "WAT-OBS-044", avgTimeSpent: "3m 40s", totalViews: Math.round(10100 * mult).toLocaleString(), category: "Classic" },
+      { rank: 4, name: "Aero-Pilot Titanium Sports Watch", sku: "WAT-AER-018", avgTimeSpent: "3m 05s", totalViews: Math.round(8600 * mult).toLocaleString(), category: "Sports" },
+      { rank: 5, name: "Emerald Dial Vintage Dress Watch", sku: "WAT-EMR-077", avgTimeSpent: "2m 30s", totalViews: Math.round(7200 * mult).toLocaleString(), category: "Vintage" },
+    ];
+  } else if (niche === "shoes") {
+    topProductsByTime = [
+      { rank: 1, name: "Cap-Toe Oxford Leather Shoes", sku: "SHO-OXF-001", avgTimeSpent: "4m 35s", totalViews: Math.round(15800 * mult).toLocaleString(), category: "Formal" },
+      { rank: 2, name: "Handcrafted Suede Loafers", sku: "SHO-LOA-002", avgTimeSpent: "3m 48s", totalViews: Math.round(11900 * mult).toLocaleString(), category: "Loafers" },
+      { rank: 3, name: "Peshawari Chappal - Pure Leather", sku: "SHO-PES-003", avgTimeSpent: "3m 20s", totalViews: Math.round(10200 * mult).toLocaleString(), category: "Traditional" },
+      { rank: 4, name: "Urban Streetwear Sneakers", sku: "SHO-SNK-004", avgTimeSpent: "2m 55s", totalViews: Math.round(8400 * mult).toLocaleString(), category: "Casual" },
+      { rank: 5, name: "Double Monk Strap Italian Leather", sku: "SHO-MNK-005", avgTimeSpent: "2m 20s", totalViews: Math.round(6800 * mult).toLocaleString(), category: "Formal" },
+    ];
+  }
 
   const data: AnalyticsData = {
     range,
     updatedAt: new Date().toISOString(),
+    storeName: storeName || undefined,
     trafficOverview: {
       totalVisits: Math.round(184200 * mult).toLocaleString(),
       rawVisits: Math.round(184200 * mult),
-      visitsChange: 18.4,
+      visitsChange: Number((18.4 * (storeSeed > 1 ? 1.1 : 0.9)).toFixed(1)),
       uniqueVisitors: Math.round(124500 * mult).toLocaleString(),
       rawUnique: Math.round(124500 * mult),
-      uniqueChange: 14.2,
+      uniqueChange: Number((14.2 * (storeSeed > 1 ? 1.05 : 0.95)).toFixed(1)),
       avgSessionDuration: "3m 42s",
       durationChange: 5.8,
       bounceRate: "32.4%",
@@ -165,13 +236,7 @@ export async function GET(request: Request) {
       { device: "Desktop & Laptop", percentage: 17.6, count: Math.round(32419 * mult).toLocaleString(), color: "#694873" },
       { device: "Tablet", percentage: 4.0, count: Math.round(7368 * mult).toLocaleString(), color: "#F59E0B" },
     ],
-    topProductsByTime: [
-      { rank: 1, name: "Ceramic Minimalist Vase (Handcrafted)", sku: "ART-VAS-001", avgTimeSpent: "4m 12s", totalViews: "14,280", category: "Decor" },
-      { rank: 2, name: "Abstract Canvas Painting 'Golden Dawn'", sku: "ART-CAN-089", avgTimeSpent: "3m 48s", totalViews: "11,620", category: "Art" },
-      { rank: 3, name: "Nordic Wooden Desk Lamp", sku: "ART-LMP-012", avgTimeSpent: "3m 15s", totalViews: "9,840", category: "Lighting" },
-      { rank: 4, name: "Handcrafted Genuine Leather Journal", sku: "ART-JRN-044", avgTimeSpent: "2m 50s", totalViews: "8,110", category: "Stationery" },
-      { rank: 5, name: "Velvet Accent Cushion Cover", sku: "ART-CSH-021", avgTimeSpent: "2m 20s", totalViews: "6,950", category: "Home Textiles" },
-    ],
+    topProductsByTime,
   };
 
   return NextResponse.json({
