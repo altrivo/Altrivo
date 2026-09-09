@@ -28,8 +28,59 @@ export interface CloudinarySignatureResponse {
  */
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = (e) => {
+      const rawData = e.target?.result as string;
+      if (!rawData) {
+        resolve("");
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const maxDim = 1200;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(rawData);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, w, h);
+          const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+          const optimizedData = canvas.toDataURL(mimeType, 0.85);
+          resolve(optimizedData);
+        } catch {
+          resolve(rawData);
+        }
+      };
+      img.onerror = () => resolve(rawData);
+      img.src = rawData;
+    };
     reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });

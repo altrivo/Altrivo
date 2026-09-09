@@ -58,7 +58,22 @@ export function useProducts(explicitStoreId?: string) {
             const dbProducts = store.layout_config?.products || store.commerce_config?.products;
             if (Array.isArray(dbProducts)) {
               const converted: Product[] = dbProducts.map((p: any) => {
+                let userFormImg: string | undefined = undefined;
+                if (typeof window !== "undefined" && p.id) {
+                  try {
+                    const rawForm = localStorage.getItem(`artrivo_vendor_product_form_${p.id}`);
+                    if (rawForm) {
+                      const parsedForm = JSON.parse(rawForm);
+                      const primary = parsedForm.images?.find((img: any) => img.isPrimary)?.url;
+                      const first = parsedForm.images?.[0]?.url;
+                      if (isValidImageUrl(primary)) userFormImg = primary;
+                      else if (isValidImageUrl(first)) userFormImg = first;
+                    }
+                  } catch {}
+                }
+
                 const cleanImg =
+                  userFormImg ||
                   (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
                   (isValidImageUrl(p.image) && p.image) ||
                   (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
@@ -343,21 +358,39 @@ export function useProducts(explicitStoreId?: string) {
             .then((storeData) => {
               const currentStore = storeData?.store;
               if (currentStore) {
-                const currentProducts = currentStore.layout_config?.products || [];
-                const updatedProducts = currentProducts.map((sp: any) =>
+                const allCatalogProducts = currentStore.commerce_config?.products || currentStore.layout_config?.products || [];
+                const updatedCatalog = allCatalogProducts.map((sp: any) =>
                   sp.id === id ? { ...sp, status: targetProduct!.status } : sp
                 );
+                const publishedStorefront = updatedCatalog.filter((sp: any) => sp.status === "published");
+
+                const updatedSections = (currentStore.layout_config?.sections || []).map((sec: any) => {
+                  if (sec.props && Array.isArray(sec.props.products)) {
+                    return {
+                      ...sec,
+                      props: {
+                        ...sec.props,
+                        products: sec.props.products.filter((p: any) =>
+                          p.id === id ? targetProduct!.status === "published" : p.status !== "draft"
+                        ),
+                      },
+                    };
+                  }
+                  return sec;
+                });
+
                 fetch(`/api/stores/${storeLookup}`, {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     layout_config: {
                       ...currentStore.layout_config,
-                      products: updatedProducts,
+                      sections: updatedSections,
+                      products: publishedStorefront,
                     },
                     commerce_config: {
                       ...currentStore.commerce_config,
-                      products: updatedProducts,
+                      products: updatedCatalog,
                     },
                   }),
                 }).catch(() => {});

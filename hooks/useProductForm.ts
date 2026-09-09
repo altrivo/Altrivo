@@ -339,8 +339,12 @@ export function useProductForm(initialData?: Partial<ProductFormData>, explicitS
       newErrors.price = "Price cannot be negative";
     }
 
-    if (!formData.slug.trim()) {
-      newErrors.slug = "URL slug is required";
+    if (!formData.slug?.trim()) {
+      if (formData.title.trim()) {
+        formData.slug = slugify(formData.title);
+      } else {
+        newErrors.slug = "URL slug is required";
+      }
     }
 
     setErrors(newErrors);

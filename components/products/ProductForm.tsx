@@ -74,10 +74,17 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
     }
   };
 
+  const [validationErrorBanner, setValidationErrorBanner] = useState<string | null>(null);
+
   const handleSave = (status: "published" | "draft") => {
-    saveProduct(status, () => {
+    setValidationErrorBanner(null);
+    const success = saveProduct(status, () => {
       router.push("/products");
     });
+    if (!success && status === "published") {
+      setValidationErrorBanner("Please complete all required fields (Product Title, Category, Valid Price) to publish.");
+      setTimeout(() => setValidationErrorBanner(null), 7000);
+    }
   };
 
   const handleSaveAndNext = () => {
@@ -202,6 +209,24 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
           </div>
         </div>
       </div>
+
+      {validationErrorBanner && (
+        <div className="mx-auto max-w-[1200px] px-6 pt-4">
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-xs animate-in fade-in duration-200">
+            <span className="flex items-center gap-2">
+              <span className="text-base">⚠️</span>
+              <span>{validationErrorBanner}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setValidationErrorBanner(null)}
+              className="text-amber-700 hover:text-amber-950 font-bold px-2 py-0.5 rounded"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="mx-auto max-w-[1200px] px-6 py-8">

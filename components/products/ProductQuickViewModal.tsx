@@ -14,6 +14,7 @@ interface ProductQuickViewModalProps {
   open: boolean;
   onClose: () => void;
   onDuplicate?: (id: string) => void;
+  onToggleStatus?: (id: string) => void;
 }
 
 const shoeFallbackGallery = [
@@ -60,6 +61,7 @@ export function ProductQuickViewModal({
   open,
   onClose,
   onDuplicate,
+  onToggleStatus,
 }: ProductQuickViewModalProps) {
   const router = useRouter();
   const [formData, setFormData] = useState<ProductFormData | null>(null);
@@ -85,7 +87,7 @@ export function ProductQuickViewModal({
 
   // Helper: only keep persistent URLs (data: or https:), not blob: which expire on refresh
   const isValidUrl = (url: string | null | undefined) =>
-    url && !url.startsWith("blob:") && !url.includes("pollinations.ai") &&
+    url && !url.startsWith("blob:") && !url.includes("photo-1522335789203-aabd1fc54bc9") &&
     (url.startsWith("data:") || url.startsWith("https://") || url.startsWith("http://"));
 
   // Single Source of Truth for Media: Prioritize form state images, then product record images
@@ -136,6 +138,19 @@ export function ProductQuickViewModal({
           </div>
 
           <div className="flex items-center gap-2">
+            {onToggleStatus && (
+              <Button
+                variant={product.status === "published" ? "ghost" : "primary"}
+                size="sm"
+                onClick={() => {
+                  onToggleStatus(product.id);
+                  onClose();
+                }}
+                className="gap-1 text-xs font-bold"
+              >
+                {product.status === "published" ? "Move to Draft" : "Publish Product"}
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleEdit} className="gap-1.5">
               <Pencil size={14} />
               <span>Edit Product</span>

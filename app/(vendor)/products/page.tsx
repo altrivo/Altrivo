@@ -17,7 +17,7 @@ import {
 import { ProductQuickViewModal } from "@/components/products/ProductQuickViewModal";
 import { useProducts } from "@/hooks/useProducts";
 import { useVendorStore } from "@/context/VendorStoreContext";
-import { getCategoryDefaultImage, isValidImageUrl } from "@/lib/product-storage";
+import { getCategoryDefaultImage, isValidImageUrl, getStoredProductFormData } from "@/lib/product-storage";
 import type { Product, ProductStatus, ProductSortField } from "@/types/product";
 
 const statusConfig: Record<
@@ -662,7 +662,13 @@ export default function ProductsPage() {
                     const imageCount = product.images?.length || 1;
                     const variantCount = product.variantsCount || 0;
 
+                    const storedForm = typeof window !== "undefined" ? getStoredProductFormData(product.id) : null;
+                    const formPrimary = storedForm?.images?.find((img) => img.isPrimary)?.url;
+                    const formFirst = storedForm?.images?.[0]?.url;
+                    const formImg = (isValidImageUrl(formPrimary) && formPrimary) || (isValidImageUrl(formFirst) && formFirst) || undefined;
+
                     const thumbnailSrc =
+                      formImg ||
                       (isValidImageUrl(product.thumbnail) && product.thumbnail) ||
                       (isValidImageUrl(product.image) && product.image) ||
                       (Array.isArray(product.images) && product.images.find((img) => isValidImageUrl(img))) ||
@@ -813,6 +819,7 @@ export default function ProductsPage() {
         open={quickViewProduct !== null}
         onClose={() => setQuickViewProduct(null)}
         onDuplicate={(id) => duplicateProduct(id)}
+        onToggleStatus={(id) => toggleProductStatus(id)}
       />
     </div>
   );

@@ -1316,7 +1316,7 @@ export default function StoreBuilderPage() {
             layout: "card",
             categories: effectiveNiche === "watches" ? [
               { title: "Automatic Chronographs", count: "18 models", icon: "star", image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80" },
-              { title: "Classic Leather Dress", count: "24 models", icon: "trending-up", image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80" },
+              { title: "Classic Leather Dress", count: "24 models", icon: "trending-up", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80" },
               { title: "18K Gold Plated", count: "12 models", icon: "award", image: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80" },
               { title: "Sports & Diver 200M", count: "15 models", icon: "tag", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80" },
             ] : [
@@ -1501,7 +1501,7 @@ export default function StoreBuilderPage() {
             layout: "card",
             categories: effectiveNiche === "watches" ? [
               { title: "Automatic Chronographs", count: "18 models", icon: "star", image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80" },
-              { title: "Classic Leather Dress", count: "24 models", icon: "trending-up", image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80" },
+              { title: "Classic Leather Dress", count: "24 models", icon: "trending-up", image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80" },
               { title: "18K Gold Plated", count: "12 models", icon: "award", image: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80" },
               { title: "Sports & Diver 200M", count: "15 models", icon: "tag", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80" },
             ] : [

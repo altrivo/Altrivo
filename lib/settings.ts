@@ -68,7 +68,7 @@ export const INITIAL_SETTINGS_STATE: SettingsState = {
     address: "Suite 402, Commerce Plaza, Gulberg III, Lahore, Pakistan",
     phone: "+92 300 1234567",
     businessEmail: "hello@apexartisans.com",
-    logoUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=200&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=200&q=80",
   },
   notifications: {
     orderAlerts: true,

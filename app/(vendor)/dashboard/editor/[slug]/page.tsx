@@ -132,7 +132,7 @@ const NICHE_PRESETS: Record<string, NichePreset> = {
     images: [
       { label: "Automatic Chronograph Watch", url: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80" },
       { label: "18K Gold Plated Bracelet", url: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80" },
-      { label: "Minimalist Leather Watch", url: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80" },
+      { label: "Minimalist Leather Watch", url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80" },
     ],
     products: [],
   },
@@ -1063,18 +1063,34 @@ export default function VisualLayoutEditor() {
             ? productCategories.map((c) => ({ name: c, href: "#catalog" }))
             : fallbackCats;
 
+          const publishedCatalog = mergedStoreCatalog.filter((p) => p.status === "published");
+
+          const cleanSections = (storeData.layout_config?.sections || []).map((sec: any) => {
+            if (sec.props && Array.isArray(sec.props.products)) {
+              return {
+                ...sec,
+                props: {
+                  ...sec.props,
+                  products: sec.props.products.filter((p: any) => p.status !== "draft"),
+                },
+              };
+            }
+            return sec;
+          });
+
           if (storeData.layout_config?.sections?.length > 0) {
             setLayoutConfig({
               ...storeData.layout_config,
+              sections: cleanSections,
               categories: storeData.layout_config.categories || realCategoryNav,
-              products: mergedStoreCatalog,
+              products: publishedCatalog,
             });
             setStoreName(storeData.name || storeData.layout_config.storeName || "My Store");
             setStoreId(storeData.id);
             
-            // Always initialize productsList strictly with the store's verified mergedStoreCatalog
-            if (mergedStoreCatalog.length > 0) {
-              setProductsList(mergedStoreCatalog);
+            // Only published products auto-populate productsList on the live canvas! Draft products stay in catalog
+            if (publishedCatalog.length > 0) {
+              setProductsList(publishedCatalog);
             } else {
               setProductsList([]);
             }
@@ -1085,8 +1101,8 @@ export default function VisualLayoutEditor() {
           } else {
             setStoreName(storeData.name || "My Store");
             setStoreId(storeData.id);
-            if (mergedStoreCatalog.length > 0) {
-              setProductsList(mergedStoreCatalog);
+            if (publishedCatalog.length > 0) {
+              setProductsList(publishedCatalog);
             }
           }
         }
@@ -1351,13 +1367,13 @@ export default function VisualLayoutEditor() {
         dynamicProps.subline = "Hand-assembled automatic chronographs engineered for a lifetime of prestige.";
         dynamicProps.primaryCtaText = "Explore Chronographs";
         dynamicProps.secondaryCtaText = "Horology Specs";
-        dynamicProps.heroImage = preset.images[1]?.url || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80";
+        dynamicProps.heroImage = preset.images[1]?.url || "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1200&q=80";
       } else if (blueprint.type.includes("Category")) {
         dynamicProps.title = `Explore ${storeName} Collections`;
         dynamicProps.categories = [
           { title: "Automatic Chronographs", count: "16 items", image: preset.images[0]?.url || "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600" },
           { title: "18K Gold Jewelry", count: "24 items", image: preset.images[1]?.url || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600" },
-          { title: "Minimalist Leather", count: "18 items", image: preset.images[2]?.url || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600" },
+          { title: "Minimalist Leather", count: "18 items", image: preset.images[2]?.url || "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600" },
         ];
       } else if (blueprint.type === "BrandStory") {
         dynamicProps.title = "The Art of Precision Horology";
@@ -3298,11 +3314,11 @@ export default function VisualLayoutEditor() {
                 <button
                   type="button"
                   onClick={() => {
-                    setProductsList([...sanitizedCatalog]);
+                    setProductsList([...sanitizedCatalog.filter(p => p.status === "published")]);
                   }}
                   className="text-[11px] text-primary-600 hover:text-primary-700 font-bold cursor-pointer"
                 >
-                  Select All ({sanitizedCatalog.length})
+                  Select All Published ({sanitizedCatalog.filter(p => p.status === "published").length})
                 </button>
                 <span>•</span>
                 <button
@@ -3388,6 +3404,13 @@ export default function VisualLayoutEditor() {
                               {item.discount}
                             </span>
                           )}
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ml-auto ${
+                            item.status === "draft"
+                              ? "bg-slate-100 border border-slate-200 text-slate-500"
+                              : "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                          }`}>
+                            {item.status === "draft" ? "Draft" : "Published"}
+                          </span>
                         </div>
                       </div>
                     </div>

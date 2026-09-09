@@ -18,7 +18,7 @@ export function getCategoryDefaultImage(category?: string, name?: string): strin
     const watchGallery = [
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80",
     ];
     let hash = 0;
@@ -48,9 +48,9 @@ const defaultFallbackUrl =
 
 export function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
-  if (url.includes("pollinations.ai")) return false;
   if (url.startsWith("blob:")) return false; // blob: URLs expire on refresh — treat as invalid
   if (url.includes("photo-1596568359553-a56de6970068")) return false; // Reject legacy green sneaker fallback
+  if (url.includes("photo-1522335789203-aabd1fc54bc9")) return false; // Reject makeup powder photo accidentally used for watches
   return url.startsWith("data:") || url.startsWith("https://") || url.startsWith("http://");
 }
 
@@ -151,8 +151,24 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
       continue;
     }
 
-    // Correctly resolve candidate image from thumbnail, image, or images list
+    // Resolve user-uploaded form imagery if stored in local form state
+    let userFormImg: string | undefined = undefined;
+    if (typeof window !== "undefined" && p.id) {
+      try {
+        const rawForm = localStorage.getItem(`${FORM_STORAGE_PREFIX}${p.id}`);
+        if (rawForm) {
+          const parsedForm = JSON.parse(rawForm);
+          const primary = parsedForm.images?.find((img: any) => img.isPrimary)?.url;
+          const first = parsedForm.images?.[0]?.url;
+          if (isValidImageUrl(primary)) userFormImg = primary;
+          else if (isValidImageUrl(first)) userFormImg = first;
+        }
+      } catch {}
+    }
+
+    // Correctly resolve candidate image from form state, thumbnail, image, or images list
     const candidateImg =
+      (isValidImageUrl(userFormImg) && userFormImg) ||
       (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
       (isValidImageUrl(p.image) && p.image) ||
       (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
@@ -308,15 +324,20 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
     localStorage.setItem(key, JSON.stringify(scopedProducts));
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
 
-    // Synchronize to the backend / database for this store
+    // Synchronize to the backend / database for this store:
+    // commerce_config keeps all products (both published and drafts for catalog inventory)
     const storefrontProducts = scopedProducts.map((p) => toStorefrontProduct(p));
+    // layout_config ONLY receives published products so drafts never auto-populate live storefront sections
+    const publishedStorefrontProducts = scopedProducts
+      .filter((p) => p.status === "published")
+      .map((p) => toStorefrontProduct(p));
 
     fetch(`/api/stores/${storeId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         commerce_config: { products: storefrontProducts },
-        layout_config: { products: storefrontProducts },
+        layout_config: { products: publishedStorefrontProducts },
       }),
     }).catch((err) => console.warn("[product-storage] DB sync background note:", err));
   } catch (e) {
