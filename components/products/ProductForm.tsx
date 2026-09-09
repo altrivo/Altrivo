@@ -175,16 +175,16 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                   <button
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-all truncate ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all truncate ${
                       isActive
-                        ? "bg-primary-600 text-white shadow"
+                        ? "bg-[#312038] text-white shadow font-bold"
                         : isDone
-                        ? "bg-success-100 text-success-700"
-                        : "text-subtle hover:text-heading"
+                        ? "bg-purple-50 text-[#312038] border border-purple-200/80 font-bold hover:bg-purple-100/70"
+                        : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                     }`}
                   >
                     {isDone ? (
-                      <Check size={14} className="text-success-600 font-bold" />
+                      <Check size={14} className="text-[#312038] font-black stroke-[2.5]" />
                     ) : (
                       <span>{tab.icon}</span>
                     )}
@@ -194,7 +194,7 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                     </span>
                   </button>
                   {idx < tabItems.length - 1 && (
-                    <div className={`h-px flex-1 mx-1 ${isDone ? "bg-success-300" : "bg-default"}`} />
+                    <div className={`h-px flex-1 mx-1 ${isDone ? "bg-[#312038]/30" : "bg-slate-200"}`} />
                   )}
                 </div>
               );
@@ -338,7 +338,7 @@ export function ProductForm({ mode, initialData }: ProductFormProps) {
                     type="button"
                     onClick={() => handleSave("published")}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-success-600 hover:bg-success-700 disabled:opacity-60 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] disabled:opacity-60 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
                   >
                     {isSaving ? (
                       <>
