@@ -182,7 +182,7 @@ export default function ProductsPage() {
     bulkChangeStatus,
     toggleProductStatus,
     categories,
-  } = useProducts(activeStoreId || undefined);
+  } = useProducts(activeStoreId || activeStore?.id || undefined);
 
   const [confirmAction, setConfirmAction] = useState<{
     title: string;

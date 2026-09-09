@@ -40,9 +40,9 @@ export function useProducts(explicitStoreId?: string) {
 
   // Sync state with local storage on mount, fetch backend products, and sync on update events
   useEffect(() => {
-    // 1. Initial immediate load from localStorage
+    // 1. Initial immediate load from localStorage strictly scoped to this store
     const initialLocal = getStoredProducts(effectiveStoreId);
-    setProducts(initialLocal);
+    setProducts(initialLocal.filter((p) => !p.storeId || !effectiveStoreId || p.storeId === effectiveStoreId));
     setSelectedIds(new Set());
     setCurrentPage(1);
 
@@ -55,7 +55,7 @@ export function useProducts(explicitStoreId?: string) {
           const store = data?.store;
           if (store) {
             const dbProducts = store.layout_config?.products || store.commerce_config?.products;
-            if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+            if (Array.isArray(dbProducts)) {
               const converted: Product[] = dbProducts.map((p: any) => {
                 const cleanImg =
                   (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
@@ -93,19 +93,29 @@ export function useProducts(explicitStoreId?: string) {
               setProducts((prev) => {
                 const map = new Map<string, Product>();
                 converted.forEach((p) => map.set(p.id, p));
+
+                // STRICT MULTI-STORE ISOLATION:
+                // Discard any local product that belongs to another store!
                 prev.forEach((locP) => {
+                  if (locP.storeId && effectiveStoreId && locP.storeId !== effectiveStoreId) {
+                    return; // NEVER merge foreign products into this store!
+                  }
                   if (!map.has(locP.id)) {
-                    const cleanLocImg =
-                      (isValidImageUrl(locP.thumbnail) && locP.thumbnail) ||
-                      (isValidImageUrl(locP.image) && locP.image) ||
-                      getCategoryDefaultImage(locP.category, locP.name);
-                    map.set(locP.id, {
-                      ...locP,
-                      thumbnail: cleanLocImg,
-                      image: cleanLocImg,
-                    });
+                    if (!locP.storeId || locP.storeId === effectiveStoreId) {
+                      const cleanLocImg =
+                        (isValidImageUrl(locP.thumbnail) && locP.thumbnail) ||
+                        (isValidImageUrl(locP.image) && locP.image) ||
+                        getCategoryDefaultImage(locP.category, locP.name);
+                      map.set(locP.id, {
+                        ...locP,
+                        storeId: effectiveStoreId,
+                        thumbnail: cleanLocImg,
+                        image: cleanLocImg,
+                      });
+                    }
                   }
                 });
+
                 const merged = Array.from(map.values());
                 saveStoredProducts(merged, effectiveStoreId);
                 return merged;
@@ -117,7 +127,8 @@ export function useProducts(explicitStoreId?: string) {
     }
 
     const syncProducts = () => {
-      setProducts(getStoredProducts(effectiveStoreId));
+      const prods = getStoredProducts(effectiveStoreId);
+      setProducts(effectiveStoreId ? prods.filter((p) => !p.storeId || p.storeId === effectiveStoreId) : prods);
     };
 
     window.addEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);

@@ -145,6 +145,12 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
   for (const p of parsed) {
     if (!p || typeof p !== "object") continue;
 
+    // STRICT MULTI-STORE ISOLATION:
+    // If targetStoreId is specified and the product belongs to another store, discard it completely
+    if (targetStoreId && p.storeId && p.storeId !== targetStoreId) {
+      continue;
+    }
+
     // Correctly resolve candidate image from thumbnail, image, or images list
     const candidateImg =
       (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
@@ -260,39 +266,21 @@ export function getStoredProducts(explicitStoreId?: string): Product[] {
 
   try {
     const storeId = resolveStoreId(explicitStoreId);
-    
-    // 1. Direct key attempt — strictly for this store only
-    if (storeId) {
-      const key = getStorageKey(storeId);
-      const raw = localStorage.getItem(key);
-      if (raw !== null) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return sanitizeProductList(parsed, storeId);
-          }
-        } catch {}
-      }
+    if (!storeId) {
+      return [];
     }
 
-    // 2. Active store ID attempt ONLY if no explicit storeId was provided
-    if (!explicitStoreId) {
-      const activeStoreId = localStorage.getItem("active_store_id");
-      if (activeStoreId && activeStoreId !== storeId) {
-        const activeKey = getStorageKey(activeStoreId);
-        const rawActive = localStorage.getItem(activeKey);
-        if (rawActive !== null) {
-          try {
-            const parsed = JSON.parse(rawActive);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              return sanitizeProductList(parsed, activeStoreId);
-            }
-          } catch {}
+    const key = getStorageKey(storeId);
+    const raw = localStorage.getItem(key);
+    if (raw !== null) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return sanitizeProductList(parsed, storeId);
         }
-      }
+      } catch {}
     }
 
-    // No fallback scan — strictly return empty if no products found for this store
     return [];
   } catch (e) {
     console.error("Error reading stored products:", e);
@@ -312,8 +300,10 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
     if (!storeId) return;
 
     const key = getStorageKey(storeId);
-    // Ensure all products carry this store's ID
-    const scopedProducts = products.map((p) => ({ ...p, storeId }));
+
+    // STRICT MULTI-STORE ISOLATION: Only save products that belong to this store
+    const filteredProducts = products.filter((p) => !p.storeId || p.storeId === storeId);
+    const scopedProducts = filteredProducts.map((p) => ({ ...p, storeId }));
 
     localStorage.setItem(key, JSON.stringify(scopedProducts));
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));

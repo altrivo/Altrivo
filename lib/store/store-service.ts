@@ -248,19 +248,7 @@ function ensureDataFile(): StoreRow[] {
     const raw = fs.readFileSync(STORES_FILE, "utf-8");
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      const enriched = parsed.map((s: StoreRow) => {
-        if (!s.layout_config?.products || s.layout_config.products.length === 0) {
-          return {
-            ...s,
-            layout_config: {
-              ...s.layout_config,
-              products: SEED_STORE.layout_config.products,
-            },
-          };
-        }
-        return s;
-      });
-      return enriched;
+      return parsed;
     }
     return [SEED_STORE];
   } catch (err) {
