@@ -593,11 +593,41 @@ export async function updateStore(storeId: string, updates: Partial<StoreRow>): 
 
   const targetId = idx !== -1 ? stores[idx].id : storeId;
 
+  const mergedLayout = updates.layout_config && idx !== -1 && stores[idx].layout_config
+    ? { ...stores[idx].layout_config, ...updates.layout_config }
+    : updates.layout_config;
+
+  const mergedCommerce = updates.commerce_config && idx !== -1 && stores[idx].commerce_config
+    ? { ...stores[idx].commerce_config, ...updates.commerce_config }
+    : updates.commerce_config;
+
+  // If products were updated in layout_config, also sync them to sections that display products
+  if (mergedLayout?.products && Array.isArray(mergedLayout.products) && mergedLayout.sections) {
+    mergedLayout.sections = mergedLayout.sections.map((sec: any) => {
+      if (sec.type === 'ProductGridFeatured' || sec.type?.includes('ProductGrid')) {
+        return {
+          ...sec,
+          props: {
+            ...sec.props,
+            products: mergedLayout.products,
+          },
+        };
+      }
+      return sec;
+    });
+  }
+
+  const safeUpdates = {
+    ...updates,
+    ...(mergedLayout ? { layout_config: mergedLayout } : {}),
+    ...(mergedCommerce ? { commerce_config: mergedCommerce } : {}),
+  };
+
   // 1. Immediately persist locally
   if (idx !== -1) {
     stores[idx] = {
       ...stores[idx],
-      ...updates,
+      ...safeUpdates,
       updated_at: new Date().toISOString(),
     };
     saveStoresArray([...stores]);
@@ -609,7 +639,7 @@ export async function updateStore(storeId: string, updates: Partial<StoreRow>): 
     if (supabase) {
       let query = supabase
         .from("stores")
-        .update({ ...updates, updated_at: new Date().toISOString() });
+        .update({ ...safeUpdates, updated_at: new Date().toISOString() });
 
       if (UUID_REGEX.test(targetId)) {
         query = query.or(`id.eq.${targetId},slug.eq.${clean}`);

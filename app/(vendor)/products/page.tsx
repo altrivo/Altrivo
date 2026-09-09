@@ -17,6 +17,7 @@ import {
 import { ProductQuickViewModal } from "@/components/products/ProductQuickViewModal";
 import { useProducts } from "@/hooks/useProducts";
 import { useVendorStore } from "@/context/VendorStoreContext";
+import { getCategoryDefaultImage, isValidImageUrl } from "@/lib/product-storage";
 import type { Product, ProductStatus, ProductSortField } from "@/types/product";
 
 const statusConfig: Record<
@@ -179,6 +180,7 @@ export default function ProductsPage() {
     bulkDelete,
     bulkChangeCategory,
     bulkChangeStatus,
+    toggleProductStatus,
     categories,
   } = useProducts(activeStoreId || undefined);
 
@@ -661,9 +663,10 @@ export default function ProductsPage() {
                     const variantCount = product.variantsCount || 0;
 
                     const thumbnailSrc =
-                      product.thumbnail && !product.thumbnail.includes("pollinations.ai")
-                        ? product.thumbnail
-                        : "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=120&auto=format&fit=crop&q=80";
+                      (isValidImageUrl(product.thumbnail) && product.thumbnail) ||
+                      (isValidImageUrl(product.image) && product.image) ||
+                      (Array.isArray(product.images) && product.images.find((img) => isValidImageUrl(img))) ||
+                      getCategoryDefaultImage(product.category, product.name);
 
                     return (
                       <tr
@@ -694,7 +697,7 @@ export default function ProductsPage() {
                               loading="lazy"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src =
-                                  "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=120&auto=format&fit=crop&q=80";
+                                  getCategoryDefaultImage(product.category, product.name);
                               }}
                             />
                             {imageCount > 1 && (
@@ -747,9 +750,16 @@ export default function ProductsPage() {
                           {product.category}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={cfg.variant} size="sm">
-                            {cfg.label}
-                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => toggleProductStatus(product.id)}
+                            className="cursor-pointer transition-transform hover:scale-105 active:scale-95 text-left inline-flex items-center gap-1.5"
+                            title={`Click to switch to ${product.status === "published" ? "Draft" : "Published"}`}
+                          >
+                            <Badge variant={cfg?.variant || "gray"} size="sm">
+                              {cfg?.label || "Draft"}
+                            </Badge>
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-body whitespace-nowrap">
                           {formatDate(product.updatedAt)}
@@ -758,6 +768,7 @@ export default function ProductsPage() {
                           <ProductActions
                             product={product}
                             onQuickView={() => setQuickViewProduct(product)}
+                            onToggleStatus={() => toggleProductStatus(product.id)}
                             onDuplicate={() => duplicateProduct(product.id)}
                             onDelete={() => handleSingleDelete(product)}
                           />
@@ -810,11 +821,13 @@ export default function ProductsPage() {
 function ProductActions({
   product,
   onQuickView,
+  onToggleStatus,
   onDuplicate,
   onDelete,
 }: {
   product: Product;
   onQuickView: () => void;
+  onToggleStatus: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
 }) {
@@ -844,7 +857,7 @@ function ProductActions({
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 z-dropdown w-44 bg-card rounded-lg border border-default shadow-float overflow-hidden py-1">
+          <div className="absolute right-0 top-full mt-1 z-dropdown w-48 bg-card rounded-lg border border-default shadow-float overflow-hidden py-1">
             <button
               onClick={() => {
                 setOpen(false);
@@ -853,6 +866,16 @@ function ProductActions({
               className="w-full text-left px-3 py-2 text-sm text-body hover:bg-muted hover:text-heading transition-colors flex items-center gap-2 font-medium"
             >
               <span>👁️</span> Quick View
+            </button>
+            <button
+              onClick={() => {
+                setOpen(false);
+                onToggleStatus();
+              }}
+              className="w-full text-left px-3 py-2 text-sm text-body hover:bg-muted hover:text-heading transition-colors flex items-center gap-2 font-medium"
+            >
+              <span>{product.status === "published" ? "⏸️" : "🚀"}</span>
+              {product.status === "published" ? "Set as Draft" : "Publish Product"}
             </button>
             <button
               onClick={() => {

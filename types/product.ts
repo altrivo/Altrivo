@@ -22,6 +22,7 @@ export interface Product {
   brand?: string;
   status: ProductStatus;
   thumbnail: string;
+  image?: string;
   updatedAt: string;
   images?: string[];
   variantsCount?: number;

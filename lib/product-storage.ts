@@ -9,13 +9,48 @@ const PRODUCTS_UPDATED_EVENT = "artrivo_products_updated";
  * Retrieves the stored products list from localStorage.
  * Falls back to mockProducts if storage is empty or unavailable.
  */
-const defaultFallbackUrl =
-  "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=800&auto=format&fit=crop&q=80";
+/**
+ * Retrieves category-specific high-resolution product imagery fallback.
+ */
+export function getCategoryDefaultImage(category?: string, name?: string): string {
+  const combined = `${category || ""} ${name || ""}`.toLowerCase();
+  if (/watch|ghari|dial|chrono|timepiece/i.test(combined)) {
+    const watchGallery = [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80",
+    ];
+    let hash = 0;
+    const key = (name || category || "watch").toLowerCase();
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash + key.charCodeAt(i)) % watchGallery.length;
+    }
+    return watchGallery[hash];
+  }
+  if (/shirt|cloth|dress|suit|kurta|wear|apparel|pant|trouser|blouse|coat|jacket/i.test(combined)) {
+    return "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80";
+  }
+  if (/shoe|boot|sneaker|heel|sandal|loafer|khussa|footwear/i.test(combined)) {
+    return "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80";
+  }
+  if (/bag|handbag|purse|tote|backpack|clutch/i.test(combined)) {
+    return "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80";
+  }
+  if (/jewel|ring|necklace|bracelet|earring/i.test(combined)) {
+    return "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80";
+  }
+  return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
+}
 
-function isValidImageUrl(url: string | null | undefined): boolean {
+const defaultFallbackUrl =
+  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80";
+
+export function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   if (url.includes("pollinations.ai")) return false;
   if (url.startsWith("blob:")) return false; // blob: URLs expire on refresh — treat as invalid
+  if (url.includes("photo-1596568359553-a56de6970068")) return false; // Reject legacy green sneaker fallback
   return url.startsWith("data:") || url.startsWith("https://") || url.startsWith("http://");
 }
 
@@ -110,13 +145,22 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
   for (const p of parsed) {
     if (!p || typeof p !== "object") continue;
 
-    const cleanThumbnail = isValidImageUrl(p.thumbnail)
-      ? p.thumbnail
-      : defaultFallbackUrl;
+    // Correctly resolve candidate image from thumbnail, image, or images list
+    const candidateImg =
+      (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
+      (isValidImageUrl(p.image) && p.image) ||
+      (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
+      getCategoryDefaultImage(p.category, p.name);
+
+    const cleanThumbnail = candidateImg;
     const cleanImages =
-      p.images && p.images.length > 0
+      Array.isArray(p.images) && p.images.length > 0
         ? p.images.filter((img: string) => isValidImageUrl(img))
         : [cleanThumbnail];
+
+    if (cleanThumbnail && !cleanImages.includes(cleanThumbnail)) {
+      cleanImages.unshift(cleanThumbnail);
+    }
 
     // Fix flat non-unique SKUs like "WATCH"
     let cleanSku = p.sku;
@@ -124,12 +168,22 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
       cleanSku = generateUniqueSku(p.name, p.category);
     }
 
+    // Default status to "published" so vendor products appear live
+    const status: ProductStatus =
+      p.status === "draft"
+        ? "draft"
+        : p.status === "out-of-stock"
+        ? "out-of-stock"
+        : "published";
+
     const cleanProduct: Product = {
       ...p,
       storeId: p.storeId || targetStoreId,
       sku: cleanSku,
+      status,
       thumbnail: cleanThumbnail,
-      images: cleanImages.length > 0 ? cleanImages : [cleanThumbnail],
+      image: cleanThumbnail,
+      images: cleanImages,
     };
 
     // If there is an exact name collision (like the 3 watch duplicates), keep only the one with price > 0
@@ -172,6 +226,12 @@ export function toStorefrontProduct(p: any): any {
       ? `${Math.round(((p.compareAtPrice - numPrice) / p.compareAtPrice) * 100)}% OFF`
       : "");
 
+  const resolvedImage =
+    (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
+    (isValidImageUrl(p.image) && p.image) ||
+    (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
+    getCategoryDefaultImage(p.category, p.name);
+
   return {
     id: p.id,
     sku: p.sku || "",
@@ -180,8 +240,9 @@ export function toStorefrontProduct(p: any): any {
     originalPrice: origPriceVal,
     discount: discountVal,
     rating: p.rating || 5.0,
-    image: p.thumbnail || p.image || defaultFallbackUrl,
-    thumbnail: p.thumbnail || p.image || defaultFallbackUrl,
+    status: p.status || "published",
+    image: resolvedImage,
+    thumbnail: resolvedImage,
     tag: p.category || p.tag || "Clothing",
     category: p.category || p.tag || "Clothing",
     inStock: p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),
@@ -298,7 +359,7 @@ export function saveProductFromForm(
   const thumbnail =
     primaryImgUrl ||
     firstImgUrl ||
-    "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=800&auto=format&fit=crop&q=80";
+    getCategoryDefaultImage(formData.category, formData.title);
 
   const allImageUrls = allImageObjects.map((img) => img.url).filter(Boolean);
   if (thumbnail && !allImageUrls.includes(thumbnail)) {
@@ -337,6 +398,7 @@ export function saveProductFromForm(
     brand: formData.brand || "Altrivo Signature",
     status: targetStatus,
     thumbnail,
+    image: thumbnail,
     updatedAt: nowISO,
     images: allImageUrls.length > 0 ? allImageUrls : [thumbnail],
     variantsCount: formData.variants?.length || 0,
@@ -375,7 +437,7 @@ export function saveProductFromForm(
  * Retrieves ProductFormData for edit mode.
  * Checks localStorage first, then falls back to constructing from mockProducts.
  */
-export function getStoredProductFormData(id: string): ProductFormData | null {
+export function getStoredProductFormData(id: string, explicitStoreId?: string): ProductFormData | null {
   if (typeof window !== "undefined") {
     try {
       const raw = localStorage.getItem(`${FORM_STORAGE_PREFIX}${id}`);
@@ -396,11 +458,13 @@ export function getStoredProductFormData(id: string): ProductFormData | null {
     }
   }
 
-  // Fall back to finding in stored products or mockProducts
-  const products = getStoredProducts();
+  // Fall back to finding in stored products or active store
+  const products = getStoredProducts(explicitStoreId);
   const existingProduct = products.find((p) => p.id === id);
 
   if (!existingProduct) return null;
+
+  const resolvedImg = existingProduct.thumbnail || existingProduct.image;
 
   return {
     id: existingProduct.id,
@@ -417,7 +481,7 @@ export function getStoredProductFormData(id: string): ProductFormData | null {
     hasVariants: false,
     options: [],
     variants: [],
-    status: existingProduct.status === "published" ? "published" : "draft",
+    status: existingProduct.status === "draft" ? "draft" : "published",
     images:
       existingProduct.images && existingProduct.images.length > 0
         ? existingProduct.images.map((url, idx) => ({
@@ -425,8 +489,8 @@ export function getStoredProductFormData(id: string): ProductFormData | null {
             url,
             isPrimary: idx === 0,
           }))
-        : existingProduct.thumbnail
-          ? [{ id: "img_0", url: existingProduct.thumbnail, isPrimary: true }]
+        : resolvedImg
+          ? [{ id: "img_0", url: resolvedImg, isPrimary: true }]
           : [],
     metaTitle: existingProduct.name,
     metaDescription: `Buy ${existingProduct.name} online at Altrivo. Available in ${existingProduct.category} category.`,

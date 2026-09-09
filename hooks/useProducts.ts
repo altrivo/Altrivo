@@ -7,6 +7,9 @@ import {
   getStoredProducts,
   saveStoredProducts,
   resolveStoreId,
+  getCategoryDefaultImage,
+  generateUniqueSku,
+  isValidImageUrl,
   PRODUCTS_UPDATED_EVENT,
 } from "@/lib/product-storage";
 import type {
@@ -35,11 +38,83 @@ export function useProducts(explicitStoreId?: string) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [products, setProducts] = useState<Product[]>([]);
 
-  // Sync state with local storage on mount, on update events, and when active store changes
+  // Sync state with local storage on mount, fetch backend products, and sync on update events
   useEffect(() => {
-    setProducts(getStoredProducts(effectiveStoreId));
+    // 1. Initial immediate load from localStorage
+    const initialLocal = getStoredProducts(effectiveStoreId);
+    setProducts(initialLocal);
     setSelectedIds(new Set());
     setCurrentPage(1);
+
+    // 2. Fetch from backend store API to sync real-time database state
+    const targetLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+    if (targetLookup) {
+      fetch(`/api/stores/${targetLookup}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const store = data?.store;
+          if (store) {
+            const dbProducts = store.layout_config?.products || store.commerce_config?.products;
+            if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+              const converted: Product[] = dbProducts.map((p: any) => {
+                const cleanImg =
+                  (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
+                  (isValidImageUrl(p.image) && p.image) ||
+                  (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
+                  getCategoryDefaultImage(p.category, p.name);
+                const priceNum = typeof p.price === "number" ? p.price : parseFloat(String(p.price).replace(/[^0-9.]/g, "")) || 0;
+                const candidateImages =
+                  Array.isArray(p.images) && p.images.length > 0
+                    ? p.images.filter((img: string) => isValidImageUrl(img))
+                    : [cleanImg];
+                if (cleanImg && !candidateImages.includes(cleanImg)) {
+                  candidateImages.unshift(cleanImg);
+                }
+
+                return {
+                  id: p.id,
+                  storeId: effectiveStoreId || store.id,
+                  name: p.name || p.title || "Untitled Product",
+                  sku: p.sku || generateUniqueSku(p.name, p.category),
+                  price: priceNum,
+                  stock: p.stock !== undefined ? Number(p.stock) : 10,
+                  category: p.category || p.tag || "Electronics",
+                  brand: p.brand || "Altrivo Signature",
+                  status: (p.status === "draft" ? "draft" : p.status === "out-of-stock" ? "out-of-stock" : "published") as ProductStatus,
+                  thumbnail: cleanImg,
+                  image: cleanImg,
+                  images: candidateImages,
+                  updatedAt: p.updatedAt || store.updated_at || new Date().toISOString(),
+                  variantsCount: p.variantsCount || 0,
+                  description: p.description || "",
+                };
+              });
+
+              setProducts((prev) => {
+                const map = new Map<string, Product>();
+                converted.forEach((p) => map.set(p.id, p));
+                prev.forEach((locP) => {
+                  if (!map.has(locP.id)) {
+                    const cleanLocImg =
+                      (isValidImageUrl(locP.thumbnail) && locP.thumbnail) ||
+                      (isValidImageUrl(locP.image) && locP.image) ||
+                      getCategoryDefaultImage(locP.category, locP.name);
+                    map.set(locP.id, {
+                      ...locP,
+                      thumbnail: cleanLocImg,
+                      image: cleanLocImg,
+                    });
+                  }
+                });
+                const merged = Array.from(map.values());
+                saveStoredProducts(merged, effectiveStoreId);
+                return merged;
+              });
+            }
+          }
+        })
+        .catch((err) => console.warn("[useProducts] Store DB sync note:", err));
+    }
 
     const syncProducts = () => {
       setProducts(getStoredProducts(effectiveStoreId));
@@ -51,7 +126,7 @@ export function useProducts(explicitStoreId?: string) {
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);
       window.removeEventListener("storage", syncProducts);
     };
-  }, [effectiveStoreId]);
+  }, [effectiveStoreId, activeStore?.slug, activeStore?.id]);
 
   const categories = useMemo(
     () => [...new Set(products.map((p) => p.category))].sort(),
@@ -254,6 +329,57 @@ export function useProducts(explicitStoreId?: string) {
     [selectedIds, effectiveStoreId],
   );
 
+  const toggleProductStatus = useCallback(
+    (id: string) => {
+      let targetProduct: Product | undefined;
+      setProducts((prev) => {
+        const next = prev.map((p) => {
+          if (p.id === id) {
+            const nextStatus: ProductStatus = p.status === "published" ? "draft" : "published";
+            targetProduct = { ...p, status: nextStatus };
+            return targetProduct;
+          }
+          return p;
+        });
+        saveStoredProducts(next, effectiveStoreId);
+
+        // Sync updated status with backend store
+        const storeLookup = effectiveStoreId || activeStore?.id;
+        if (storeLookup && targetProduct) {
+          fetch(`/api/stores/${storeLookup}`)
+            .then((res) => (res.ok ? res.json() : null))
+            .then((storeData) => {
+              const currentStore = storeData?.store;
+              if (currentStore) {
+                const currentProducts = currentStore.layout_config?.products || [];
+                const updatedProducts = currentProducts.map((sp: any) =>
+                  sp.id === id ? { ...sp, status: targetProduct!.status } : sp
+                );
+                fetch(`/api/stores/${storeLookup}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    layout_config: {
+                      ...currentStore.layout_config,
+                      products: updatedProducts,
+                    },
+                    commerce_config: {
+                      ...currentStore.commerce_config,
+                      products: updatedProducts,
+                    },
+                  }),
+                }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        }
+
+        return next;
+      });
+    },
+    [effectiveStoreId, activeStore?.id],
+  );
+
   const hasActiveFilters = Boolean(
     filters.search || filters.category || filters.status,
   );
@@ -283,6 +409,7 @@ export function useProducts(explicitStoreId?: string) {
     bulkDelete,
     bulkChangeCategory,
     bulkChangeStatus,
+    toggleProductStatus,
     categories,
   };
 }
