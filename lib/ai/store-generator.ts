@@ -191,17 +191,7 @@ function buildSections(
     },
   });
 
-  // 3. Feature Grid (trust/benefits)
-  sections.push({
-    id: pickSectionId("FeatureGrid", 1),
-    type: "FeatureGrid",
-    props: {
-      columns: content.featureItems.length >= 4 ? 4 : 3,
-      items: content.featureItems.slice(0, 4),
-    },
-  });
-
-  // 4. Category Carousel
+  // 3. Category Carousel
   const catCarouselType = plan.recommendedSections.categoryCarousel || "CategoryCarousel";
   sections.push({
     id: pickSectionId(catCarouselType, 1),
@@ -216,7 +206,7 @@ function buildSections(
     },
   });
 
-  // 5. Featured Products Grid
+  // 4. Featured Products Grid
   const prodGridType = plan.recommendedSections.productGrid || "ProductGridFeatured";
   sections.push({
     id: pickSectionId(prodGridType, 1),
@@ -227,7 +217,7 @@ function buildSections(
     },
   });
 
-  // 6. Testimonials
+  // 5. Testimonials
   const testimonialType = plan.recommendedSections.testimonials || "TestimonialSlider";
   sections.push({
     id: pickSectionId(testimonialType, 1),
@@ -242,7 +232,7 @@ function buildSections(
     },
   });
 
-  // 7. Brand Story
+  // 6. Brand Story
   const brandType = plan.recommendedSections.brandStory || "BrandStory";
   sections.push({
     id: pickSectionId(brandType, 1),
@@ -254,7 +244,7 @@ function buildSections(
     },
   });
 
-  // 8. Newsletter
+  // 7. Newsletter
   const newsletterType = plan.recommendedSections.newsletter || "NewsletterSignup";
   sections.push({
     id: pickSectionId(newsletterType, 1),
@@ -264,6 +254,16 @@ function buildSections(
       subtitle: content.newsletterSubheadline,
       buttonText: "Subscribe",
       layout: "box",
+    },
+  });
+
+  // 8. Feature Grid (Trust & Buyer Guarantees - Placed last, right above footer)
+  sections.push({
+    id: pickSectionId("FeatureGrid", 1),
+    type: "FeatureGrid",
+    props: {
+      columns: content.featureItems.length >= 4 ? 4 : 3,
+      items: content.featureItems.slice(0, 4),
     },
   });
 

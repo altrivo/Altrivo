@@ -488,18 +488,6 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
         },
       },
       {
-        id: "feature-grid-1",
-        type: "FeatureGrid" as const,
-        props: {
-          columns: 3 as const,
-          items: config.trustFeatures.map((f) => ({
-            icon: f.icon,
-            title: f.title,
-            description: f.description,
-          })),
-        },
-      },
-      {
         id: "category-carousel-1",
         type: "CategoryCarousel" as const,
         props: {
@@ -523,6 +511,18 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
           subtitle: config.newsletter.subheadline,
           buttonText: "Subscribe",
           layout: "box" as const,
+        },
+      },
+      {
+        id: "feature-grid-1",
+        type: "FeatureGrid" as const,
+        props: {
+          columns: 3 as const,
+          items: config.trustFeatures.map((f) => ({
+            icon: f.icon,
+            title: f.title,
+            description: f.description,
+          })),
         },
       },
     ],

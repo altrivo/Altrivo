@@ -110,19 +110,6 @@ const SEED_STORE: StoreRow = {
         },
       },
       {
-        id: "feature-grid-1",
-        type: "FeatureGrid",
-        props: {
-          columns: 4,
-          items: [
-            { icon: "truck", title: "Cash on Delivery", description: "Pay at your doorstep anywhere in Pakistan via TCS / Leopard" },
-            { icon: "shield-check", title: "A2 Escrow Protection", description: "100% buyer protection guarantee until delivery confirmation" },
-            { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free size replacement with zero extra charges" },
-            { icon: "award", title: "Pure Full-Grain Leather", description: "Hand-inspected natural leather crafted by master shoemakers" },
-          ],
-        },
-      },
-      {
         id: "category-carousel-1",
         type: "CategoryCarouselCenterEmphasis",
         props: {
@@ -177,6 +164,19 @@ const SEED_STORE: StoreRow = {
           subtitle: "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
           buttonText: "Claim 10% Discount",
           layout: "box",
+        },
+      },
+      {
+        id: "feature-grid-1",
+        type: "FeatureGrid",
+        props: {
+          columns: 4,
+          items: [
+            { icon: "truck", title: "Cash on Delivery", description: "Pay at your doorstep anywhere in Pakistan via TCS / Leopard" },
+            { icon: "shield-check", title: "A2 Escrow Protection", description: "100% buyer protection guarantee until delivery confirmation" },
+            { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free size replacement with zero extra charges" },
+            { icon: "award", title: "Pure Full-Grain Leather", description: "Hand-inspected natural leather crafted by master shoemakers" },
+          ],
         },
       },
     ],

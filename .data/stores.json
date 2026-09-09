@@ -257,35 +257,6 @@
           }
         },
         {
-          "id": "features-1",
-          "type": "FeatureGrid",
-          "props": {
-            "items": [
-              {
-                "icon": "truck",
-                "title": "Cash on Delivery",
-                "description": "Nationwide COD delivery across Pakistan"
-              },
-              {
-                "icon": "shield-check",
-                "title": "A2 Escrow Protection",
-                "description": "100% buyer protection guarantee"
-              },
-              {
-                "icon": "rotate-ccw",
-                "title": "7-Day Easy Exchange",
-                "description": "Hassle-free size replacement"
-              },
-              {
-                "icon": "award",
-                "title": "Pure Full-Grain Leather",
-                "description": "Hand-inspected natural leather"
-              }
-            ],
-            "columns": 4
-          }
-        },
-        {
           "id": "categories-1",
           "type": "CategoryCarouselCenterEmphasis",
           "props": {
@@ -430,6 +401,35 @@
             "title": "Join The StepCraft Inner Circle",
             "subtitle": "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
             "buttonText": "Claim 10% Discount"
+          }
+        },
+        {
+          "id": "features-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Nationwide COD delivery across Pakistan"
+              },
+              {
+                "icon": "shield-check",
+                "title": "A2 Escrow Protection",
+                "description": "100% buyer protection guarantee"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "7-Day Easy Exchange",
+                "description": "Hassle-free size replacement"
+              },
+              {
+                "icon": "award",
+                "title": "Pure Full-Grain Leather",
+                "description": "Hand-inspected natural leather"
+              }
+            ],
+            "columns": 4
           }
         }
       ],
@@ -586,30 +586,6 @@
           }
         },
         {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "items": [
-              {
-                "icon": "Sparkles",
-                "title": "Bespoke Craftsmanship",
-                "description": "Precision-tailored garments crafted from ethically sourced, high-grade European textiles."
-              },
-              {
-                "icon": "Globe",
-                "title": "Global Express Delivery",
-                "description": "Seamless white-glove worldwide shipping and carbon-neutral transit on every order."
-              },
-              {
-                "icon": "ShieldCheck",
-                "title": "Private Concierge",
-                "description": "Dedicated personal styling advice, bespoke alterations, and VIP private appointments."
-              }
-            ],
-            "columns": 3
-          }
-        },
-        {
           "id": "category-carousel-1",
           "type": "CategoryCarousel",
           "props": {
@@ -706,6 +682,30 @@
             "layout": "box",
             "subtitle": "Subscribe to receive confidential invitations to capsule launches, private lookbook previews, and curated editorial insights.",
             "buttonText": "Subscribe"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "Sparkles",
+                "title": "Bespoke Craftsmanship",
+                "description": "Precision-tailored garments crafted from ethically sourced, high-grade European textiles."
+              },
+              {
+                "icon": "Globe",
+                "title": "Global Express Delivery",
+                "description": "Seamless white-glove worldwide shipping and carbon-neutral transit on every order."
+              },
+              {
+                "icon": "ShieldCheck",
+                "title": "Private Concierge",
+                "description": "Dedicated personal styling advice, bespoke alterations, and VIP private appointments."
+              }
+            ],
+            "columns": 3
           }
         }
       ],
@@ -896,36 +896,6 @@
           }
         },
         {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "columns": 4,
-            "layout": "grid",
-            "items": [
-              {
-                "icon": "Crown",
-                "title": "Royal Heritage Craft",
-                "description": "Infused with centuries of traditional cobbling techniques and regal aesthetics."
-              },
-              {
-                "icon": "Gem",
-                "title": "Full-Grain Leather",
-                "description": "Sourced from world-renowned tanneries for exceptional comfort and lasting luster."
-              },
-              {
-                "icon": "Sparkles",
-                "title": "Handstitched Precision",
-                "description": "Every single pair requires dozens of hours of meticulous handiwork by master artisans."
-              },
-              {
-                "icon": "Truck",
-                "title": "Global White-Glove Shipping",
-                "description": "Complimentary fully-insured international delivery direct from our atelier."
-              }
-            ]
-          }
-        },
-        {
           "id": "categories-showcase-1",
           "type": "CategoryCarousel",
           "props": {
@@ -1022,6 +992,36 @@
             "subtitle": "Subscribe to receive exclusive invitations to private trunk shows, rare leather releases, and bespoke trunk drops.",
             "buttonText": "Join VIP Club",
             "layout": "box"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "columns": 4,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "Crown",
+                "title": "Royal Heritage Craft",
+                "description": "Infused with centuries of traditional cobbling techniques and regal aesthetics."
+              },
+              {
+                "icon": "Gem",
+                "title": "Full-Grain Leather",
+                "description": "Sourced from world-renowned tanneries for exceptional comfort and lasting luster."
+              },
+              {
+                "icon": "Sparkles",
+                "title": "Handstitched Precision",
+                "description": "Every single pair requires dozens of hours of meticulous handiwork by master artisans."
+              },
+              {
+                "icon": "Truck",
+                "title": "Global White-Glove Shipping",
+                "description": "Complimentary fully-insured international delivery direct from our atelier."
+              }
+            ]
           }
         }
       ],
@@ -1198,35 +1198,6 @@
           }
         },
         {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "items": [
-              {
-                "icon": "truck",
-                "title": "Cash on Delivery",
-                "description": "Nationwide express COD across Pakistan"
-              },
-              {
-                "icon": "shield-check",
-                "title": "Escrow Protection",
-                "description": "100% buyer security guarantee"
-              },
-              {
-                "icon": "rotate-ccw",
-                "title": "Easy Returns & Exchange",
-                "description": "7-day hassle-free replacement"
-              },
-              {
-                "icon": "award",
-                "title": "Authentic Quality",
-                "description": "Directly sourced from master craftsmen"
-              }
-            ],
-            "columns": 4
-          }
-        },
-        {
           "id": "category-carousel-1",
           "type": "CategoryCarousel",
           "props": {
@@ -1366,6 +1337,35 @@
             "layout": "box",
             "subtitle": "Get 10% off your first order and exclusive drops alert.",
             "buttonText": "Subscribe"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Nationwide express COD across Pakistan"
+              },
+              {
+                "icon": "shield-check",
+                "title": "Escrow Protection",
+                "description": "100% buyer security guarantee"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "Easy Returns & Exchange",
+                "description": "7-day hassle-free replacement"
+              },
+              {
+                "icon": "award",
+                "title": "Authentic Quality",
+                "description": "Directly sourced from master craftsmen"
+              }
+            ],
+            "columns": 4
           }
         }
       ],
@@ -1547,36 +1547,6 @@
           }
         },
         {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "columns": 4,
-            "layout": "grid",
-            "items": [
-              {
-                "icon": "truck",
-                "title": "Cash on Delivery",
-                "description": "Nationwide express COD across Pakistan"
-              },
-              {
-                "icon": "shield-check",
-                "title": "Escrow Protection",
-                "description": "100% buyer security guarantee"
-              },
-              {
-                "icon": "rotate-ccw",
-                "title": "Easy Returns & Exchange",
-                "description": "7-day hassle-free replacement"
-              },
-              {
-                "icon": "award",
-                "title": "Authentic Quality",
-                "description": "Directly sourced from master craftsmen"
-              }
-            ]
-          }
-        },
-        {
           "id": "categories-showcase-1",
           "type": "CategoryCarousel",
           "props": {
@@ -1666,6 +1636,36 @@
             "subtitle": "Get 10% off your first order and exclusive drops alert.",
             "buttonText": "Join VIP Club",
             "layout": "box"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "columns": 4,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Nationwide express COD across Pakistan"
+              },
+              {
+                "icon": "shield-check",
+                "title": "Escrow Protection",
+                "description": "100% buyer security guarantee"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "Easy Returns & Exchange",
+                "description": "7-day hassle-free replacement"
+              },
+              {
+                "icon": "award",
+                "title": "Authentic Quality",
+                "description": "Directly sourced from master craftsmen"
+              }
+            ]
           }
         }
       ],
@@ -1833,36 +1833,6 @@
             "imageAlignment": "background",
             "bgTheme": "gold",
             "buttonTheme": "emerald"
-          }
-        },
-        {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "columns": 4,
-            "layout": "cards3d",
-            "items": [
-              {
-                "icon": "shield-check",
-                "title": "Sapphire Crystal Glass",
-                "description": "Scratch-resistant anti-reflective coating"
-              },
-              {
-                "icon": "award",
-                "title": "Japanese Movement",
-                "description": "Precision Miyota automatic caliber accuracy"
-              },
-              {
-                "icon": "truck",
-                "title": "Cash on Delivery",
-                "description": "Tracked express courier dispatch nationwide"
-              },
-              {
-                "icon": "rotate-ccw",
-                "title": "2-Year Warranty",
-                "description": "Comprehensive movement and repair guarantee"
-              }
-            ]
           }
         },
         {
@@ -2557,6 +2527,36 @@
             "subtitle": "Receive private invitations to limited batch drops and 10% OFF your first luxury timepiece.",
             "buttonText": "Join VIP Club",
             "layout": "box"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "columns": 4,
+            "layout": "cards3d",
+            "items": [
+              {
+                "icon": "shield-check",
+                "title": "Sapphire Crystal Glass",
+                "description": "Scratch-resistant anti-reflective coating"
+              },
+              {
+                "icon": "award",
+                "title": "Japanese Movement",
+                "description": "Precision Miyota automatic caliber accuracy"
+              },
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Tracked express courier dispatch nationwide"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "2-Year Warranty",
+                "description": "Comprehensive movement and repair guarantee"
+              }
+            ]
           }
         }
       ],
@@ -3976,35 +3976,6 @@
           }
         },
         {
-          "id": "feature-grid-1",
-          "type": "FeatureGrid",
-          "props": {
-            "items": [
-              {
-                "icon": "truck",
-                "title": "Cash on Delivery",
-                "description": "Pay at your doorstep anywhere in Pakistan via TCS / Leopard"
-              },
-              {
-                "icon": "shield-check",
-                "title": "A2 Escrow Protection",
-                "description": "100% buyer protection guarantee until delivery confirmation"
-              },
-              {
-                "icon": "rotate-ccw",
-                "title": "7-Day Easy Exchange",
-                "description": "Hassle-free size replacement with zero extra charges"
-              },
-              {
-                "icon": "award",
-                "title": "Pure Full-Grain Leather",
-                "description": "Hand-inspected natural leather crafted by master shoemakers"
-              }
-            ],
-            "columns": 4
-          }
-        },
-        {
           "id": "category-carousel-1",
           "type": "CategoryCarouselCenterEmphasis",
           "props": {
@@ -4291,6 +4262,35 @@
             "layout": "box",
             "subtitle": "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
             "buttonText": "Claim 10% Discount"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Pay at your doorstep anywhere in Pakistan via TCS / Leopard"
+              },
+              {
+                "icon": "shield-check",
+                "title": "A2 Escrow Protection",
+                "description": "100% buyer protection guarantee until delivery confirmation"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "7-Day Easy Exchange",
+                "description": "Hassle-free size replacement with zero extra charges"
+              },
+              {
+                "icon": "award",
+                "title": "Pure Full-Grain Leather",
+                "description": "Hand-inspected natural leather crafted by master shoemakers"
+              }
+            ],
+            "columns": 4
           }
         }
       ],

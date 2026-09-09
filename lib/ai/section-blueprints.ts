@@ -260,79 +260,7 @@ export const SECTION_BLUEPRINT_CATALOG: SectionCategoryBlueprint[] = [
     ],
   },
 
-  // 4. FEATURES & TRUST (5 Variants)
-  {
-    category: "features",
-    title: "Trust & Buyer Guarantees",
-    subtitle: "Give Pakistani buyers 100% confidence with COD, Escrow protection, and express courier.",
-    icon: "ShieldCheck",
-    defaultVariant: "FeatureGrid",
-    variants: [
-      {
-        id: "FeatureGrid",
-        name: "4-Column Trust Badges",
-        category: "features",
-        tag: "Pakistani E-Commerce Essential",
-        badge: "Recommended",
-        description: "Cash on Delivery (COD), 2-4 Days Express TCS, 100% Escrow Protection, and Easy 7-Day Exchange.",
-        recommendedFor: ["all", "shoes", "fashion", "electronics"],
-        previewSnippet: {
-          layoutType: "4-Column Icon Grid",
-          highlights: ["COD Badge", "Escrow Verified", "TCS / Courier Logo"],
-        },
-      },
-      {
-        id: "PromoBanner",
-        name: "Top Urgency Banner Ribbon",
-        category: "features",
-        tag: "Urgency & Offers",
-        description: "Prominent top ribbon banner announcing seasonal drop, free delivery threshold, or discount code.",
-        recommendedFor: ["all", "retail", "shoes"],
-        previewSnippet: {
-          layoutType: "Full Ribbon Bar",
-          highlights: ["Free Delivery Alert", "Discount Coupon Pill", "Live Pulse Dot"],
-        },
-      },
-      {
-        id: "FeatureGridCards3D",
-        name: "Floating 3D Trust Cards",
-        category: "features",
-        tag: "Modern Depth",
-        description: "Elevated glassmorphic cards with glowing border gradients and Lucide trust icons.",
-        recommendedFor: ["luxury", "shoes", "tech"],
-        previewSnippet: {
-          layoutType: "3D Elevated Cards",
-          highlights: ["Glassmorphism", "Icon Badges", "Interactive Hover"],
-        },
-      },
-      {
-        id: "FeatureGridMinimalBar",
-        name: "Clean Minimal Divider Strip",
-        category: "features",
-        tag: "Minimalist",
-        description: "Ultra-clean single line trust bar seamlessly placed below the hero with inline icons.",
-        recommendedFor: ["minimal", "apparel", "shoes"],
-        previewSnippet: {
-          layoutType: "Inline Divider Bar",
-          highlights: ["Minimalist Style", "Clean Line", "Zero Clutter"],
-        },
-      },
-      {
-        id: "FeatureGridBuyerProtection",
-        name: "Escrow & Courier Badge Wall",
-        category: "features",
-        tag: "High Trust",
-        description: "Prominent Pakistani buyer safety stamps, bank grade encryption, and delivery assurance.",
-        recommendedFor: ["high-ticket", "leather", "shoes"],
-        previewSnippet: {
-          layoutType: "Badge Stamp Wall",
-          highlights: ["Verified Escrow", "Courier Partners", "Money-Back Guarantee"],
-        },
-      },
-    ],
-  },
-
-  // 5. ABOUT US / BRAND STORY (5 Variants)
+  // 4. ABOUT US / BRAND STORY (5 Variants)
   {
     category: "story",
     title: "Brand Story & Heritage",
@@ -547,6 +475,78 @@ export const SECTION_BLUEPRINT_CATALOG: SectionCategoryBlueprint[] = [
       },
     ],
   },
+
+  // 7. FEATURES & TRUST (5 Variants - Placed last, right above the footer)
+  {
+    category: "features",
+    title: "Trust & Buyer Guarantees",
+    subtitle: "Give Pakistani buyers 100% confidence with COD, Escrow protection, and express courier.",
+    icon: "ShieldCheck",
+    defaultVariant: "FeatureGrid",
+    variants: [
+      {
+        id: "FeatureGrid",
+        name: "4-Column Trust Badges",
+        category: "features",
+        tag: "Pakistani E-Commerce Essential",
+        badge: "Recommended",
+        description: "Cash on Delivery (COD), 2-4 Days Express TCS, 100% Escrow Protection, and Easy 7-Day Exchange.",
+        recommendedFor: ["all", "shoes", "fashion", "electronics"],
+        previewSnippet: {
+          layoutType: "4-Column Icon Grid",
+          highlights: ["COD Badge", "Escrow Verified", "TCS / Courier Logo"],
+        },
+      },
+      {
+        id: "PromoBanner",
+        name: "Top Urgency Banner Ribbon",
+        category: "features",
+        tag: "Urgency & Offers",
+        description: "Prominent top ribbon banner announcing seasonal drop, free delivery threshold, or discount code.",
+        recommendedFor: ["all", "retail", "shoes"],
+        previewSnippet: {
+          layoutType: "Full Ribbon Bar",
+          highlights: ["Free Delivery Alert", "Discount Coupon Pill", "Live Pulse Dot"],
+        },
+      },
+      {
+        id: "FeatureGridCards3D",
+        name: "Floating 3D Trust Cards",
+        category: "features",
+        tag: "Modern Depth",
+        description: "Elevated glassmorphic cards with glowing border gradients and Lucide trust icons.",
+        recommendedFor: ["luxury", "shoes", "tech"],
+        previewSnippet: {
+          layoutType: "3D Elevated Cards",
+          highlights: ["Glassmorphism", "Icon Badges", "Interactive Hover"],
+        },
+      },
+      {
+        id: "FeatureGridMinimalBar",
+        name: "Clean Minimal Divider Strip",
+        category: "features",
+        tag: "Minimalist",
+        description: "Ultra-clean single line trust bar seamlessly placed below the hero with inline icons.",
+        recommendedFor: ["minimal", "apparel", "shoes"],
+        previewSnippet: {
+          layoutType: "Inline Divider Bar",
+          highlights: ["Minimalist Style", "Clean Line", "Zero Clutter"],
+        },
+      },
+      {
+        id: "FeatureGridBuyerProtection",
+        name: "Escrow & Courier Badge Wall",
+        category: "features",
+        tag: "High Trust",
+        description: "Prominent Pakistani buyer safety stamps, bank grade encryption, and delivery assurance.",
+        recommendedFor: ["high-ticket", "leather", "shoes"],
+        previewSnippet: {
+          layoutType: "Badge Stamp Wall",
+          highlights: ["Verified Escrow", "Courier Partners", "Money-Back Guarantee"],
+        },
+      },
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -625,23 +625,7 @@ export function assembleCustomStore(
     });
   }
 
-  // 3. Features & Trust Grid
-  if (selections.features && selections.features !== "PromoBanner") {
-    sections.push({
-      id: "feature-grid-1",
-      type: "FeatureGrid",
-      props: {
-        columns: 4,
-        layout: selections.features === "FeatureGridCards3D" ? "cards3d" : selections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
-        items: content.featureItems.length >= 4 ? content.featureItems.slice(0, 4) : [
-          { icon: "truck", title: "Cash on Delivery", description: "Nationwide COD express delivery across Pakistan" },
-          { icon: "shield-check", title: "Escrow Protection", description: "100% money back guarantee until delivery confirmation" },
-          { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement guarantee" },
-          { icon: "award", title: "100% Genuine Quality", description: "Authentic materials with full craftsmanship warranty" },
-        ],
-      },
-    });
-  }
+
 
   // 4. Categories Showcase (Selected Variant)
   sections.push({
@@ -703,6 +687,24 @@ export function assembleCustomStore(
       layout: "box",
     },
   });
+
+  // 9. Features & Trust Grid (Placed last, right above the footer)
+  if (selections.features && selections.features !== "PromoBanner") {
+    sections.push({
+      id: "feature-grid-1",
+      type: "FeatureGrid",
+      props: {
+        columns: 4,
+        layout: selections.features === "FeatureGridCards3D" ? "cards3d" : selections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
+        items: content.featureItems.length >= 4 ? content.featureItems.slice(0, 4) : [
+          { icon: "truck", title: "Cash on Delivery", description: "Nationwide COD express delivery across Pakistan" },
+          { icon: "shield-check", title: "Escrow Protection", description: "100% money back guarantee until delivery confirmation" },
+          { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement guarantee" },
+          { icon: "award", title: "100% Genuine Quality", description: "Authentic materials with full craftsmanship warranty" },
+        ],
+      },
+    });
+  }
 
   const categories = content.categoryNames.map((c) => ({
     name: c.title,

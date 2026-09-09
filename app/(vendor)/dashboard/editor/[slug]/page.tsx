@@ -488,19 +488,6 @@ export default function VisualLayoutEditor() {
         },
       },
       {
-        id: "features-1",
-        type: "FeatureGrid",
-        props: {
-          columns: 4,
-          items: [
-            { icon: "truck", title: "Cash on Delivery", description: "Nationwide COD delivery across Pakistan" },
-            { icon: "shield-check", title: "A2 Escrow Protection", description: "100% buyer protection guarantee" },
-            { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free size replacement" },
-            { icon: "award", title: "Pure Full-Grain Leather", description: "Hand-inspected natural leather" },
-          ],
-        },
-      },
-      {
         id: "categories-1",
         type: "CategoryCarouselCenterEmphasis",
         props: {
@@ -555,6 +542,19 @@ export default function VisualLayoutEditor() {
           title: "Join The StepCraft Inner Circle",
           subtitle: "Get exclusive access to private shoe drops and enjoy instant 10% OFF your first order.",
           buttonText: "Claim 10% Discount",
+        },
+      },
+      {
+        id: "features-1",
+        type: "FeatureGrid",
+        props: {
+          columns: 4,
+          items: [
+            { icon: "truck", title: "Cash on Delivery", description: "Nationwide COD delivery across Pakistan" },
+            { icon: "shield-check", title: "A2 Escrow Protection", description: "100% buyer protection guarantee" },
+            { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free size replacement" },
+            { icon: "award", title: "Pure Full-Grain Leather", description: "Hand-inspected natural leather" },
+          ],
         },
       },
     ],

@@ -1307,22 +1307,7 @@ export default function StoreBuilderPage() {
             });
           });
         }
-        if (selectedSections.features && selectedSections.features !== "PromoBanner") {
-          assembledSections.push({
-            id: "feature-grid-1",
-            type: "FeatureGrid",
-            props: {
-              columns: 4,
-              layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
-              items: [
-                { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
-                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
-                { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
-                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
-              ],
-            },
-          });
-        }
+
         assembledSections.push({
           id: "categories-showcase-1",
           type: selectedSections.categories || "CategoryCarouselCenterEmphasis",
@@ -1385,6 +1370,24 @@ export default function StoreBuilderPage() {
             layout: "box",
           },
         });
+
+        // Features & Trust Grid placed last, right above the footer
+        if (selectedSections.features && selectedSections.features !== "PromoBanner") {
+          assembledSections.push({
+            id: "feature-grid-1",
+            type: "FeatureGrid",
+            props: {
+              columns: 4,
+              layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
+              items: [
+                { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
+                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
+                { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
+                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
+              ],
+            },
+          });
+        }
 
         const storeData = data.store || {
           id: `store_${Date.now()}`,
@@ -1489,22 +1492,7 @@ export default function StoreBuilderPage() {
             });
           });
         }
-        if (selectedSections.features && selectedSections.features !== "PromoBanner") {
-          assembledSections.push({
-            id: "feature-grid-1",
-            type: "FeatureGrid",
-            props: {
-              columns: 4,
-              layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
-              items: [
-                { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
-                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
-                { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
-                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
-              ],
-            },
-          });
-        }
+
         assembledSections.push({
           id: "categories-showcase-1",
           type: selectedSections.categories || "CategoryCarouselCenterEmphasis",
@@ -1567,6 +1555,24 @@ export default function StoreBuilderPage() {
             layout: "box",
           },
         });
+
+        // Features & Trust Grid placed last, right above the footer
+        if (selectedSections.features && selectedSections.features !== "PromoBanner") {
+          assembledSections.push({
+            id: "feature-grid-1",
+            type: "FeatureGrid",
+            props: {
+              columns: 4,
+              layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
+              items: [
+                { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
+                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
+                { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
+                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
+              ],
+            },
+          });
+        }
 
         const fallbackStore = {
           id: `store_${Date.now()}`,
