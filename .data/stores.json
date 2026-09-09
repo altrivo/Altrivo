@@ -233,42 +233,46 @@
           "id": "hero-1",
           "type": "HeroSplitImage",
           "props": {
-            "title": "Walk With Royal Distinction",
+            "title": "Precision Luxury Timepieces",
             "ctaLink": "#catalog",
-            "ctaText": "Shop Collection",
-            "imageUrl": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-            "subtitle": "100% pure full-grain calfskin leather shoes. Handcrafted in Pakistan with ergonomic comfort.",
+            "ctaText": "Shop Timepieces",
+            "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80",
+            "subtitle": "Mastercrafted automatic chronographs and luxury watches. Engineered with sapphire crystal glass and timeless prestige.",
             "imageAlignment": "right",
             "secondaryCtaLink": "#about",
-            "secondaryCtaText": "Explore Heritage"
+            "secondaryCtaText": "Our Heritage"
           }
         },
         {
           "id": "categories-1",
           "type": "CategoryCarouselCenterEmphasis",
           "props": {
-            "title": "Explore Shoe Collections",
+            "title": "Explore Watch Collections",
             "layout": "card",
             "categories": [
               {
-                "count": "24 items",
-                "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
-                "title": "Oxford & Formals"
-              },
-              {
-                "count": "18 items",
-                "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80",
-                "title": "Casual Loafers"
-              },
-              {
-                "count": "32 items",
-                "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80",
-                "title": "Sneakers & Street"
-              },
-              {
+                "title": "Automatic Chronographs",
                 "count": "12 items",
-                "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=800&q=80",
-                "title": "Peshawari Chappal"
+                "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+                "href": "/category/chronographs"
+              },
+              {
+                "title": "Skeleton Mechanical",
+                "count": "8 items",
+                "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=600&q=80",
+                "href": "/category/mechanical"
+              },
+              {
+                "title": "Luxury Dress Watches",
+                "count": "15 items",
+                "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
+                "href": "/category/dress"
+              },
+              {
+                "title": "Diver Timepieces",
+                "count": "10 items",
+                "image": "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=600&q=80",
+                "href": "/category/diver"
               }
             ]
           }
@@ -278,7 +282,7 @@
           "type": "ProductGridFeatured",
           "props": {
             "limit": 12,
-            "title": "Featured Masterpieces",
+            "title": "Featured Timepieces",
             "columns": 3,
             "products": [
               {
@@ -327,18 +331,18 @@
                 "originalPrice": ""
               }
             ],
-            "subtitle": "Handcrafted 100% genuine calfskin leather footwear."
+            "subtitle": "Mastercrafted luxury timepieces designed for precision and elegance."
           }
         },
         {
           "id": "story-1",
           "type": "BrandStory",
           "props": {
-            "title": "The Legacy of Master Cobblers",
-            "imageUrl": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=800&q=80",
+            "title": "The Art of Precision Horology",
+            "imageUrl": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80",
             "paragraphs": [
-              "Every pair of StepCraft shoes begins with hand-selected hides of top-tier full-grain leather. Our craftsmen spend over 36 hours stitching and shaping each silhouette.",
-              "We reject synthetic shortcuts. Every detail is engineered to ensure timeless luxury."
+              "Every timepiece begins with meticulously inspected mechanical components and handcrafted luxury casing. Built for individuals who appreciate timeless prestige.",
+              "We reject synthetic shortcuts. Every watch features scratch-resistant sapphire crystal glass, ergonomic bracelets, and dependable water-resistant construction."
             ]
           }
         },
@@ -408,24 +412,20 @@
       "storeName": "Watch-Brand",
       "categories": [
         {
-          "href": "#catalog",
-          "name": "Oxford & Formals"
+          "name": "Automatic Chronographs",
+          "href": "#catalog"
         },
         {
-          "href": "#catalog",
-          "name": "Casual Loafers"
+          "name": "Skeleton Mechanical",
+          "href": "#catalog"
         },
         {
-          "href": "#catalog",
-          "name": "Sneakers & Street"
+          "name": "Luxury Dress Watches",
+          "href": "#catalog"
         },
         {
-          "href": "#catalog",
-          "name": "Peshawari Chappal"
-        },
-        {
-          "href": "#catalog",
-          "name": "Chelsea Boots"
+          "name": "Diver Timepieces",
+          "href": "#catalog"
         }
       ]
     },
@@ -496,7 +496,7 @@
     "custom_domain": null,
     "subdomain": null,
     "created_at": "2026-09-07T14:55:15.066192+00:00",
-    "updated_at": "2026-09-09T08:47:25.311Z"
+    "updated_at": "2026-09-09T09:02:20.881Z"
   },
   {
     "id": "06e897d3-d685-4cf7-bc84-c2c140834f5d",

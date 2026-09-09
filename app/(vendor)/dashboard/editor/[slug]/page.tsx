@@ -942,10 +942,6 @@ export default function VisualLayoutEditor() {
           // -----------------------------------------------------------------
           // Load Real Store Products strictly scoped to this store ID & slug
           // -----------------------------------------------------------------
-          const localProducts = [
-            ...getStoredProducts(storeData.id),
-            ...getStoredProducts(storeData.slug || slug),
-          ];
           const backendCommerceProducts = Array.isArray(storeData.commerce_config?.products)
             ? storeData.commerce_config.products
             : [];
@@ -953,10 +949,28 @@ export default function VisualLayoutEditor() {
             ? storeData.layout_config.products
             : [];
 
-          // Merge & deduplicate products by id/sku
+          // Primary source of truth: the store's verified database products
+          const canonicalProducts = backendLayoutProducts.length > 0
+            ? backendLayoutProducts
+            : backendCommerceProducts.length > 0
+            ? backendCommerceProducts
+            : getStoredProducts(storeData.id);
+
+          // Strictly filter products to only those that belong to this store
           const productMap = new Map<string, any>();
-          [...localProducts, ...backendCommerceProducts, ...backendLayoutProducts].forEach((rawP) => {
+          canonicalProducts.forEach((rawP: any) => {
             if (!rawP) return;
+            // Reject any product belonging to another store
+            if (rawP.storeId && storeData.id && rawP.storeId !== storeData.id && rawP.storeId !== storeData.slug) {
+              return;
+            }
+            // Strict isolation: if store is watch-brand, reject any apparel product
+            if (
+              (storeData.slug === "watch-brand" || sName.includes("watch")) &&
+              ((rawP.name || "").toLowerCase().includes("shirt") || rawP.id === "prod_1788857708721_8y74" || (rawP.category || "").toLowerCase() === "clothing")
+            ) {
+              return;
+            }
             const converted = toStorefrontProduct(rawP);
             if (converted && converted.id) {
               const key = (converted.sku || converted.id).toLowerCase();
@@ -968,6 +982,18 @@ export default function VisualLayoutEditor() {
 
           const mergedStoreCatalog = Array.from(productMap.values());
           setStoreCatalogProducts(mergedStoreCatalog);
+
+          // Overwrite local storage for this store to eliminate any stale foreign products
+          if (typeof window !== "undefined") {
+            try {
+              if (storeData.id) {
+                localStorage.setItem(`artrivo_products_store_${storeData.id}`, JSON.stringify(mergedStoreCatalog));
+              }
+              if (storeData.slug) {
+                localStorage.setItem(`artrivo_products_store_${storeData.slug}`, JSON.stringify(mergedStoreCatalog));
+              }
+            } catch {}
+          }
 
           // Dynamically derive real categories from store products
           const productCategories = Array.from(
@@ -1969,7 +1995,7 @@ export default function VisualLayoutEditor() {
                               handleAddProductBySkuOrId(skuInput);
                             }
                           }}
-                          placeholder="e.g. BDY-6437 or Ladies Shirt"
+                          placeholder={activeNiche === "watches" ? "e.g. BDY-7749 or Watch boy" : activeNiche === "clothing" ? "e.g. BDY-6437 or Cotton Shirt" : "e.g. BDY-1001 or Product Name"}
                           className="flex-1 p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-[#312038] focus:bg-white font-mono"
                         />
                         <button
@@ -2438,7 +2464,7 @@ export default function VisualLayoutEditor() {
                                 handleAddProductBySkuOrId(skuInput);
                               }
                             }}
-                            placeholder="e.g. BDY-6437 or Ladies Shirt"
+                            placeholder={activeNiche === "watches" ? "e.g. BDY-7749 or Watch boy" : activeNiche === "clothing" ? "e.g. BDY-6437 or Cotton Shirt" : "e.g. BDY-1001 or Product Name"}
                             className="flex-1 p-2 rounded-xl bg-card border border-default text-heading text-xs placeholder-slate-500 focus:outline-none focus:border-[#312038] font-mono"
                           />
                           <button
