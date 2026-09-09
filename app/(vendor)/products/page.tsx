@@ -146,11 +146,12 @@ function formatDate(iso: string) {
   });
 }
 
-function formatCurrency(amount: number) {
+function formatCurrency(amount: number | null | undefined) {
+  const num = typeof amount === "number" && !isNaN(amount) ? amount : parseFloat(String(amount || 0).replace(/[^0-9.]/g, "")) || 0;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(num);
 }
 
 export default function ProductsPage() {
@@ -742,14 +743,14 @@ export default function ProductsPage() {
                         <td className="px-4 py-3 text-right tabular-nums">
                           <span
                             className={
-                              product.stock === 0
+                              (product.stock ?? 10) === 0
                                 ? "text-error-500 font-semibold"
-                                : product.stock < 10
+                                : (product.stock ?? 10) < 10
                                   ? "text-warning-600 font-medium"
                                   : "text-body"
                             }
                           >
-                            {product.stock.toLocaleString()}
+                            {(product.stock ?? 10).toLocaleString()}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-body">

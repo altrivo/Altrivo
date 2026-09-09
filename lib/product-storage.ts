@@ -198,11 +198,16 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
         ? "out-of-stock"
         : "published";
 
+    const cleanStock = p.stock !== undefined && p.stock !== null ? Number(p.stock) : 10;
+    const cleanPrice = typeof p.price === "number" ? p.price : parseFloat(String(p.price || 0).replace(/[^0-9.]/g, "")) || 0;
+
     const cleanProduct: Product = {
       ...p,
       storeId: p.storeId || targetStoreId,
       sku: cleanSku,
       status,
+      stock: isNaN(cleanStock) ? 10 : cleanStock,
+      price: isNaN(cleanPrice) ? 0 : cleanPrice,
       thumbnail: cleanThumbnail,
       image: cleanThumbnail,
       images: cleanImages,
