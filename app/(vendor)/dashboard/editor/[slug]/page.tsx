@@ -1929,13 +1929,13 @@ export default function VisualLayoutEditor() {
                   </div>
 
                   {/* Shop Products & Catalog Controls */}
-                  <div className="pt-3 border-t border-slate-800 space-y-3">
+                  <div className="pt-3 border-t border-slate-200 space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-[11px] text-[#312038] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5" />
                         <span>Shop Page Products</span>
                       </label>
-                      <span className="text-[10px] font-bold text-slate-300 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800">
+                      <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
                         {productsList.length} Active
                       </span>
                     </div>
@@ -1954,7 +1954,7 @@ export default function VisualLayoutEditor() {
 
                     {/* Quick Add by SKU / ID */}
                     <div className="space-y-1">
-                      <label className="text-[10px] text-slate-400 font-bold block">Quick Add to Shop by SKU or ID:</label>
+                      <label className="text-[10px] text-slate-600 font-bold block">Quick Add to Shop by SKU or ID:</label>
                       <div className="flex gap-1.5">
                         <input
                           type="text"
@@ -1970,7 +1970,7 @@ export default function VisualLayoutEditor() {
                             }
                           }}
                           placeholder="e.g. BDY-6437 or Ladies Shirt"
-                          className="flex-1 p-2 rounded-xl bg-card border border-default text-heading text-xs placeholder-slate-500 focus:outline-none focus:border-[#312038] font-mono"
+                          className="flex-1 p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-[#312038] focus:bg-white font-mono"
                         />
                         <button
                           type="button"
@@ -1981,7 +1981,7 @@ export default function VisualLayoutEditor() {
                         </button>
                       </div>
                       {skuFeedback && (
-                        <p className={`text-[10px] font-semibold ${skuFeedback.type === "success" ? "text-purple-600" : "text-rose-400"}`}>
+                        <p className={`text-[10px] font-semibold ${skuFeedback.type === "success" ? "text-purple-600" : "text-rose-500"}`}>
                           {skuFeedback.message}
                         </p>
                       )}
@@ -1989,13 +1989,13 @@ export default function VisualLayoutEditor() {
 
                     {/* Active Products List in Shop */}
                     <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                      <div className="flex items-center justify-between text-[10px] text-slate-600 font-bold">
                         <span>Active in Shop Page ({productsList.length})</span>
                         {productsList.length > 0 && (
                           <button
                             type="button"
                             onClick={() => setProductsList([])}
-                            className="text-rose-400 hover:text-rose-300 cursor-pointer"
+                            className="text-rose-500 hover:text-rose-600 cursor-pointer"
                           >
                             Clear All
                           </button>
@@ -2006,27 +2006,27 @@ export default function VisualLayoutEditor() {
                           productsList.map((prod, idx) => (
                             <div
                               key={prod.id || idx}
-                              className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2"
+                              className="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
                             >
                               <div className="flex items-center gap-2 min-w-0">
                                 <img
                                   src={prod.image || prod.thumbnail}
                                   alt={prod.name}
-                                  className="w-8 h-8 rounded-lg object-cover bg-slate-800 border border-slate-700 flex-shrink-0"
+                                  className="w-8 h-8 rounded-lg object-cover bg-slate-100 border border-slate-200 flex-shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <p className="text-xs font-bold text-white truncate">{prod.name}</p>
-                                  <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
-                                    <span className="font-mono text-slate-500">{prod.sku || prod.id}</span>
+                                  <p className="text-xs font-bold text-slate-900 truncate">{prod.name}</p>
+                                  <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
+                                    <span className="font-mono text-slate-400">{prod.sku || prod.id}</span>
                                     <span>•</span>
-                                    <span>{prod.price}</span>
+                                    <span className="font-extrabold text-slate-900">{typeof prod.price === "string" && prod.price.startsWith("$") ? prod.price : `$${typeof prod.price === "number" ? prod.price : parseFloat(String(prod.price).replace(/[^0-9.]/g, "")) || 0}`}</span>
                                   </div>
                                 </div>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => setProductsList(productsList.filter((_, i) => i !== idx))}
-                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer"
+                                className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer"
                                 title="Remove from Shop"
                               >
                                 <X className="w-3.5 h-3.5" />
@@ -2034,7 +2034,7 @@ export default function VisualLayoutEditor() {
                             </div>
                           ))
                         ) : (
-                          <div className="p-3 text-center rounded-xl bg-slate-900/50 border border-dashed border-slate-800 text-slate-400 text-xs">
+                          <div className="p-3 text-center rounded-xl bg-slate-50 border border-dashed border-slate-200 text-slate-500 text-xs">
                             No products added to shop page yet.
                           </div>
                         )}
@@ -2392,12 +2392,12 @@ export default function VisualLayoutEditor() {
                       {/* Quick Collection Populator derived dynamically from storeCatalogProducts */}
                       {storeCatalogProducts.length > 0 && (
                         <div className="space-y-1">
-                          <label className="text-[10px] text-slate-400 font-bold block">Quick Fill by Category:</label>
+                          <label className="text-[10px] text-slate-500 font-bold block">Quick Fill by Category:</label>
                           <div className="flex flex-wrap gap-1.5 text-[10px]">
                             <button
                               type="button"
                               onClick={() => setProductsList([...storeCatalogProducts])}
-                              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 text-slate-300 font-bold transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
                             >
                               All ({storeCatalogProducts.length})
                             </button>
@@ -2411,7 +2411,7 @@ export default function VisualLayoutEditor() {
                                     const filtered = storeCatalogProducts.filter((p) => (p.category || p.tag) === catName);
                                     setProductsList(filtered);
                                   }}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 text-slate-300 font-bold transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
                                 >
                                   {catName} ({count})
                                 </button>
@@ -2519,15 +2519,15 @@ export default function VisualLayoutEditor() {
 
                       {/* Card Shape Selector */}
                       <div className="space-y-1">
-                        <label className="text-slate-400 font-bold block text-[10px]">Card Shape / Style</label>
+                        <label className="text-slate-500 font-bold block text-[10px]">Card Shape / Style</label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
                             onClick={() => handlePropChange("itemShape", "card")}
-                            className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all ${
+                            className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all cursor-pointer ${
                               (activeSection.props.itemShape || "card") === "card"
-                                ? "bg-purple-500/10 border-[#312038] text-purple-600"
-                                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                                ? "bg-purple-50 border-[#312038] text-purple-700 font-black shadow-xs"
+                                : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                             }`}
                           >
                             Rounded Card
@@ -2535,10 +2535,10 @@ export default function VisualLayoutEditor() {
                           <button
                             type="button"
                             onClick={() => handlePropChange("itemShape", "circle")}
-                            className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all ${
+                            className={`p-2 rounded-lg border text-center font-bold text-[11px] transition-all cursor-pointer ${
                               activeSection.props.itemShape === "circle"
-                                ? "bg-purple-500/10 border-[#312038] text-purple-600"
-                                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                                ? "bg-purple-50 border-[#312038] text-purple-700 font-black shadow-xs"
+                                : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                             }`}
                           >
                             Circular Avatar
@@ -2757,21 +2757,21 @@ export default function VisualLayoutEditor() {
                           },
                         }))
                       }
-                      className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-[#312038] text-left space-y-1.5 transition-all"
+                      className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#312038] text-left space-y-1.5 transition-all cursor-pointer shadow-xs hover:bg-slate-100"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className="w-3.5 h-3.5 rounded-full border border-slate-700" style={{ backgroundColor: p.primary }} />
-                        <span className="w-3.5 h-3.5 rounded-full border border-slate-700" style={{ backgroundColor: p.secondary }} />
-                        <span className="w-3.5 h-3.5 rounded-full border border-slate-700" style={{ backgroundColor: p.bg }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-slate-300" style={{ backgroundColor: p.primary }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-slate-300" style={{ backgroundColor: p.secondary }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-slate-300" style={{ backgroundColor: p.bg }} />
                       </div>
-                      <span className="text-[10px] font-bold text-white block truncate">{p.name}</span>
+                      <span className="text-[10px] font-bold text-slate-900 block truncate">{p.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* 2. Typography Font Families */}
-              <div className="space-y-3 pt-3 border-t border-slate-800">
+              <div className="space-y-3 pt-3 border-t border-slate-200">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Heading Font Family</label>
                   <select
@@ -3131,26 +3131,26 @@ export default function VisualLayoutEditor() {
 
       {/* ========================================================================= */}
       {/* ========================================================================= */}
-      {/* 4. STORE CATALOG PRODUCTS PICKER MODAL (REAL STORE PRODUCTS STRICTLY)       */}
+      {/* 4. STORE CATALOG PRODUCTS PICKER MODAL (LIGHT MODE)                       */}
       {/* ========================================================================= */}
       {showCatalogPickerModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-2xl text-white max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-2xl text-slate-900 max-h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-[#312038]" />
                   <span>Pick Products from Store Catalog ({storeCatalogProducts.length} Total)</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Select which verified products from {storeName} to display in this storefront section.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCatalogPickerModal(false)}
-                className="text-slate-400 hover:text-white text-xs font-bold p-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 text-xs font-bold p-1 cursor-pointer"
               >
                 ✕ Close
               </button>
@@ -3173,8 +3173,8 @@ export default function VisualLayoutEditor() {
                     onClick={() => setCatalogFilterCategory(tab.id)}
                     className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex-shrink-0 ${
                       catalogFilterCategory.toLowerCase() === tab.id.toLowerCase()
-                        ? "bg-[#312038] text-white shadow-md font-bold"
-                        : "bg-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[#312038] text-white shadow-sm font-bold"
+                        : "bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                     }`}
                   >
                     {tab.label}
@@ -3189,13 +3189,13 @@ export default function VisualLayoutEditor() {
                   value={catalogSearchQuery}
                   onChange={(e) => setCatalogSearchQuery(e.target.value)}
                   placeholder="Search store products by title, SKU, or category..."
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#312038]"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#312038] focus:bg-white focus:ring-2 focus:ring-[#312038]/10 transition-all"
                 />
               </div>
             </div>
 
             {/* Quick Actions Counter */}
-            <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div className="flex items-center justify-between text-xs text-slate-500 px-1">
               <span className="font-bold text-[#312038]">
                 {productsList.length} products currently active in this section
               </span>
@@ -3205,7 +3205,7 @@ export default function VisualLayoutEditor() {
                   onClick={() => {
                     setProductsList([...storeCatalogProducts]);
                   }}
-                  className="text-[11px] text-sky-400 hover:text-sky-300 font-bold cursor-pointer"
+                  className="text-[11px] text-primary-600 hover:text-primary-700 font-bold cursor-pointer"
                 >
                   Select All ({storeCatalogProducts.length})
                 </button>
@@ -3213,7 +3213,7 @@ export default function VisualLayoutEditor() {
                 <button
                   type="button"
                   onClick={() => setProductsList([])}
-                  className="text-[11px] text-rose-400 hover:text-rose-300 font-bold cursor-pointer"
+                  className="text-[11px] text-rose-500 hover:text-rose-600 font-bold cursor-pointer"
                 >
                   Clear Section
                 </button>
@@ -3236,17 +3236,21 @@ export default function VisualLayoutEditor() {
                 })
                 .map((item) => {
                   const isSelected = productsList.some((p) => p.id === item.id || (p.sku && item.sku && p.sku === item.sku));
+                  const displayPrice = typeof item.price === "string" && item.price.startsWith("$")
+                    ? item.price
+                    : `$${typeof item.price === "number" ? item.price : parseFloat(String(item.price).replace(/[^0-9.]/g, "")) || 0}`;
+
                   return (
                     <div
                       key={item.id || item.sku}
                       onClick={() => handleToggleProductFromCatalog(item)}
                       className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
                         isSelected
-                          ? "bg-slate-100 border-[#312038] shadow-md ring-1 ring-[#312038]/40"
-                          : "bg-slate-950/80 border-slate-800 hover:border-slate-700"
+                          ? "bg-purple-50/70 border-[#312038] shadow-xs ring-1 ring-[#312038]/30"
+                          : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs"
                       }`}
                     >
-                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
                         <img src={item.thumbnail || item.image} alt={item.name} className="w-full h-full object-cover" />
                         {isSelected && (
                           <div className="absolute inset-0 bg-[#312038]/70 flex items-center justify-center">
@@ -3261,18 +3265,18 @@ export default function VisualLayoutEditor() {
                             {item.category || item.tag}
                           </span>
                           {item.sku && (
-                            <span className="text-[9px] font-mono text-slate-500 ml-auto font-bold">
+                            <span className="text-[9px] font-mono text-slate-400 ml-auto font-bold">
                               {item.sku}
                             </span>
                           )}
                         </div>
-                        <p className="font-bold text-white text-xs truncate mt-0.5">{item.name}</p>
+                        <p className="font-bold text-slate-900 text-xs truncate mt-0.5">{item.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-slate-900 font-extrabold text-xs">
-                            {item.price}
+                            {displayPrice}
                           </span>
                           {item.discount && (
-                            <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 text-[9px] font-bold">
+                            <span className="px-1.5 py-0.2 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-bold">
                               {item.discount}
                             </span>
                           )}
@@ -3284,9 +3288,9 @@ export default function VisualLayoutEditor() {
 
               {storeCatalogProducts.length === 0 && (
                 <div className="col-span-full py-12 text-center space-y-3">
-                  <ShoppingBag className="w-10 h-10 text-slate-500 mx-auto" />
-                  <p className="text-white font-bold text-sm">No products found in this store's catalog</p>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto" />
+                  <p className="text-slate-900 font-bold text-sm">No products found in this store's catalog</p>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
                     Products added in your store inventory will automatically appear here.
                   </p>
                 </div>
@@ -3304,7 +3308,7 @@ export default function VisualLayoutEditor() {
                     (cat && cat.toLowerCase().includes(catalogSearchQuery.toLowerCase()));
                   return matchCat && matchQuery;
                 }).length === 0 && (
-                  <div className="col-span-full py-10 text-center space-y-2 text-slate-400 text-xs">
+                  <div className="col-span-full py-10 text-center space-y-2 text-slate-500 text-xs">
                     <p>No products match your filter or search query.</p>
                     <button
                       type="button"
@@ -3312,7 +3316,7 @@ export default function VisualLayoutEditor() {
                         setCatalogFilterCategory("all");
                         setCatalogSearchQuery("");
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold text-xs hover:bg-slate-700 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs cursor-pointer"
                     >
                       Reset Filters
                     </button>
@@ -3321,14 +3325,14 @@ export default function VisualLayoutEditor() {
             </div>
 
             {/* Modal Footer */}
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-xs text-slate-400">
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
                 Changes take effect in visual canvas immediately.
               </span>
               <button
                 type="button"
                 onClick={() => setShowCatalogPickerModal(false)}
-                className="px-6 py-2.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-black text-xs shadow-lg shadow-[#312038]/30 active:scale-95 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#312038] hover:bg-[#432c4d] text-white font-black text-xs shadow-md shadow-[#312038]/20 active:scale-95 transition-all cursor-pointer"
               >
                 Apply Selection ({productsList.length} Items)
               </button>
@@ -3486,32 +3490,32 @@ export default function VisualLayoutEditor() {
       )}
 
       {/* ========================================================================= */}
-      {/* 6. AI IMAGE SELECTOR MODAL                                                */}
+      {/* 6. AI IMAGE SELECTOR MODAL (LIGHT MODE)                                   */}
       {/* ========================================================================= */}
       {showImagePickerFor && (
-        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-card border border-default rounded-2xl p-6 space-y-4 shadow-2xl text-heading">
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-2xl text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#312038]" />
-                <h3 className="text-base font-bold text-white">AI High-Res Image Suggestions ({currentNichePreset.name})</h3>
+                <h3 className="text-base font-bold text-slate-900">AI High-Res Image Suggestions ({currentNichePreset.name})</h3>
               </div>
               <button
                 onClick={() => setShowImagePickerFor(null)}
-                className="text-slate-500 hover:text-white text-xs font-bold"
+                className="text-slate-400 hover:text-slate-700 text-xs font-bold cursor-pointer"
               >
                 ✕ Close
               </button>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Click any photo to instantly apply, or upload your own photo from your computer.
             </p>
 
             {/* AI Image Prompt Generator Box */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-violet-950/60 to-slate-950 border border-violet-500/30 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-violet-300">
-                <Wand2 className="w-4 h-4 text-violet-400 animate-pulse" />
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-violet-900">
+                <Wand2 className="w-4 h-4 text-violet-600 animate-pulse" />
                 <span>AI Photo Generator (Studio Diffusion & DALL-E)</span>
               </div>
               <div className="flex gap-2">
@@ -3520,13 +3524,13 @@ export default function VisualLayoutEditor() {
                   value={aiImagePrompt}
                   onChange={(e) => setAiImagePrompt(e.target.value)}
                   placeholder="e.g. Handmade Royal Oxford shoes on polished wood..."
-                  className="flex-1 p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  className="flex-1 p-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10"
                 />
                 <button
                   type="button"
                   onClick={handleGenerateCustomAiImage}
                   disabled={!aiImagePrompt.trim() || isGeneratingAiImg}
-                  className="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50 transition-all active:scale-95"
+                  className="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs flex items-center gap-1.5 disabled:opacity-50 transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
                   {isGeneratingAiImg ? (
                     <>
@@ -3544,10 +3548,10 @@ export default function VisualLayoutEditor() {
             </div>
 
             {/* Direct Upload Box from PC / Drive */}
-            <div className="p-3.5 rounded-xl border-2 border-dashed border-slate-700 hover:border-[#312038] bg-slate-950/60 text-center space-y-1 transition-all">
+            <div className="p-3.5 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#312038] bg-slate-50 hover:bg-slate-100/80 text-center space-y-1 transition-all">
               <label className="cursor-pointer block">
                 <Upload className="w-5 h-5 text-[#312038] mx-auto mb-1" />
-                <span className="text-xs font-bold text-heading block">📁 Upload Image from PC / Drive</span>
+                <span className="text-xs font-bold text-slate-900 block">📁 Upload Image from PC / Drive</span>
                 <span className="text-[10px] text-slate-500 block">Select any JPG, PNG, WEBP file directly from your computer</span>
                 <input
                   type="file"
@@ -3570,13 +3574,13 @@ export default function VisualLayoutEditor() {
                     handlePropChange("heroImage", img.url);
                     setShowImagePickerFor(null);
                   }}
-                  className="group rounded-xl border border-slate-800 overflow-hidden cursor-pointer hover:border-[#312038] transition-all"
+                  className="group rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-[#312038] transition-all bg-white shadow-xs"
                 >
                   <div className="h-28 overflow-hidden relative">
                     <img src={img.url} alt={img.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   </div>
-                  <div className="p-2 bg-slate-950">
-                    <p className="text-[10px] font-bold text-white truncate">{img.label}</p>
+                  <div className="p-2 bg-white border-t border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-800 truncate">{img.label}</p>
                   </div>
                 </div>
               ))}
