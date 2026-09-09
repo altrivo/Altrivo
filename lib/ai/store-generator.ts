@@ -412,10 +412,10 @@ export async function generateFinalStore(
       keywords: plan.seoKeywords,
     },
     commerceConfig: {
-      currency: plan.currency || "PKR",
-      currencySymbol: currencyMap[plan.currency] || "₨",
+      currency: plan.currency || "USD",
+      currencySymbol: (plan.currency && currencyMap[plan.currency]) || "$",
       codEnabled: plan.market?.toLowerCase().includes("pakistan") ?? true,
-      freeShippingThreshold: 5000,
+      freeShippingThreshold: 50,
       escrowEnabled: true,
     },
   };

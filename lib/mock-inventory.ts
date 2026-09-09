@@ -1,17 +1,8 @@
 import type { InventoryItem } from "@/types/inventory";
 
-import { getStoredProducts, getStoredProductFormData } from "./product-storage";
+import { getStoredProducts, getStoredProductFormData, getCategoryDefaultImage, isValidImageUrl } from "./product-storage";
 
 const INVENTORY_STORAGE_KEY = "artrivo_vendor_inventory";
-const defaultFallback =
-  "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=120&auto=format&fit=crop&q=80";
-
-function isValidThumb(url: string | null | undefined): boolean {
-  if (!url) return false;
-  if (url.startsWith("blob:")) return false;
-  if (url.includes("pollinations.ai")) return false;
-  return url.startsWith("data:") || url.startsWith("https://") || url.startsWith("http://");
-}
 
 export function generateMockInventory(): InventoryItem[] {
   const products = typeof window !== "undefined" ? getStoredProducts() : [];
@@ -20,7 +11,9 @@ export function generateMockInventory(): InventoryItem[] {
   products.slice(0, 200).forEach((product, idx) => {
     const defaultThreshold = 10 + (idx % 3) * 5;
     const storedForm = typeof window !== "undefined" ? getStoredProductFormData(product.id) : null;
-    const cleanThumb = isValidThumb(product.thumbnail) ? product.thumbnail : defaultFallback;
+    const cleanThumb = isValidImageUrl(product.thumbnail)
+      ? product.thumbnail
+      : getCategoryDefaultImage(product.category, product.name);
 
     if (storedForm?.variants && storedForm.variants.length > 0) {
       storedForm.variants.forEach((v) => {

@@ -350,19 +350,14 @@ export function ShopPageView({
             : ""
         }`}
       >
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl text-center sm:text-left">
+        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl">
+          <div className="space-y-2 max-w-2xl text-center sm:text-left">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold uppercase tracking-wider">
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>All Products</span>
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">{hero.title}</h1>
             <p className="text-xs sm:text-sm text-slate-300">{hero.subtitle}</p>
-          </div>
-
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 text-xs font-bold">
-            <span className="text-emerald-400 font-extrabold text-base">{products.length}</span>
-            <span>Items Available</span>
           </div>
         </div>
       </div>

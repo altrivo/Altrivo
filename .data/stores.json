@@ -34,7 +34,8 @@
           "category": "Clothing",
           "discount": "",
           "thumbnail": "data:image/jpeg;base64,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",
-          "originalPrice": "$30"
+          "originalPrice": "$30",
+          "status": "published"
         }
       ],
       "sections": [
@@ -138,7 +139,9 @@
           "discount": "",
           "originalPrice": "$30"
         }
-      ]
+      ],
+      "currency": "USD",
+      "currencySymbol": "$"
     },
     "is_published": true,
     "is_generating": false,
@@ -527,7 +530,9 @@
           "originalPrice": "$30",
           "status": "published"
         }
-      ]
+      ],
+      "currency": "USD",
+      "currencySymbol": "$"
     },
     "is_published": true,
     "is_generating": false,
@@ -750,7 +755,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
           "tag": "Bestseller",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s2",
@@ -761,7 +767,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
           "tag": "Trending",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s3",
@@ -772,7 +779,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
           "tag": "Traditional",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s4",
@@ -783,7 +791,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
           "tag": "Limited Drop",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         }
       ]
     },
@@ -1026,7 +1035,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
           "tag": "Bestseller",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s2",
@@ -1037,7 +1047,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
           "tag": "Trending",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s3",
@@ -1048,7 +1059,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
           "tag": "Traditional",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s4",
@@ -1059,7 +1071,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
           "tag": "Limited Drop",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         }
       ]
     },
@@ -1078,7 +1091,7 @@
     },
     "commerce_config": {
       "currency": "USD",
-      "currencySymbol": "₨",
+      "currencySymbol": "$",
       "codEnabled": true,
       "freeShippingThreshold": 5000,
       "escrowEnabled": true
@@ -1121,7 +1134,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$9500"
+          "originalPrice": "$9500",
+          "status": "published"
         },
         {
           "id": "s2",
@@ -1132,7 +1146,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$7800"
+          "originalPrice": "$7800",
+          "status": "published"
         },
         {
           "id": "s3",
@@ -1143,7 +1158,8 @@
           "rating": 5,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$6500"
+          "originalPrice": "$6500",
+          "status": "published"
         },
         {
           "id": "s4",
@@ -1154,7 +1170,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$11000"
+          "originalPrice": "$11000",
+          "status": "published"
         }
       ],
       "sections": [
@@ -1263,7 +1280,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$9500"
+                "originalPrice": "$9500",
+                "status": "published"
               },
               {
                 "id": "s2",
@@ -1274,7 +1292,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$7800"
+                "originalPrice": "$7800",
+                "status": "published"
               },
               {
                 "id": "s3",
@@ -1285,7 +1304,8 @@
                 "rating": 5,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$6500"
+                "originalPrice": "$6500",
+                "status": "published"
               },
               {
                 "id": "s4",
@@ -1296,7 +1316,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$11000"
+                "originalPrice": "$11000",
+                "status": "published"
               }
             ]
           }
@@ -1442,7 +1463,9 @@
           "discount": "20% OFF",
           "originalPrice": "$11000"
         }
-      ]
+      ],
+      "currency": "USD",
+      "currencySymbol": "$"
     },
     "is_published": true,
     "is_generating": false,
@@ -1656,7 +1679,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80",
           "tag": "Bestseller",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s2",
@@ -1667,7 +1691,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=600&q=80",
           "tag": "Trending",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s3",
@@ -1678,7 +1703,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80",
           "tag": "Traditional",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "s4",
@@ -1689,7 +1715,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
           "tag": "Limited Drop",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         }
       ]
     },
@@ -1706,7 +1733,7 @@
     },
     "commerce_config": {
       "currency": "USD",
-      "currencySymbol": "₨",
+      "currencySymbol": "$",
       "codEnabled": true,
       "freeShippingThreshold": 5000,
       "escrowEnabled": true
@@ -1892,7 +1919,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0002",
@@ -1903,7 +1931,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0003",
@@ -1914,7 +1943,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0004",
@@ -1925,7 +1955,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0005",
@@ -1936,7 +1967,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0006",
@@ -1947,7 +1979,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0007",
@@ -1958,7 +1991,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0008",
@@ -1969,7 +2003,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0009",
@@ -1980,7 +2015,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1582898950624-954f9d0cba3c?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0010",
@@ -1991,7 +2027,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0011",
@@ -2002,7 +2039,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0012",
@@ -2013,7 +2051,8 @@
                 "rating": 5,
                 "image": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0013",
@@ -2024,7 +2063,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0014",
@@ -2035,7 +2075,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0015",
@@ -2046,7 +2087,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0016",
@@ -2057,7 +2099,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0017",
@@ -2068,7 +2111,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0018",
@@ -2079,7 +2123,8 @@
                 "rating": 5,
                 "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0019",
@@ -2090,7 +2135,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0020",
@@ -2101,7 +2147,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0021",
@@ -2112,7 +2159,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0022",
@@ -2123,7 +2171,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0023",
@@ -2134,7 +2183,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0024",
@@ -2145,7 +2195,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0025",
@@ -2156,7 +2207,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0026",
@@ -2167,7 +2219,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0027",
@@ -2178,7 +2231,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0028",
@@ -2189,7 +2243,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0029",
@@ -2200,7 +2255,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0030",
@@ -2211,7 +2267,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0031",
@@ -2222,7 +2279,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0032",
@@ -2233,7 +2291,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
                 "tag": "Footwear",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0033",
@@ -2244,7 +2303,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0034",
@@ -2255,7 +2315,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0035",
@@ -2266,7 +2327,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0036",
@@ -2277,7 +2339,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0037",
@@ -2288,7 +2351,8 @@
                 "rating": 5,
                 "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0038",
@@ -2299,7 +2363,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0039",
@@ -2310,7 +2375,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0040",
@@ -2321,7 +2387,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0041",
@@ -2332,7 +2399,8 @@
                 "rating": 5,
                 "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0042",
@@ -2343,7 +2411,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0043",
@@ -2354,7 +2423,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0044",
@@ -2365,7 +2435,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0045",
@@ -2376,7 +2447,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0046",
@@ -2387,7 +2459,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0047",
@@ -2398,7 +2471,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
                 "tag": "Accessories",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0048",
@@ -2409,7 +2483,8 @@
                 "rating": 4.8,
                 "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
                 "tag": "Home Decor",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0049",
@@ -2420,7 +2495,8 @@
                 "rating": 4.7,
                 "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
                 "tag": "Apparel",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               },
               {
                 "id": "prod_0050",
@@ -2431,7 +2507,8 @@
                 "rating": 4.9,
                 "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
                 "tag": "Leather Goods",
-                "inStock": true
+                "inStock": true,
+                "status": "published"
               }
             ]
           }
@@ -2493,7 +2570,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0002",
@@ -2504,7 +2582,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0003",
@@ -2515,7 +2594,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0004",
@@ -2526,7 +2606,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0005",
@@ -2537,7 +2618,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0006",
@@ -2548,7 +2630,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0007",
@@ -2559,7 +2642,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0008",
@@ -2570,7 +2654,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0009",
@@ -2581,7 +2666,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1582898950624-954f9d0cba3c?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0010",
@@ -2592,7 +2678,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0011",
@@ -2603,7 +2690,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0012",
@@ -2614,7 +2702,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0013",
@@ -2625,7 +2714,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0014",
@@ -2636,7 +2726,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0015",
@@ -2647,7 +2738,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0016",
@@ -2658,7 +2750,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0017",
@@ -2669,7 +2762,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0018",
@@ -2680,7 +2774,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0019",
@@ -2691,7 +2786,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0020",
@@ -2702,7 +2798,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0021",
@@ -2713,7 +2810,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0022",
@@ -2724,7 +2822,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0023",
@@ -2735,7 +2834,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0024",
@@ -2746,7 +2846,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0025",
@@ -2757,7 +2858,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0026",
@@ -2768,7 +2870,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0027",
@@ -2779,7 +2882,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0028",
@@ -2790,7 +2894,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0029",
@@ -2801,7 +2906,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0030",
@@ -2812,7 +2918,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0031",
@@ -2823,7 +2930,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0032",
@@ -2834,7 +2942,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=800&auto=format&fit=crop&q=80",
           "tag": "Footwear",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0033",
@@ -2845,7 +2954,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0034",
@@ -2856,7 +2966,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0035",
@@ -2867,7 +2978,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0036",
@@ -2878,7 +2990,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0037",
@@ -2889,7 +3002,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0038",
@@ -2900,7 +3014,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0039",
@@ -2911,7 +3026,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0040",
@@ -2922,7 +3038,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0041",
@@ -2933,7 +3050,8 @@
           "rating": 5,
           "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0042",
@@ -2944,7 +3062,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0043",
@@ -2955,7 +3074,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0044",
@@ -2966,7 +3086,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0045",
@@ -2977,7 +3098,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0046",
@@ -2988,7 +3110,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0047",
@@ -2999,7 +3122,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1589756823695-278bc923f962?w=800&auto=format&fit=crop&q=80",
           "tag": "Accessories",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0048",
@@ -3010,7 +3134,8 @@
           "rating": 4.8,
           "image": "https://images.unsplash.com/photo-1590736969955-71cc94801759?w=800&auto=format&fit=crop&q=80",
           "tag": "Home Decor",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0049",
@@ -3021,7 +3146,8 @@
           "rating": 4.7,
           "image": "https://images.unsplash.com/photo-1542272604-780c96856592?w=800&auto=format&fit=crop&q=80",
           "tag": "Apparel",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         },
         {
           "id": "prod_0050",
@@ -3032,7 +3158,8 @@
           "rating": 4.9,
           "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&auto=format&fit=crop&q=80",
           "tag": "Leather Goods",
-          "inStock": true
+          "inStock": true,
+          "status": "published"
         }
       ]
     },
@@ -3599,7 +3726,9 @@
           "tag": "Leather Goods",
           "inStock": true
         }
-      ]
+      ],
+      "currency": "USD",
+      "currencySymbol": "$"
     },
     "is_published": true,
     "is_generating": false,
@@ -3639,7 +3768,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$9500"
+          "originalPrice": "$9500",
+          "status": "published"
         },
         {
           "id": "s2",
@@ -3650,7 +3780,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$7800"
+          "originalPrice": "$7800",
+          "status": "published"
         },
         {
           "id": "s3",
@@ -3661,7 +3792,8 @@
           "rating": 5,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$6500"
+          "originalPrice": "$6500",
+          "status": "published"
         },
         {
           "id": "s4",
@@ -3672,7 +3804,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$11000"
+          "originalPrice": "$11000",
+          "status": "published"
         },
         {
           "id": "prod_0001",
@@ -3683,7 +3816,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "Best Seller",
-          "originalPrice": "$9500"
+          "originalPrice": "$9500",
+          "status": "published"
         },
         {
           "id": "prod_0002",
@@ -3694,7 +3828,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$8200"
+          "originalPrice": "$8200",
+          "status": "published"
         },
         {
           "id": "prod_0003",
@@ -3705,7 +3840,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "Staff Pick",
-          "originalPrice": "$11000"
+          "originalPrice": "$11000",
+          "status": "published"
         },
         {
           "id": "prod_0004",
@@ -3716,7 +3852,8 @@
           "rating": 4.7,
           "inStock": true,
           "discount": "15% OFF",
-          "originalPrice": "$9900"
+          "originalPrice": "$9900",
+          "status": "published"
         },
         {
           "id": "prod_0005",
@@ -3727,7 +3864,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "Popular",
-          "originalPrice": "$6500"
+          "originalPrice": "$6500",
+          "status": "published"
         },
         {
           "id": "prod_0006",
@@ -3738,7 +3876,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "Heritage",
-          "originalPrice": "$9200"
+          "originalPrice": "$9200",
+          "status": "published"
         },
         {
           "id": "prod_0015",
@@ -3749,7 +3888,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "18% OFF",
-          "originalPrice": "$12000"
+          "originalPrice": "$12000",
+          "status": "published"
         },
         {
           "id": "prod_0014",
@@ -3760,7 +3900,8 @@
           "rating": 4.7,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$3500"
+          "originalPrice": "$3500",
+          "status": "published"
         },
         {
           "id": "prod_0016",
@@ -3771,7 +3912,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "Popular",
-          "originalPrice": "$4200"
+          "originalPrice": "$4200",
+          "status": "published"
         },
         {
           "id": "prod_0013",
@@ -3782,7 +3924,8 @@
           "rating": 4.8,
           "inStock": true,
           "discount": "25% OFF",
-          "originalPrice": "$3200"
+          "originalPrice": "$3200",
+          "status": "published"
         },
         {
           "id": "prod_0020",
@@ -3793,7 +3936,8 @@
           "rating": 4.7,
           "inStock": true,
           "discount": "20% OFF",
-          "originalPrice": "$5800"
+          "originalPrice": "$5800",
+          "status": "published"
         },
         {
           "id": "prod_0021",
@@ -3804,7 +3948,8 @@
           "rating": 4.9,
           "inStock": true,
           "discount": "Premium",
-          "originalPrice": "$19900"
+          "originalPrice": "$19900",
+          "status": "published"
         }
       ],
       "sections": [
@@ -3909,7 +4054,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$9500"
+                "originalPrice": "$9500",
+                "status": "published"
               },
               {
                 "id": "s2",
@@ -3920,7 +4066,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$7800"
+                "originalPrice": "$7800",
+                "status": "published"
               },
               {
                 "id": "s3",
@@ -3931,7 +4078,8 @@
                 "rating": 5,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$6500"
+                "originalPrice": "$6500",
+                "status": "published"
               },
               {
                 "id": "s4",
@@ -3942,7 +4090,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$11000"
+                "originalPrice": "$11000",
+                "status": "published"
               },
               {
                 "id": "prod_0001",
@@ -3953,7 +4102,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "Best Seller",
-                "originalPrice": "$9500"
+                "originalPrice": "$9500",
+                "status": "published"
               },
               {
                 "id": "prod_0002",
@@ -3964,7 +4114,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$8200"
+                "originalPrice": "$8200",
+                "status": "published"
               },
               {
                 "id": "prod_0003",
@@ -3975,7 +4126,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "Staff Pick",
-                "originalPrice": "$11000"
+                "originalPrice": "$11000",
+                "status": "published"
               },
               {
                 "id": "prod_0004",
@@ -3986,7 +4138,8 @@
                 "rating": 4.7,
                 "inStock": true,
                 "discount": "15% OFF",
-                "originalPrice": "$9900"
+                "originalPrice": "$9900",
+                "status": "published"
               },
               {
                 "id": "prod_0005",
@@ -3997,7 +4150,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "Popular",
-                "originalPrice": "$6500"
+                "originalPrice": "$6500",
+                "status": "published"
               },
               {
                 "id": "prod_0006",
@@ -4008,7 +4162,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "Heritage",
-                "originalPrice": "$9200"
+                "originalPrice": "$9200",
+                "status": "published"
               },
               {
                 "id": "prod_0015",
@@ -4019,7 +4174,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "18% OFF",
-                "originalPrice": "$12000"
+                "originalPrice": "$12000",
+                "status": "published"
               },
               {
                 "id": "prod_0014",
@@ -4030,7 +4186,8 @@
                 "rating": 4.7,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$3500"
+                "originalPrice": "$3500",
+                "status": "published"
               },
               {
                 "id": "prod_0016",
@@ -4041,7 +4198,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "Popular",
-                "originalPrice": "$4200"
+                "originalPrice": "$4200",
+                "status": "published"
               },
               {
                 "id": "prod_0013",
@@ -4052,7 +4210,8 @@
                 "rating": 4.8,
                 "inStock": true,
                 "discount": "25% OFF",
-                "originalPrice": "$3200"
+                "originalPrice": "$3200",
+                "status": "published"
               },
               {
                 "id": "prod_0020",
@@ -4063,7 +4222,8 @@
                 "rating": 4.7,
                 "inStock": true,
                 "discount": "20% OFF",
-                "originalPrice": "$5800"
+                "originalPrice": "$5800",
+                "status": "published"
               },
               {
                 "id": "prod_0021",
@@ -4074,7 +4234,8 @@
                 "rating": 4.9,
                 "inStock": true,
                 "discount": "Premium",
-                "originalPrice": "$19900"
+                "originalPrice": "$19900",
+                "status": "published"
               }
             ]
           }
@@ -4359,7 +4520,9 @@
           "discount": "Premium",
           "originalPrice": "$19900"
         }
-      ]
+      ],
+      "currency": "USD",
+      "currencySymbol": "$"
     },
     "is_published": true,
     "is_generating": false,

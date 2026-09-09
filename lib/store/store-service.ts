@@ -530,6 +530,17 @@ export async function createStore(input: CreateStoreInput, explicitVendorId?: st
     storeName: input.name,
   };
 
+  // Ensure layout_config has the exact store name and clean published products
+  const layoutProducts = (updatedLayoutConfig.products || []).map((p: any) => ({
+    ...p,
+    status: p.status || "published",
+  }));
+
+  const cleanedLayoutConfig = {
+    ...updatedLayoutConfig,
+    ...(layoutProducts.length > 0 ? { products: layoutProducts } : {}),
+  };
+
   const newStoreRow: StoreRow = {
     id: `store_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     vendor_id: finalVendorId,
@@ -538,9 +549,16 @@ export async function createStore(input: CreateStoreInput, explicitVendorId?: st
     niche: input.niche || "shoes",
     description: input.description || null,
     logo_url: input.logo_url || null,
-    layout_config: updatedLayoutConfig,
+    layout_config: cleanedLayoutConfig,
     seo_config: input.seo_config || {},
-    commerce_config: input.commerce_config || {},
+    commerce_config: {
+      currency: "USD",
+      currencySymbol: "$",
+      codEnabled: true,
+      freeShippingThreshold: 50,
+      escrowEnabled: true,
+      ...(input.commerce_config || {}),
+    },
     is_published: true,
     is_generating: false,
     custom_domain: null,
