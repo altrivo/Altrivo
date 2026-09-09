@@ -6,6 +6,7 @@ import { useVendorStore } from "@/context/VendorStoreContext";
 import {
   getStoredProducts,
   saveStoredProducts,
+  getStorageKey,
   resolveStoreId,
   getCategoryDefaultImage,
   generateUniqueSku,
@@ -90,36 +91,16 @@ export function useProducts(explicitStoreId?: string) {
                 };
               });
 
-              setProducts((prev) => {
-                const map = new Map<string, Product>();
-                converted.forEach((p) => map.set(p.id, p));
+              // Authoritative source of truth: the store's database products
+              setProducts(converted);
 
-                // STRICT MULTI-STORE ISOLATION:
-                // Discard any local product that belongs to another store!
-                prev.forEach((locP) => {
-                  if (locP.storeId && effectiveStoreId && locP.storeId !== effectiveStoreId) {
-                    return; // NEVER merge foreign products into this store!
-                  }
-                  if (!map.has(locP.id)) {
-                    if (!locP.storeId || locP.storeId === effectiveStoreId) {
-                      const cleanLocImg =
-                        (isValidImageUrl(locP.thumbnail) && locP.thumbnail) ||
-                        (isValidImageUrl(locP.image) && locP.image) ||
-                        getCategoryDefaultImage(locP.category, locP.name);
-                      map.set(locP.id, {
-                        ...locP,
-                        storeId: effectiveStoreId,
-                        thumbnail: cleanLocImg,
-                        image: cleanLocImg,
-                      });
-                    }
-                  }
-                });
-
-                const merged = Array.from(map.values());
-                saveStoredProducts(merged, effectiveStoreId);
-                return merged;
-              });
+              // Sync localStorage to match the authoritative database state for this store
+              if (typeof window !== "undefined" && effectiveStoreId) {
+                try {
+                  const key = getStorageKey(effectiveStoreId);
+                  localStorage.setItem(key, JSON.stringify(converted));
+                } catch {}
+              }
             }
           }
         })
