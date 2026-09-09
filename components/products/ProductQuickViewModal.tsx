@@ -18,7 +18,7 @@ interface ProductQuickViewModalProps {
 
 const shoeFallbackGallery = [
   "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=800&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1535043934128-cf0b28d52f95?w=800&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1581101767113-1677fc2beaa8?w=800&auto=format&fit=crop&q=80",
   "https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?w=800&auto=format&fit=crop&q=80",

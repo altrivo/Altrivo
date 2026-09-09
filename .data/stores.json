@@ -175,6 +175,21 @@
       },
       "products": [
         {
+          "id": "prod_1788944746539_vzn2",
+          "sku": "BDY-1930",
+          "tag": "Electronics",
+          "name": "Twist Watch",
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          "price": "$45",
+          "rating": 5,
+          "status": "draft",
+          "inStock": true,
+          "category": "Electronics",
+          "discount": "",
+          "thumbnail": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          "originalPrice": ""
+        },
+        {
           "id": "prod_1788870677349_gksm",
           "sku": "BDY-7749",
           "tag": "Electronics",
@@ -251,28 +266,28 @@
             "layout": "card",
             "categories": [
               {
-                "title": "Automatic Chronographs",
+                "href": "/category/chronographs",
                 "count": "12 items",
                 "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-                "href": "/category/chronographs"
+                "title": "Automatic Chronographs"
               },
               {
-                "title": "Skeleton Mechanical",
+                "href": "/category/mechanical",
                 "count": "8 items",
                 "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=600&q=80",
-                "href": "/category/mechanical"
+                "title": "Skeleton Mechanical"
               },
               {
-                "title": "Luxury Dress Watches",
+                "href": "/category/dress",
                 "count": "15 items",
                 "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
-                "href": "/category/dress"
+                "title": "Luxury Dress Watches"
               },
               {
-                "title": "Diver Timepieces",
+                "href": "/category/diver",
                 "count": "10 items",
                 "image": "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=600&q=80",
-                "href": "/category/diver"
+                "title": "Diver Timepieces"
               }
             ]
           }
@@ -285,6 +300,21 @@
             "title": "Featured Timepieces",
             "columns": 3,
             "products": [
+              {
+                "id": "prod_1788944746539_vzn2",
+                "sku": "BDY-1930",
+                "tag": "Electronics",
+                "name": "Twist Watch",
+                "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+                "price": "$45",
+                "rating": 5,
+                "status": "draft",
+                "inStock": true,
+                "category": "Electronics",
+                "discount": "",
+                "thumbnail": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+                "originalPrice": ""
+              },
               {
                 "id": "prod_1788870677349_gksm",
                 "sku": "BDY-7749",
@@ -412,20 +442,20 @@
       "storeName": "Watch-Brand",
       "categories": [
         {
-          "name": "Automatic Chronographs",
-          "href": "#catalog"
+          "href": "#catalog",
+          "name": "Automatic Chronographs"
         },
         {
-          "name": "Skeleton Mechanical",
-          "href": "#catalog"
+          "href": "#catalog",
+          "name": "Skeleton Mechanical"
         },
         {
-          "name": "Luxury Dress Watches",
-          "href": "#catalog"
+          "href": "#catalog",
+          "name": "Luxury Dress Watches"
         },
         {
-          "name": "Diver Timepieces",
-          "href": "#catalog"
+          "href": "#catalog",
+          "name": "Diver Timepieces"
         }
       ]
     },
@@ -443,6 +473,21 @@
     "commerce_config": {
       "currency": "USD",
       "products": [
+        {
+          "id": "prod_1788944746539_vzn2",
+          "sku": "BDY-1930",
+          "tag": "Electronics",
+          "name": "Twist Watch",
+          "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          "price": "$45",
+          "rating": 5,
+          "status": "draft",
+          "inStock": true,
+          "category": "Electronics",
+          "discount": "",
+          "thumbnail": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          "originalPrice": ""
+        },
         {
           "id": "prod_1788870677349_gksm",
           "sku": "BDY-7749",
@@ -496,7 +541,7 @@
     "custom_domain": null,
     "subdomain": null,
     "created_at": "2026-09-07T14:55:15.066192+00:00",
-    "updated_at": "2026-09-09T09:02:20.881Z"
+    "updated_at": "2026-09-09T10:10:13.469605+00:00"
   },
   {
     "id": "06e897d3-d685-4cf7-bc84-c2c140834f5d",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -57,7 +57,12 @@ import {
   Phone,
 } from "lucide-react";
 import StorefrontRenderer from "@/components/sections/StorefrontRenderer";
-import { getStoredProducts, toStorefrontProduct } from "@/lib/product-storage";
+import {
+  getStoredProducts,
+  toStorefrontProduct,
+  isValidImageUrl,
+  getCategoryDefaultImage,
+} from "@/lib/product-storage";
 
 // ---------------------------------------------------------------------------
 // Multi-Niche AI Asset Library & Curated Presets
@@ -564,6 +569,38 @@ export default function VisualLayoutEditor() {
   const [productsList, setProductsList] = useState<any[]>([]);
   // Real Store Catalog Products strictly scoped to this store ID & slug
   const [storeCatalogProducts, setStoreCatalogProducts] = useState<any[]>([]);
+
+  // Strictly isolate and sanitize products for the active store & niche
+  const sanitizedCatalog = useMemo(() => {
+    return storeCatalogProducts.filter((p) => {
+      if (!p) return false;
+      if (p.storeId && storeId && p.storeId !== storeId && p.storeId !== slug) return false;
+      const sName = `${storeName || ""} ${slug || ""}`.toLowerCase();
+      const pName = (p.name || "").toLowerCase();
+      const pCat = (p.category || p.tag || "").toLowerCase();
+      if (
+        activeNiche === "watches" ||
+        sName.includes("watch") ||
+        sName.includes("chrono") ||
+        sName.includes("time")
+      ) {
+        if (pCat === "clothing" || pCat === "apparel" || pName.includes("shirt") || p.id === "prod_1788857708721_8y74") {
+          return false;
+        }
+      }
+      if (
+        activeNiche === "clothing" ||
+        sName.includes("cloth") ||
+        sName.includes("apparel") ||
+        sName.includes("fashion")
+      ) {
+        if (pCat === "electronics" || pName.includes("watch") || p.id?.includes("watch")) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [storeCatalogProducts, storeId, slug, activeNiche, storeName]);
   const [skuFeedback, setSkuFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>("navbar-header");
   const [deviceMode, setDeviceMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
@@ -992,6 +1029,29 @@ export default function VisualLayoutEditor() {
               if (storeData.slug) {
                 localStorage.setItem(`artrivo_products_store_${storeData.slug}`, JSON.stringify(mergedStoreCatalog));
               }
+              const localDigi = localStorage.getItem("digishop_stores");
+              if (localDigi) {
+                const parsedStores = JSON.parse(localDigi);
+                if (Array.isArray(parsedStores)) {
+                  const updated = parsedStores.map((s: any) => {
+                    if (s.id === storeData.id || s.slug === storeData.slug) {
+                      return {
+                        ...s,
+                        layout_config: {
+                          ...s.layout_config,
+                          products: mergedStoreCatalog,
+                        },
+                        commerce_config: {
+                          ...s.commerce_config,
+                          products: mergedStoreCatalog,
+                        },
+                      };
+                    }
+                    return s;
+                  });
+                  localStorage.setItem("digishop_stores", JSON.stringify(updated));
+                }
+              }
             } catch {}
           }
 
@@ -1012,10 +1072,8 @@ export default function VisualLayoutEditor() {
             setStoreName(storeData.name || storeData.layout_config.storeName || "My Store");
             setStoreId(storeData.id);
             
-            // Prefer existing layout products if populated, otherwise initialize with store catalog
-            if (backendLayoutProducts.length > 0) {
-              setProductsList(backendLayoutProducts.map(toStorefrontProduct));
-            } else if (mergedStoreCatalog.length > 0) {
+            // Always initialize productsList strictly with the store's verified mergedStoreCatalog
+            if (mergedStoreCatalog.length > 0) {
               setProductsList(mergedStoreCatalog);
             } else {
               setProductsList([]);
@@ -2397,12 +2455,12 @@ export default function VisualLayoutEditor() {
 
                   {/* SPECIAL SECTION: PRODUCT GRID PROPS (STORE CATALOG ENGINE) */}
                   {(activeSection.type === "ProductGridFeatured" || activeSection.type.includes("ProductGrid")) && (
-                    <div className="pt-3 border-t border-slate-800 space-y-3">
+                    <div className="pt-3 border-t border-slate-200 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="font-bold text-white text-xs block">Section Products ({productsList.length})</span>
-                          <span className="text-[10px] text-slate-400">
-                            Linked to Store Catalog ({storeCatalogProducts.length} Total)
+                          <span className="font-bold text-slate-900 text-xs block">Section Products ({productsList.length})</span>
+                          <span className="text-[10px] text-slate-500">
+                            Linked to Store Catalog ({sanitizedCatalog.length} Total)
                           </span>
                         </div>
                         <button
@@ -2415,26 +2473,26 @@ export default function VisualLayoutEditor() {
                         </button>
                       </div>
 
-                      {/* Quick Collection Populator derived dynamically from storeCatalogProducts */}
-                      {storeCatalogProducts.length > 0 && (
+                      {/* Quick Collection Populator derived dynamically from sanitizedCatalog */}
+                      {sanitizedCatalog.length > 0 && (
                         <div className="space-y-1">
                           <label className="text-[10px] text-slate-500 font-bold block">Quick Fill by Category:</label>
                           <div className="flex flex-wrap gap-1.5 text-[10px]">
                             <button
                               type="button"
-                              onClick={() => setProductsList([...storeCatalogProducts])}
+                              onClick={() => setProductsList([...sanitizedCatalog])}
                               className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
                             >
-                              All ({storeCatalogProducts.length})
+                              All ({sanitizedCatalog.length})
                             </button>
-                            {Array.from(new Set(storeCatalogProducts.map((p) => p.category || p.tag).filter(Boolean))).map((catName) => {
-                              const count = storeCatalogProducts.filter((p) => (p.category || p.tag) === catName).length;
+                            {Array.from(new Set(sanitizedCatalog.map((p) => p.category || p.tag).filter(Boolean))).map((catName) => {
+                              const count = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName).length;
                               return (
                                 <button
                                   key={catName}
                                   type="button"
                                   onClick={() => {
-                                    const filtered = storeCatalogProducts.filter((p) => (p.category || p.tag) === catName);
+                                    const filtered = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName);
                                     setProductsList(filtered);
                                   }}
                                   className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
@@ -2485,20 +2543,24 @@ export default function VisualLayoutEditor() {
                       {/* Selected Product items list */}
                       <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                         {productsList.map((prod, pIdx) => (
-                          <div key={prod.id} className="p-2.5 rounded-xl bg-neutral-50 border border-default shadow-2xs flex items-center justify-between gap-2">
+                          <div key={prod.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <img src={prod.image} alt={prod.name} className="w-10 h-10 rounded-lg object-cover border border-slate-800 flex-shrink-0" />
+                              <img
+                                src={prod.image}
+                                alt={prod.name}
+                                className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = getCategoryDefaultImage(prod.category, prod.name);
+                                }}
+                              />
                               <div className="min-w-0">
-                                <p className="font-bold text-white text-xs truncate">{prod.name}</p>
+                                <p className="font-bold text-slate-900 text-xs truncate">{prod.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-slate-800 font-bold text-[11px]">{prod.price}</span>
+                                  <span className="text-slate-900 font-extrabold text-[11px]">{prod.price}</span>
                                   {prod.discount && (
-                                    <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 text-[9px] font-bold">
+                                    <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 text-[9px] font-bold">
                                       {prod.discount}
                                     </span>
-                                  )}
-                                  {prod.id && (
-                                    <span className="text-slate-500 font-mono text-[9px]">({prod.id})</span>
                                   )}
                                 </div>
                               </div>
@@ -2507,7 +2569,7 @@ export default function VisualLayoutEditor() {
                             <button
                               type="button"
                               onClick={() => setProductsList(productsList.filter((_, i) => i !== pIdx))}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
                               title="Remove from this section"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2520,11 +2582,11 @@ export default function VisualLayoutEditor() {
 
                   {/* SPECIAL SECTION: CATEGORY CAROUSEL PROPS (FULL IMAGE & CARD CONTROLS) */}
                   {activeSection.type.includes("Category") && activeSection.props.categories && (
-                    <div className="pt-3 border-t border-slate-800 space-y-3">
+                    <div className="pt-3 border-t border-slate-200 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="font-bold text-white text-xs block">Category Cards ({activeSection.props.categories.length})</span>
-                          <span className="text-[10px] text-slate-400">Edit titles, photos, and item counts</span>
+                          <span className="font-bold text-slate-900 text-xs block">Category Cards ({activeSection.props.categories.length})</span>
+                          <span className="text-[10px] text-slate-500">Edit titles, photos, and item counts</span>
                         </div>
                         <button
                           onClick={() => {
@@ -2532,7 +2594,7 @@ export default function VisualLayoutEditor() {
                             const newCat = {
                               title: `New Collection`,
                               count: `12 items`,
-                              image: currentNichePreset.images[0]?.url || "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600",
+                              image: currentNichePreset.images[0]?.url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600",
                               href: "#catalog",
                             };
                             handlePropChange("categories", [...current, newCat]);
@@ -2575,12 +2637,12 @@ export default function VisualLayoutEditor() {
                       {/* Category Items List */}
                       <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
                         {activeSection.props.categories.map((cat: any, cIdx: number) => (
-                          <div key={cIdx} className="p-3.5 rounded-xl bg-neutral-50 border border-default shadow-2xs space-y-2">
+                          <div key={cIdx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs space-y-2">
                             <div className="flex items-center gap-2.5">
                               <img
-                                src={cat.image || cat.imageUrl || "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600"}
+                                src={cat.image || cat.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"}
                                 alt={cat.title || cat.name}
-                                className="w-12 h-12 rounded-lg object-cover border border-slate-800 flex-shrink-0"
+                                className="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0"
                               />
                               <div className="flex-1 min-w-0 space-y-1">
                                 <input
@@ -2592,7 +2654,7 @@ export default function VisualLayoutEditor() {
                                     up[cIdx].name = e.target.value;
                                     handlePropChange("categories", up);
                                   }}
-                                  className="w-full bg-card p-1.5 rounded text-heading text-xs font-bold border border-slate-800 focus:border-[#312038]"
+                                  className="w-full bg-white p-1.5 rounded text-slate-900 text-xs font-bold border border-slate-200 focus:border-[#312038]"
                                   placeholder="Category Name"
                                 />
                                 <input
@@ -2603,7 +2665,7 @@ export default function VisualLayoutEditor() {
                                     up[cIdx].count = e.target.value;
                                     handlePropChange("categories", up);
                                   }}
-                                  className="w-full bg-slate-950 p-1 rounded text-slate-400 text-[10px] border border-slate-800"
+                                  className="w-full bg-white p-1 rounded text-slate-700 text-[10px] border border-slate-200"
                                   placeholder="Item count (e.g. 24 items)"
                                 />
                               </div>
@@ -2613,7 +2675,7 @@ export default function VisualLayoutEditor() {
                                   const up = activeSection.props.categories.filter((_: any, i: number) => i !== cIdx);
                                   handlePropChange("categories", up);
                                 }}
-                                className="p-1 rounded text-slate-500 hover:text-rose-400"
+                                className="p-1 rounded text-slate-400 hover:text-rose-500"
                                 title="Delete Category"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2621,8 +2683,8 @@ export default function VisualLayoutEditor() {
                             </div>
 
                             {/* Category Image Upload & URL */}
-                            <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
-                              <label className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-bold cursor-pointer text-[10px]">
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                              <label className="flex items-center gap-1 text-sky-600 hover:text-sky-700 font-bold cursor-pointer text-[10px]">
                                 <Upload className="w-3 h-3" /> Upload PC Photo
                                 <input
                                   type="file"
@@ -2656,7 +2718,7 @@ export default function VisualLayoutEditor() {
                                     handlePropChange("categories", up);
                                   }
                                 }}
-                                className="flex items-center gap-1 text-purple-600 hover:text-purple-300 font-bold text-[10px]"
+                                className="flex items-center gap-1 text-[#312038] hover:text-[#5A3D63] font-bold text-[10px]"
                               >
                                 <Sparkles className="w-3 h-3" /> AI Suggest Photo
                               </button>
@@ -2676,10 +2738,10 @@ export default function VisualLayoutEditor() {
           {/* TAB 3: FULL PRODUCT CATALOG MANAGER */}
           {sidebarTab === "catalog" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                 <div>
-                  <span className="font-bold text-white text-xs block">Store Products Catalog</span>
-                  <span className="text-[10px] text-slate-400">{productsList.length} total products</span>
+                  <span className="font-bold text-slate-900 text-xs block">Store Products Catalog</span>
+                  <span className="text-[10px] text-slate-500">{productsList.length} total products</span>
                 </div>
                 <button
                   onClick={openAddProductModal}
@@ -2691,15 +2753,22 @@ export default function VisualLayoutEditor() {
 
               <div className="space-y-3">
                 {productsList.map((prod, pIdx) => (
-                  <div key={prod.id} className="p-3.5 rounded-xl bg-neutral-50 border border-default shadow-2xs space-y-2.5">
+                  <div key={prod.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs space-y-2.5">
                     <div className="flex items-center gap-3">
-                      <img src={prod.image} alt={prod.name} className="w-12 h-12 rounded-lg object-cover border border-slate-800 flex-shrink-0" />
+                      <img
+                        src={prod.image}
+                        alt={prod.name}
+                        className="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = getCategoryDefaultImage(prod.category, prod.name);
+                        }}
+                      />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-white text-xs truncate">{prod.name}</p>
+                        <p className="font-bold text-slate-900 text-xs truncate">{prod.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-slate-800 font-bold text-[11px]">{prod.price}</span>
+                          <span className="text-slate-900 font-extrabold text-[11px]">{prod.price}</span>
                           {prod.discount && (
-                            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold">
+                            <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold">
                               {prod.discount}
                             </span>
                           )}
@@ -2709,14 +2778,14 @@ export default function VisualLayoutEditor() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => openEditProductModal(prod, pIdx)}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 cursor-pointer"
                           title="Edit in Modal"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-purple-600" />
                         </button>
                         <button
                           onClick={() => setProductsList(productsList.filter((_, i) => i !== pIdx))}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 cursor-pointer"
                           title="Delete Product"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -2724,8 +2793,8 @@ export default function VisualLayoutEditor() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/60">
-                      <label className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-bold cursor-pointer">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200">
+                      <label className="flex items-center gap-1 text-sky-600 hover:text-sky-700 font-bold cursor-pointer">
                         <Upload className="w-3 h-3" /> Upload PC Photo
                         <input
                           type="file"
@@ -2734,10 +2803,10 @@ export default function VisualLayoutEditor() {
                           onChange={(e) => handleFileUpload(e, `product_${pIdx}`)}
                         />
                       </label>
-                      <span className="flex items-center gap-1 text-purple-600 font-bold">
+                      <span className="flex items-center gap-1 text-purple-700 font-bold">
                         <ShoppingBag className="w-3 h-3" /> Quick Cart
                       </span>
-                      <span className="flex items-center gap-1 text-rose-400 font-bold">
+                      <span className="flex items-center gap-1 text-rose-500 font-bold">
                         <Heart className="w-3 h-3 fill-rose-500" /> Wishlist
                       </span>
                     </div>
@@ -2750,7 +2819,7 @@ export default function VisualLayoutEditor() {
           {/* TAB 4: THEME COLORS & TYPOGRAPHY STYLING SUITE */}
           {sidebarTab === "colors" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              <div className="pb-2 border-b border-slate-800">
+              <div className="pb-2 border-b border-slate-200">
                 <h3 className="text-sm font-bold text-heading">Typography &amp; Theme Styling</h3>
                 <p className="text-[10px] text-slate-400">Change fonts, text colors, background colors, and palettes</p>
               </div>
@@ -2799,7 +2868,7 @@ export default function VisualLayoutEditor() {
               {/* 2. Typography Font Families */}
               <div className="space-y-3 pt-3 border-t border-slate-200">
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Heading Font Family</label>
+                  <label className="text-slate-600 font-bold block mb-1">Heading Font Family</label>
                   <select
                     value={layoutConfig.theme.typography.heading}
                     onChange={(e) =>
@@ -2811,7 +2880,7 @@ export default function VisualLayoutEditor() {
                         },
                       }))
                     }
-                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-[#312038]"
+                    className="w-full p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#312038]"
                   >
                     <option value="Playfair Display">🏛️ Playfair Display (Luxury &amp; Heritage)</option>
                     <option value="Plus Jakarta Sans">⚡ Plus Jakarta Sans (Modern &amp; Clean)</option>
@@ -2824,7 +2893,7 @@ export default function VisualLayoutEditor() {
                 </div>
 
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Body Text Font</label>
+                  <label className="text-slate-600 font-bold block mb-1">Body Text Font</label>
                   <select
                     value={layoutConfig.theme.typography.body}
                     onChange={(e) =>
@@ -2836,7 +2905,7 @@ export default function VisualLayoutEditor() {
                         },
                       }))
                     }
-                    className="w-full p-2.5 rounded-lg bg-neutral-50 border border-default shadow-2xs text-white text-xs font-semibold focus:outline-none focus:border-[#312038]"
+                    className="w-full p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#312038]"
                   >
                     <option value="Inter">Inter (Ultra Legible)</option>
                     <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
@@ -2848,9 +2917,9 @@ export default function VisualLayoutEditor() {
               </div>
 
               {/* 3. Detailed Color Pickers */}
-              <div className="space-y-3 pt-3 border-t border-slate-800">
+              <div className="space-y-3 pt-3 border-t border-slate-200">
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Primary Brand Color (Buttons &amp; Accents)</label>
+                  <label className="text-slate-600 font-bold block mb-1">Primary Brand Color (Buttons &amp; Accents)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -2861,7 +2930,7 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, primary: e.target.value } },
                         }))
                       }
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-slate-300 bg-white cursor-pointer"
                     />
                     <input
                       type="text"
@@ -2872,13 +2941,13 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, primary: e.target.value } },
                         }))
                       }
-                      className="flex-1 p-2 rounded-lg bg-card border border-default text-heading font-mono text-xs"
+                      className="flex-1 p-2 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Accent Color (Gold &amp; Badges)</label>
+                  <label className="text-slate-600 font-bold block mb-1">Accent Color (Gold &amp; Badges)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -2889,7 +2958,7 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, secondary: e.target.value } },
                         }))
                       }
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-slate-300 bg-white cursor-pointer"
                     />
                     <input
                       type="text"
@@ -2900,13 +2969,13 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, secondary: e.target.value } },
                         }))
                       }
-                      className="flex-1 p-2 rounded-lg bg-card border border-default text-heading font-mono text-xs"
+                      className="flex-1 p-2 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Store Background Color</label>
+                  <label className="text-slate-600 font-bold block mb-1">Store Background Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -2917,7 +2986,7 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, background: e.target.value } },
                         }))
                       }
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-slate-300 bg-white cursor-pointer"
                     />
                     <input
                       type="text"
@@ -2928,13 +2997,13 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, background: e.target.value } },
                         }))
                       }
-                      className="flex-1 p-2 rounded-lg bg-card border border-default text-heading font-mono text-xs"
+                      className="flex-1 p-2 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Text &amp; Heading Color</label>
+                  <label className="text-slate-600 font-bold block mb-1">Text &amp; Heading Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -2945,7 +3014,7 @@ export default function VisualLayoutEditor() {
                           theme: { ...prev.theme, colors: { ...prev.theme.colors, text: e.target.value } },
                         }))
                       }
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-slate-300 bg-white cursor-pointer"
                     />
                     <input
                       type="text"
@@ -3160,14 +3229,14 @@ export default function VisualLayoutEditor() {
       {/* 4. STORE CATALOG PRODUCTS PICKER MODAL (LIGHT MODE)                       */}
       {/* ========================================================================= */}
       {showCatalogPickerModal && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="max-w-4xl w-full bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-2xl text-slate-900 max-h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <ShoppingBag className="w-5 h-5 text-[#312038]" />
-                  <span>Pick Products from Store Catalog ({storeCatalogProducts.length} Total)</span>
+                  <span>Pick Products from Store Catalog ({sanitizedCatalog.length} Total)</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Select which verified products from {storeName} to display in this storefront section.
@@ -3176,7 +3245,7 @@ export default function VisualLayoutEditor() {
               <button
                 type="button"
                 onClick={() => setShowCatalogPickerModal(false)}
-                className="text-slate-400 hover:text-slate-700 text-xs font-bold p-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 ✕ Close
               </button>
@@ -3184,11 +3253,11 @@ export default function VisualLayoutEditor() {
 
             {/* Filter Bar: Category Tabs + Search */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              {/* Category Pills dynamically generated from storeCatalogProducts */}
+              {/* Category Pills dynamically generated from sanitizedCatalog */}
               <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 text-xs">
                 {[
-                  { id: "all", label: `All (${storeCatalogProducts.length})` },
-                  ...Array.from(new Set(storeCatalogProducts.map((p) => p.category || p.tag).filter(Boolean))).map((cat) => ({
+                  { id: "all", label: `All (${sanitizedCatalog.length})` },
+                  ...Array.from(new Set(sanitizedCatalog.map((p) => p.category || p.tag).filter(Boolean))).map((cat) => ({
                     id: String(cat),
                     label: String(cat),
                   })),
@@ -3229,11 +3298,11 @@ export default function VisualLayoutEditor() {
                 <button
                   type="button"
                   onClick={() => {
-                    setProductsList([...storeCatalogProducts]);
+                    setProductsList([...sanitizedCatalog]);
                   }}
                   className="text-[11px] text-primary-600 hover:text-primary-700 font-bold cursor-pointer"
                 >
-                  Select All ({storeCatalogProducts.length})
+                  Select All ({sanitizedCatalog.length})
                 </button>
                 <span>•</span>
                 <button
@@ -3248,7 +3317,7 @@ export default function VisualLayoutEditor() {
 
             {/* Store Products Grid */}
             <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pr-1 max-h-[55vh]">
-              {storeCatalogProducts
+              {sanitizedCatalog
                 .filter((p) => {
                   const cat = p.category || p.tag || "";
                   const matchCat =
@@ -3266,18 +3335,31 @@ export default function VisualLayoutEditor() {
                     ? item.price
                     : `$${typeof item.price === "number" ? item.price : parseFloat(String(item.price).replace(/[^0-9.]/g, "")) || 0}`;
 
+                  const resolvedItemImg =
+                    (isValidImageUrl(item.thumbnail) && item.thumbnail) ||
+                    (isValidImageUrl(item.image) && item.image) ||
+                    (Array.isArray(item.images) && item.images.find((img: string) => isValidImageUrl(img))) ||
+                    getCategoryDefaultImage(item.category || item.tag, item.name);
+
                   return (
                     <div
                       key={item.id || item.sku}
                       onClick={() => handleToggleProductFromCatalog(item)}
-                      className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
+                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 select-none ${
                         isSelected
                           ? "bg-purple-50/70 border-[#312038] shadow-xs ring-1 ring-[#312038]/30"
-                          : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs"
+                          : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-xs"
                       }`}
                     >
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
-                        <img src={item.thumbnail || item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <img
+                          src={resolvedItemImg}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = getCategoryDefaultImage(item.category || item.tag, item.name);
+                          }}
+                        />
                         {isSelected && (
                           <div className="absolute inset-0 bg-[#312038]/70 flex items-center justify-center">
                             <Check className="w-5 h-5 text-white stroke-[3]" />
@@ -3287,7 +3369,7 @@ export default function VisualLayoutEditor() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
                             {item.category || item.tag}
                           </span>
                           {item.sku && (
@@ -3312,7 +3394,7 @@ export default function VisualLayoutEditor() {
                   );
                 })}
 
-              {storeCatalogProducts.length === 0 && (
+              {sanitizedCatalog.length === 0 && (
                 <div className="col-span-full py-12 text-center space-y-3">
                   <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto" />
                   <p className="text-slate-900 font-bold text-sm">No products found in this store's catalog</p>
@@ -3322,8 +3404,8 @@ export default function VisualLayoutEditor() {
                 </div>
               )}
 
-              {storeCatalogProducts.length > 0 &&
-                storeCatalogProducts.filter((p) => {
+              {sanitizedCatalog.length > 0 &&
+                sanitizedCatalog.filter((p) => {
                   const cat = p.category || p.tag || "";
                   const matchCat =
                     catalogFilterCategory === "all" || cat.toLowerCase() === catalogFilterCategory.toLowerCase();

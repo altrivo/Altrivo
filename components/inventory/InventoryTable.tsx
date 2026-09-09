@@ -10,6 +10,7 @@ import type {
 } from "@/types/inventory";
 
 import { InlineEditPopover } from "./InlineEditPopover";
+import { getCategoryDefaultImage } from "@/lib/product-storage";
 
 interface ToastNotification {
   id: string;
@@ -360,12 +361,11 @@ export function InventoryTable({
                   <td className="py-2 px-3 text-center align-middle">
                     <div className="relative w-9 h-9 mx-auto rounded-md overflow-hidden bg-slate-100 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                       <img
-                        src={item.thumbnail || "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=120&auto=format&fit=crop&q=80"}
+                        src={item.thumbnail || getCategoryDefaultImage(item.category, item.name)}
                         alt={item.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "https://images.unsplash.com/photo-1596568359553-a56de6970068?w=120&auto=format&fit=crop&q=80";
+                          (e.target as HTMLImageElement).src = getCategoryDefaultImage(item.category, item.name);
                         }}
                       />
                     </div>
