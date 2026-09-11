@@ -21,6 +21,50 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
+    // Mode 0: Instant 1-Click Store Generation (Direct from Step 1 when vendor clicks "Instant Store Preset")
+    if (body.mode === 'instant' || body.instantBuild) {
+      const plan = providedPlan || (await planStore(prompt)).plan;
+      if (body.storeName && body.storeName.trim()) {
+        plan.suggestedName = body.storeName.trim();
+      }
+      if (body.niche && body.niche !== 'general') {
+        plan.industry = body.niche;
+      }
+
+      const templateToUse = effectiveTemplateId || plan.recommendedTemplateId || 'minimal-luxe';
+      const { store: generated, tokensUsed, costUsd } = await generateFinalStore(plan, templateToUse);
+      const slug = await generateUniqueSlug(generated.name);
+
+      const store = await createStore({
+        name: generated.name,
+        slug,
+        niche: generated.niche,
+        description: generated.description,
+        layout_config: generated.layoutConfig,
+        seo_config: generated.seoConfig,
+        commerce_config: {
+          ...(generated.commerceConfig || {}),
+          currency: plan.currency || "PKR",
+          currencySymbol: "₨",
+          codEnabled: true,
+          freeShippingThreshold: 5000,
+          escrowEnabled: true,
+        },
+      }, targetVendorId);
+
+      try {
+        await createSnapshot(store.id, 'ai_generate', `Instant 1-Click Store: ${generated.name}`);
+      } catch {}
+
+      const response = NextResponse.json({ store, tokensUsed, costUsd }, { status: 201 });
+      response.cookies.set("active_store_id", store.id, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+      });
+      return response;
+    }
+
     // Mode 1: Custom Section Blueprint Assembly (Vendor chose individual components + custom components)
     if (effectiveSections) {
       const plan = providedPlan || (await planStore(prompt)).plan;

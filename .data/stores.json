@@ -1,5 +1,235 @@
 [
   {
+    "id": "35fdbb40-2f9a-4ace-89fe-ee4c03150901",
+    "vendor_id": "a40ff35a-a3f1-45f7-b105-9ec09d21a1d7",
+    "name": "Test Chrono Craft",
+    "slug": "test-chrono-craft",
+    "niche": "watches",
+    "description": "Precision Japanese Engineering. Timeless Black & Gold.",
+    "logo_url": null,
+    "layout_config": {
+      "theme": {
+        "colors": {
+          "text": "#F5F5F5",
+          "primary": "#0D0D0D",
+          "secondary": "#D4AF37",
+          "background": "#050505"
+        },
+        "typography": {
+          "body": "Inter",
+          "heading": "Playfair Display"
+        }
+      },
+      "sections": [
+        {
+          "id": "promo-banner-1",
+          "type": "PromoBanner",
+          "props": {
+            "text": "🎉 Official Drop: Free Nationwide Insured Delivery on all Luxury Timepieces!",
+            "layout": "ribbon"
+          }
+        },
+        {
+          "id": "hero-centered-overlay-1",
+          "type": "HeroCenteredOverlay",
+          "props": {
+            "title": "Precision Engineering & Timeless Horology",
+            "ctaLink": "/shop",
+            "ctaText": "Explore Timepieces",
+            "imageUrl": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80",
+            "subtitle": "Precision Japanese Engineering. Timeless Black & Gold.",
+            "imageAlignment": "right",
+            "secondaryCtaLink": "/shop",
+            "secondaryCtaText": "View Chronographs"
+          }
+        },
+        {
+          "id": "category-carousel-1",
+          "type": "CategoryCarousel",
+          "props": {
+            "title": "Explore Collections",
+            "layout": "card",
+            "categories": [
+              {
+                "href": "#catalog",
+                "icon": "star",
+                "count": "18 models",
+                "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+                "title": "Automatic Chronographs"
+              },
+              {
+                "href": "#catalog",
+                "icon": "trending-up",
+                "count": "24 models",
+                "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80",
+                "title": "Classic Leather Dress"
+              },
+              {
+                "href": "#catalog",
+                "icon": "award",
+                "count": "12 models",
+                "image": "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80",
+                "title": "18K Gold Plated Editions"
+              },
+              {
+                "href": "#catalog",
+                "icon": "tag",
+                "count": "15 models",
+                "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+                "title": "Sports & Diver 200M"
+              }
+            ]
+          }
+        },
+        {
+          "id": "product-grid-featured-1",
+          "type": "ProductGridFeatured",
+          "props": {
+            "title": "Featured Products",
+            "columns": 3
+          }
+        },
+        {
+          "id": "testimonial-slider-1",
+          "type": "TestimonialSlider",
+          "props": {
+            "title": "What Our Customers Say",
+            "layout": "carousel",
+            "testimonials": [
+              {
+                "id": "1",
+                "name": "Dr. Daniyal Ahmed (Islamabad)",
+                "role": "Verified Buyer",
+                "text": "The bezel finish and sweep of the second hand is stunning. Looks like a 2-lakh watch!",
+                "rating": 5
+              },
+              {
+                "id": "2",
+                "name": "Shahmeer Khan (Lahore)",
+                "role": "Verified Buyer",
+                "text": "Delivered in luxury velvet box with warranty card. Outstanding quality.",
+                "rating": 5
+              }
+            ]
+          }
+        },
+        {
+          "id": "brand-story-1",
+          "type": "BrandStory",
+          "props": {
+            "title": "The Art of Precision Horology",
+            "imageUrl": "https://images.unsplash.com/photo-1513094735237-8f2714d57c13?auto=format&fit=crop&w=1200&q=80",
+            "paragraphs": [
+              "Each timepiece is individually assembled and tested for 72 hours in dust-free horological chambers.",
+              "We blend surgical-grade 316L stainless steel with sapphire crystal to build watches meant to be passed down generations."
+            ]
+          }
+        },
+        {
+          "id": "newsletter-signup-1",
+          "type": "NewsletterSignup",
+          "props": {
+            "title": "Join The Chrono VIP Collectors Club",
+            "layout": "box",
+            "subtitle": "Receive private invitations to limited batch drops and 10% OFF your first luxury timepiece.",
+            "buttonText": "Subscribe"
+          }
+        },
+        {
+          "id": "feature-grid-1",
+          "type": "FeatureGrid",
+          "props": {
+            "items": [
+              {
+                "icon": "shield-check",
+                "title": "Sapphire Crystal Glass",
+                "description": "Scratch-resistant anti-reflective coating"
+              },
+              {
+                "icon": "award",
+                "title": "Japanese Movement",
+                "description": "Precision Miyota automatic caliber accuracy"
+              },
+              {
+                "icon": "truck",
+                "title": "Cash on Delivery",
+                "description": "Tracked express courier dispatch nationwide"
+              },
+              {
+                "icon": "rotate-ccw",
+                "title": "2-Year Warranty",
+                "description": "Comprehensive movement and repair guarantee"
+              }
+            ],
+            "columns": 4
+          }
+        }
+      ],
+      "storeName": "Test Chrono Craft",
+      "categories": [
+        {
+          "href": "/category/automatic-chronographs",
+          "name": "Automatic Chronographs"
+        },
+        {
+          "href": "/category/classic-leather-dress",
+          "name": "Classic Leather Dress"
+        },
+        {
+          "href": "/category/18k-gold-plated-editions",
+          "name": "18K Gold Plated Editions"
+        },
+        {
+          "href": "/category/sports-diver-200m",
+          "name": "Sports & Diver 200M"
+        }
+      ],
+      "socialLinks": [
+        {
+          "href": "#",
+          "icon": "instagram",
+          "name": "Instagram"
+        },
+        {
+          "href": "#",
+          "icon": "whatsapp",
+          "name": "WhatsApp"
+        },
+        {
+          "href": "#",
+          "icon": "facebook",
+          "name": "Facebook"
+        }
+      ]
+    },
+    "seo_config": {
+      "title": "Test Chrono Craft | Luxury Watches & Chronographs",
+      "keywords": [
+        "luxury watches Pakistan",
+        "chronograph watch",
+        "automatic watches Pakistan",
+        "sapphire crystal watch",
+        "cash on delivery watches",
+        "Japanese movement watches",
+        "black and gold luxury watch"
+      ],
+      "description": "Precision Japanese Engineering. Timeless Black & Gold."
+    },
+    "commerce_config": {
+      "currency": "PKR",
+      "codEnabled": true,
+      "escrowEnabled": true,
+      "currencySymbol": "₨",
+      "freeShippingThreshold": 5000
+    },
+    "is_published": true,
+    "is_generating": false,
+    "custom_domain": null,
+    "subdomain": null,
+    "created_at": "2026-09-11T09:12:31.212686+00:00",
+    "updated_at": "2026-09-11T09:12:31.212686+00:00"
+  },
+  {
     "id": "2ffea6bd-7521-4882-afe8-cb84a0f4fa68",
     "vendor_id": "6ac168a7-8eee-4050-94c3-abde88437184",
     "name": "Cloths-Brand",

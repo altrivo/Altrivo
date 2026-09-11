@@ -1,4 +1,6 @@
 import { buildPlannerPrompt } from './prompts/store-planner-prompt';
+import fs from 'fs';
+import path from 'path';
 
 export interface StoreBlueprintPlan {
   industry: string;
@@ -27,51 +29,84 @@ export interface StoreBlueprintPlan {
   };
   pageStructure: string[];
   seoKeywords: string[];
+  userPrompt?: string;
+}
+
+const GEMINI_MODELS = [
+  "gemini-3.6-flash",
+  "gemini-3.7-flash",
+  "gemini-3.8-flash",
+];
+
+function getGeminiApiKey(): string | null {
+  let key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
+  if (!key) {
+    try {
+      const envPath = path.join(process.cwd(), ".env.local");
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, "utf8");
+        for (const line of content.split("\n")) {
+          if (line.startsWith("GEMINI_API_KEY=")) {
+            key = line.split("=")[1].trim().replace(/['"]/g, "");
+            break;
+          }
+          if (!key && line.startsWith("GOOGLE_API_KEY=")) {
+            key = line.split("=")[1].trim().replace(/['"]/g, "");
+          }
+        }
+      }
+    } catch {}
+  }
+  return key;
 }
 
 export async function planStore(userPrompt: string): Promise<{ plan: StoreBlueprintPlan; tokensUsed: number; costUsd: number }> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const apiKey = getGeminiApiKey();
   const prompt = buildPlannerPrompt(userPrompt);
-
   const fallbackPlan: StoreBlueprintPlan = generateFallbackPlan(userPrompt);
+  fallbackPlan.userPrompt = userPrompt;
 
   if (!apiKey) {
     console.warn("No Gemini API key found. Using fallback plan.");
     return { plan: fallbackPlan, tokensUsed: 0, costUsd: 0 };
   }
 
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    });
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.3 }
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
+      if (response.ok) {
+        const data = await response.json();
+        let textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (textContent) {
+          let cleanJson = textContent.trim();
+          if (cleanJson.startsWith("```")) {
+            cleanJson = cleanJson.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+          }
+          const plan = JSON.parse(cleanJson) as StoreBlueprintPlan;
+          plan.userPrompt = userPrompt;
+          const tokensUsed = prompt.length + textContent.length;
+          const costUsd = (tokensUsed / 1000) * 0.0001;
+          return { plan, tokensUsed, costUsd };
+        }
+      } else {
+        const errText = await response.text();
+        console.warn(`[Gemini Store Planner ${model} Error]: ${response.status}`, errText.substring(0, 150));
+      }
+    } catch (error) {
+      console.warn(`[Gemini Store Planner Exception on ${model}]:`, error);
     }
-
-    const data = await response.json();
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!textContent) {
-      throw new Error("Empty response from Gemini API");
-    }
-
-    const plan = JSON.parse(textContent) as StoreBlueprintPlan;
-    
-    // Calculate mock token usage and cost
-    const tokensUsed = prompt.length + textContent.length;
-    const costUsd = (tokensUsed / 1000) * 0.0001; // Approximate flash cost
-
-    return { plan, tokensUsed, costUsd };
-  } catch (error) {
-    console.error("Failed to plan store via AI, falling back.", error);
-    return { plan: fallbackPlan, tokensUsed: 0, costUsd: 0 };
   }
+
+  console.warn("All Gemini models failed in store planner, falling back to smart defaults.");
+  return { plan: fallbackPlan, tokensUsed: 0, costUsd: 0 };
 }
 
 function generateFallbackPlan(userPrompt: string): StoreBlueprintPlan {

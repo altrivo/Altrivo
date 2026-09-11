@@ -30,8 +30,12 @@ Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`j
 }
 
 export function buildGeneratorPrompt(blueprint: any, templateTokens: any): string {
-  return `You are an expert copywriter and content generator for e-commerce stores.
+  const userVision = blueprint.userPrompt || blueprint.suggestedTagline || blueprint.suggestedName || "curated e-commerce storefront";
+  return `You are an expert copywriter and content generator for e-commerce stores on the Altrivo platform.
 Using the provided store blueprint and theme tokens, generate compelling, high-converting content for each section of the store.
+
+VENDOR'S EXACT STORE VISION / PROMPT:
+"${userVision}"
 
 STORE BLUEPRINT:
 ${JSON.stringify(blueprint, null, 2)}
@@ -39,22 +43,28 @@ ${JSON.stringify(blueprint, null, 2)}
 THEME TOKENS:
 ${JSON.stringify(templateTokens, null, 2)}
 
+CRITICAL INSTRUCTIONS:
+- Tailor all copywriting (headlines, subheadlines, category titles, brand story paragraphs, testimonials, and announcements) directly and specifically to the vendor's store vision prompt above.
+- Categories should be 4 realistic sub-collections specific to this niche (e.g. if watches: Automatic Chronographs, Minimalist Dress Watches, Diver Series, 18K Gold Editions).
+- Testimonials should be authentic Pakistani buyer feedback (mentioning cities like Lahore, Karachi, Islamabad) praising genuine craftsmanship and fast Cash on Delivery.
+- Feature items must highlight buyer trust: Cash on Delivery nationwide, Escrow buyer protection, 7-day easy exchange, and 100% authentic quality.
+
 Generate a JSON object with the following structure:
-- heroHeadline: Catchy main title.
-- heroSubheadline: Engaging subtitle.
-- heroCta: Primary call to action text.
-- heroSecondaryCta: (Optional) Secondary call to action text.
-- featureItems: Array of 3-4 objects { icon, title, description }.
-- categoryNames: Array of 3-6 objects { title, count, icon, href }.
-- testimonials: Array of 3-4 objects { name, text, rating (1-5), role }.
-- faqItems: Array of 4-6 objects { question, answer }.
-- newsletterHeadline: Title for newsletter section.
-- newsletterSubheadline: Subtitle for newsletter.
-- brandStoryTitle: Main title for brand story.
-- brandStoryParagraphs: Array of 2-3 paragraph strings.
+- heroHeadline: Catchy main title tailored to the brand.
+- heroSubheadline: Engaging subtitle explaining the craftsmanship and unique value.
+- heroCta: Primary call to action text (e.g. "Shop Collection", "Explore Timepieces", "Order Now").
+- heroSecondaryCta: (Optional) Secondary call to action text (e.g. "View Catalog", "Brand Heritage").
+- featureItems: Array of 4 objects { icon: "truck"|"shield-check"|"rotate-ccw"|"award", title: string, description: string }.
+- categoryNames: Array of 4 objects { title: string, count: string, icon: string, href: string }.
+- testimonials: Array of 2-3 objects { name: string, text: string, rating: 5, role: "Verified Buyer" }.
+- faqItems: Array of 3-4 objects { question: string, answer: string }.
+- newsletterHeadline: Title for VIP newsletter section.
+- newsletterSubheadline: Subtitle for newsletter (e.g. with discount incentive like 10% OFF).
+- brandStoryTitle: Main title for brand heritage and story.
+- brandStoryParagraphs: Array of 2 rich storytelling paragraphs.
 - seoTitle: Store SEO title.
 - seoDescription: Store SEO meta description.
-- announcementText: Text for the top announcement bar.
+- announcementText: Text for the top announcement bar with discount / delivery guarantee.
 
 Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.`;
 }

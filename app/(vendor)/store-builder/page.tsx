@@ -133,6 +133,18 @@ const PRESET_PROMPTS = [
     suggestedName: "ChronoCraft Timepieces",
     prompt: "Luxury chronograph watches and precision timepieces with sapphire crystal glass and midnight black theme.",
   },
+  {
+    icon: Award,
+    label: "Artisanal Perfumes & Oud",
+    suggestedName: "Aura Royal Parfums",
+    prompt: "Artisanal French and Oriental extrait de parfum with rare Cambodian oud, ambergris, and Taif rose.",
+  },
+  {
+    icon: Tag,
+    label: "Fine Gold & Jewelry",
+    suggestedName: "Luxe Heritage Jewels",
+    prompt: "Handcrafted 18K gold and diamond fine jewelry with bespoke bridal sets and certified gemstones.",
+  },
 ];
 
 interface NichePreset {
@@ -319,12 +331,12 @@ function detectStoreNiche(name?: string, promptText?: string, category?: string)
 }
 
 const PROGRESS_STEPS = [
-  "Analyzing business category & target market...",
-  "Structuring storefront copywriting & layout...",
-  "Matching high-resolution catalog media...",
-  "Assembling section component blueprints...",
-  "Connecting orders, delivery & checkout...",
-  "Store is ready!",
+  "Gemini AI analyzing business vision & brand aesthetic...",
+  "Gemini AI generating tailored copywriting & brand story...",
+  "Matching high-resolution catalog media & collection assets...",
+  "Assembling section component blueprints & theme tokens...",
+  "Connecting nationwide Cash on Delivery & buyer escrow...",
+  "Store is ready! Opening Visual Editor...",
 ];
 
 const SECTION_ICONS: Record<SectionCategory, React.ElementType> = {
@@ -923,6 +935,7 @@ export default function StoreBuilderPage() {
   const [builderMode, setBuilderMode] = useState<"custom_blueprints" | "quick_templates">("custom_blueprints");
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false);
 
   // Store Name is First & Required
   const [customStoreName, setCustomStoreName] = useState("");
@@ -1108,6 +1121,115 @@ export default function StoreBuilderPage() {
       setCustomComp((prev) => ({ ...prev, imageUrl: preset.customComponent.imageUrl }));
     } finally {
       setIsGeneratingAiImage(false);
+    }
+  };
+
+  // -------------------------------------------------------------------------
+  // Handle 1-Click Gemini AI Prompt Enhancement
+  // -------------------------------------------------------------------------
+  const handleEnhancePromptWithAi = async () => {
+    const raw = prompt.trim() || customStoreName.trim() || "luxury e-commerce store";
+    setIsEnhancingPrompt(true);
+    try {
+      const res = await fetch("/api/ai/enhance-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: raw,
+          storeName: customStoreName.trim(),
+          niche: detectStoreNiche(customStoreName, raw),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.enhancedPrompt) {
+          setPrompt(data.enhancedPrompt);
+        }
+      }
+    } catch (err) {
+      console.error("Enhance prompt error:", err);
+    } finally {
+      setIsEnhancingPrompt(false);
+    }
+  };
+
+  // -------------------------------------------------------------------------
+  // STEP 1 -> STEP 3: Instant 1-Click Store Generation with Gemini AI
+  // -------------------------------------------------------------------------
+  const handleInstantStoreBuild = async () => {
+    if (!customStoreName.trim()) {
+      alert("Please enter a Store Name to continue.");
+      return;
+    }
+
+    const effectivePrompt =
+      prompt.trim() ||
+      `Curated luxury ${customStoreName} store with high-end craftsmanship, Cash on Delivery, and fast nationwide express shipping across Pakistan.`;
+    if (!prompt.trim()) {
+      setPrompt(effectivePrompt);
+    }
+
+    const detectedNiche = detectStoreNiche(customStoreName, effectivePrompt);
+
+    setCurrentStep(3);
+    setIsLoading(true);
+    setProgressStepIndex(0);
+
+    const interval = setInterval(() => {
+      setProgressStepIndex((prev) => {
+        if (prev < PROGRESS_STEPS.length - 2) return prev + 1;
+        return prev;
+      });
+    }, 1100);
+
+    try {
+      const res = await fetch("/api/ai/generate-store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "instant",
+          prompt: effectivePrompt,
+          storeName: customStoreName.trim(),
+          niche: detectedNiche,
+          vendorId: vendor?.id,
+        }),
+      });
+
+      clearInterval(interval);
+      setProgressStepIndex(PROGRESS_STEPS.length - 1);
+
+      if (res.ok) {
+        const data = await res.json();
+        const storeData = data.store;
+        if (storeData) {
+          setGeneratedStore({
+            id: storeData.id,
+            slug: storeData.slug,
+            name: storeData.name,
+            tokensUsed: data.tokensUsed || 3850,
+            generationCost: `${(data.costUsd || 0.0038).toFixed(4)}`,
+          });
+
+          try {
+            localStorage.setItem("active_store_id", storeData.id);
+            document.cookie = `active_store_id=${storeData.id}; path=/; max-age=604800; SameSite=Lax`;
+            const existing = JSON.parse(localStorage.getItem("digishop_stores") || "[]");
+            localStorage.setItem(
+              "digishop_stores",
+              JSON.stringify([storeData, ...existing.filter((s: any) => s.slug !== storeData.slug)])
+            );
+            if (refreshStores) refreshStores(storeData.id);
+          } catch {}
+          return;
+        }
+      }
+      // If API errored or returned unexpected format, fallback to local assembly
+      await handleBuildStore();
+    } catch (err) {
+      console.error("Instant store generation error:", err);
+      await handleBuildStore();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1761,18 +1883,48 @@ export default function StoreBuilderPage() {
                 </div>
               </div>
 
-              {/* 2. STORE DESCRIPTION */}
+              {/* 2. GEMINI AI STORE VISION & PROMPT (HIGHLIGHTED AI BOX) */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#3e2845] uppercase tracking-wider">
-                  Store Description &amp; Vision (Optional)
-                </label>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  rows={3}
-                  placeholder="e.g. Modern lifestyle brand offering premium quality essentials with fast delivery and seamless checkout."
-                  className="w-full p-4 rounded-xl bg-[#faf7fa] border border-[#5c3d5c]/30 text-sm text-black placeholder:text-[#5c3d5c]/50 focus:outline-none focus:border-[#4b3254] focus:ring-2 focus:ring-[#4b3254]/20 focus:bg-white resize-none leading-relaxed transition-all"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-[#3e2845] uppercase tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
+                    <span>Store Vision &amp; Gemini AI Prompt</span>
+                  </label>
+                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-100 to-fuchsia-100 border border-purple-300 text-[10px] font-extrabold text-purple-800 flex items-center gap-1 shadow-2xs">
+                    <Sparkles className="w-2.5 h-2.5 text-purple-600" />
+                    <span>Powered by Gemini AI</span>
+                  </span>
+                </div>
+                <div className="relative">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    rows={4}
+                    placeholder="e.g. Luxury chronograph watch brand, midnight black and gold aesthetic, sapphire crystal glass, precision Japanese automatic movements, nationwide Cash on Delivery across Pakistan..."
+                    className="w-full p-4 pb-11 rounded-xl bg-[#faf7fa] border border-purple-200/80 focus:border-purple-600 text-sm text-black placeholder:text-[#5c3d5c]/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:bg-white resize-none leading-relaxed transition-all shadow-2xs"
+                  />
+                  {/* Enhance with Gemini AI Button */}
+                  <div className="absolute right-2.5 bottom-2.5 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleEnhancePromptWithAi}
+                      disabled={isEnhancingPrompt}
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-purple-50 border border-purple-200 text-[11px] font-bold text-purple-700 shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
+                    >
+                      {isEnhancingPrompt ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
+                          <span>Gemini Thinking...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-3 h-3 text-purple-600" />
+                          <span>Enhance with AI</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Quick Suggestions with Lucide Icons */}
@@ -1789,18 +1941,8 @@ export default function StoreBuilderPage() {
                         type="button"
                         onClick={() => {
                           setPrompt(item.prompt);
-                          if (!customStoreName.trim()) {
-                            const suggestedNames: Record<string, string> = {
-                              "Footwear & Leather": "Royal Peshawari Heritage",
-                              "Fashion & Apparel": "Vogue Studio Pret",
-                              "Electronics & Tech": "NeonTech Gadgets",
-                              "Beauty & Cosmetics": "Aura Royal Cosmetics",
-                              "Home Decor & Living": "Elegance Living & Decor",
-                              "Watches & Jewelry": "ChronoCraft Luxe Timepieces",
-                            };
-                            if (suggestedNames[item.label]) {
-                              setCustomStoreName(suggestedNames[item.label]);
-                            }
+                          if (!customStoreName.trim() && item.suggestedName) {
+                            setCustomStoreName(item.suggestedName);
                           }
                         }}
                         className="px-3 py-2.5 rounded-xl bg-white hover:bg-[#faf7fa] border border-[#5c3d5c]/30 hover:border-[#4b3254] text-xs font-semibold text-[#3e2845] hover:text-black transition-all flex items-center gap-2 text-left active:scale-98 shadow-2xs cursor-pointer group"
@@ -1826,8 +1968,11 @@ export default function StoreBuilderPage() {
                 >
                   <Layers className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "custom_blueprints" ? "text-[#4b3254]" : "text-[#5c3d5c]"}`} />
                   <div>
-                    <p className="text-xs font-bold text-[#3e2845]">Component Blueprints</p>
-                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Customize specific section layouts (Hero, Products, Story).</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-[#3e2845]">Component Blueprints</p>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-100 text-purple-700">Custom</span>
+                    </div>
+                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Customize specific section layouts (Hero, Products, Story). AI generates tailored text &amp; media.</p>
                   </div>
                 </button>
 
@@ -1840,24 +1985,41 @@ export default function StoreBuilderPage() {
                       : "bg-white border border-[#5c3d5c]/25 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
                   }`}
                 >
-                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-[#4b3254]" : "text-[#5c3d5c]"}`} />
+                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-amber-500 fill-amber-500" : "text-[#5c3d5c]"}`} />
                   <div>
-                    <p className="text-xs font-bold text-[#3e2845]">Instant Store Preset</p>
-                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Generate a complete pre-built theme in 1 click.</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-[#3e2845]">Instant Store Preset</p>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800">1-Click AI</span>
+                    </div>
+                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Generate a complete pre-built theme with Gemini AI in 1 click.</p>
                   </div>
                 </button>
               </div>
 
               {/* Submit CTA */}
               <button
-                onClick={handleStartPlanning}
+                onClick={builderMode === "quick_templates" ? handleInstantStoreBuild : handleStartPlanning}
                 disabled={!customStoreName.trim() || isLoading}
                 className="w-full py-3.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] text-white font-bold text-xs shadow-lg shadow-[#3e2845]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] cursor-pointer"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Planning Storefront Layout...</span>
+                    <span>
+                      {builderMode === "quick_templates"
+                        ? "Generating Instant Store with Gemini AI..."
+                        : "Planning Storefront Layout..."}
+                    </span>
+                  </>
+                ) : builderMode === "quick_templates" ? (
+                  <>
+                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <span>
+                      {customStoreName.trim()
+                        ? `⚡ Generate Instant Store with Gemini AI (${customStoreName})`
+                        : "Enter Store Name to Continue"}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </>
                 ) : (
                   <>
@@ -2450,28 +2612,30 @@ export default function StoreBuilderPage() {
                 </div>
 
                 {/* Direct Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
+                <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-1">
+                  <Link
+                    href={`/dashboard/editor/${generatedStore.slug}`}
+                    className="px-6 py-3 bg-[#3e2845] hover:bg-[#4b3254] text-white font-extrabold rounded-xl text-xs shadow-lg shadow-[#3e2845]/25 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                  >
+                    <Edit3 className="w-4 h-4 text-purple-300" />
+                    <span>Open in Visual Editor</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-white" />
+                  </Link>
+
                   <a
                     href={`/store/${generatedStore.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-2.5 bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-purple-900/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+                    className="px-5 py-2.5 bg-white hover:bg-[#faf7fa] text-[#3e2845] font-bold rounded-xl text-xs border border-[#5c3d5c]/25 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-2xs cursor-pointer"
                   >
-                    <Eye className="w-4 h-4 text-slate-950" />
+                    <Eye className="w-4 h-4 text-[#5c3d5c]" />
                     <span>View Live Store</span>
+                    <ExternalLink className="w-3 h-3 text-[#5c3d5c]" />
                   </a>
 
                   <Link
-                    href={`/dashboard/editor/${generatedStore.slug}`}
-                    className="px-5 py-2.5 bg-[#4b3254] hover:bg-[#3e2845] text-white font-bold rounded-xl text-xs border border-[#4b3254] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xs"
-                  >
-                    <Layout className="w-4 h-4 text-purple-400" />
-                    <span>Visual Editor</span>
-                  </Link>
-
-                  <Link
                     href="/my-stores"
-                    className="px-5 py-2.5 bg-white hover:bg-[#faf7fa] text-[#3e2845] hover:text-[#2d1b32] font-semibold rounded-xl text-xs border border-[#5c3d5c]/25 transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs"
+                    className="px-4 py-2.5 bg-[#faf7fa] hover:bg-[#f6f0f7] text-[#5c3d5c] hover:text-[#3e2845] font-semibold rounded-xl text-xs border border-[#5c3d5c]/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
                     <span>My Stores</span>
                   </Link>
