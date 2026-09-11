@@ -308,22 +308,20 @@ export function ShopPageView({
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      list = list.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q) ||
-          p.tag?.toLowerCase().includes(q) ||
-          p.sku?.toLowerCase().includes(q) ||
-          p.price?.toLowerCase().includes(q)
-      );
-    }
-
-    if (selectedCategory !== "all") {
-      list = list.filter(
-        (p) =>
-          p.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-          p.tag?.toLowerCase() === selectedCategory.toLowerCase()
-      );
+      list = list.filter((p) => {
+        const name = String(p.name || p.title || "").toLowerCase();
+        const category = String(p.category || p.tag || "").toLowerCase();
+        const sku = String(p.sku || "").toLowerCase();
+        const priceStr = String(p.price ?? "").toLowerCase();
+        const desc = String(p.description || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          sku.includes(q) ||
+          category.includes(q) ||
+          priceStr.includes(q) ||
+          desc.includes(q)
+        );
+      });
     }
 
     if (sortBy === "price-low") {
@@ -335,7 +333,7 @@ export function ShopPageView({
     }
 
     return list;
-  }, [products, searchQuery, selectedCategory, sortBy]);
+  }, [products, searchQuery, sortBy]);
 
   return (
     <div className="space-y-10 py-6 animate-in fade-in duration-300">
@@ -371,63 +369,43 @@ export function ShopPageView({
             : ""
         }`}
       >
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Real-time Search Input */}
-          <div className="relative w-full md:w-80">
+          <div className="relative flex-1 max-w-md w-full">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products by name, SKU, or category..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all"
+              placeholder="Search product..."
+              className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all shadow-2xs"
             />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          {/* Category Chips & Price Sort Dropdown */}
-          <div className="flex flex-wrap items-center justify-between md:justify-end gap-3 w-full md:w-auto">
-            {/* Category Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  selectedCategory === "all"
-                    ? "bg-emerald-500 text-slate-950 shadow-xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                }`}
+          {/* Price Sorting Dropdown */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent border-none text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
               >
-                All
-              </button>
-              {resolvedCategories.map((cName: string) => (
-                <button
-                  key={cName}
-                  onClick={() => setSelectedCategory(cName)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                    selectedCategory.toLowerCase() === cName.toLowerCase()
-                      ? "bg-emerald-500 text-slate-950 shadow-xs"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                  }`}
-                >
-                  {cName}
-                </button>
-              ))}
-            </div>
-
-            {/* Price Sorting Dropdown */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800">
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-transparent border-none text-xs font-bold text-slate-800 focus:outline-none cursor-pointer"
-                >
-                  <option value="featured">Sort: Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
-                </select>
-              </div>
+                <option value="featured">Sort: Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Top Rated</option>
+              </select>
             </div>
           </div>
         </div>
@@ -509,9 +487,11 @@ export function ShopPageView({
               <ShoppingBag className="w-8 h-8 text-slate-400 mx-auto" />
               <h3 className="text-base font-bold text-slate-800">No products found</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                {products.length === 0
+                {searchQuery.trim()
+                  ? `No products found matching "${searchQuery}". Please check the spelling or try searching for another term.`
+                  : products.length === 0
                   ? "Your store does not have any active products in this section yet."
-                  : "No items match your selected filter or search term. Try adjusting your search query."}
+                  : "No items match your search term. Try adjusting your query."}
               </p>
               {products.length === 0 ? (
                 <div className="flex items-center justify-center gap-2 pt-2">
@@ -528,13 +508,14 @@ export function ShopPageView({
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={() => {
                     setSearchQuery("");
                     setSelectedCategory("all");
                   }}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                 >
-                  Reset Filters
+                  Clear Search
                 </button>
               )}
             </div>
