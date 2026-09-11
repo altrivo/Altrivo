@@ -180,14 +180,16 @@
           "tag": "Electronics",
           "name": "Watch boy",
           "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-          "price": "$20",
+          "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+          "price": 20,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         },
         {
           "id": "prod_1788870834145_747",
@@ -195,14 +197,16 @@
           "tag": "Electronics",
           "name": "Watch boy (Copy)",
           "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-          "price": "$20",
+          "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+          "price": 20,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         },
         {
           "id": "prod_1788861076646_gesh",
@@ -210,14 +214,16 @@
           "tag": "Electronics",
           "name": "watch",
           "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "price": "$12",
+          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+          "price": 12,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         }
       ],
       "sections": [
@@ -291,14 +297,16 @@
                 "tag": "Electronics",
                 "name": "Watch boy",
                 "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-                "price": "$20",
+                "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+                "price": 20,
+                "originalPrice": "",
+                "discount": "",
                 "rating": 5,
                 "status": "published",
+                "stock": 10,
                 "inStock": true,
                 "category": "Electronics",
-                "discount": "",
-                "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-                "originalPrice": ""
+                "updatedAt": "2026-09-11T06:39:02.057Z"
               },
               {
                 "id": "prod_1788870834145_747",
@@ -306,14 +314,16 @@
                 "tag": "Electronics",
                 "name": "Watch boy (Copy)",
                 "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-                "price": "$20",
+                "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+                "price": 20,
+                "originalPrice": "",
+                "discount": "",
                 "rating": 5,
                 "status": "published",
+                "stock": 10,
                 "inStock": true,
                 "category": "Electronics",
-                "discount": "",
-                "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-                "originalPrice": ""
+                "updatedAt": "2026-09-11T06:39:02.057Z"
               },
               {
                 "id": "prod_1788861076646_gesh",
@@ -321,14 +331,16 @@
                 "tag": "Electronics",
                 "name": "watch",
                 "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-                "price": "$12",
+                "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+                "price": 12,
+                "originalPrice": "",
+                "discount": "",
                 "rating": 5,
                 "status": "published",
+                "stock": 10,
                 "inStock": true,
                 "category": "Electronics",
-                "discount": "",
-                "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-                "originalPrice": ""
+                "updatedAt": "2026-09-11T06:39:02.057Z"
               }
             ],
             "subtitle": "Mastercrafted luxury timepieces designed for precision and elegance."
@@ -449,14 +461,16 @@
           "tag": "Electronics",
           "name": "Twist Watch",
           "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "price": "$45",
+          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+          "price": 45,
+          "originalPrice": 66,
+          "discount": "32% OFF",
           "rating": 5,
           "status": "draft",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         },
         {
           "id": "prod_1788870677349_gksm",
@@ -464,14 +478,16 @@
           "tag": "Electronics",
           "name": "Watch boy",
           "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-          "price": "$20",
+          "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+          "price": 20,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         },
         {
           "id": "prod_1788870834145_747",
@@ -479,14 +495,16 @@
           "tag": "Electronics",
           "name": "Watch boy (Copy)",
           "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-          "price": "$20",
+          "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+          "price": 20,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         },
         {
           "id": "prod_1788861076646_gesh",
@@ -494,14 +512,16 @@
           "tag": "Electronics",
           "name": "watch",
           "image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "price": "$12",
+          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+          "price": 12,
+          "originalPrice": "",
+          "discount": "",
           "rating": 5,
           "status": "published",
+          "stock": 10,
           "inStock": true,
           "category": "Electronics",
-          "discount": "",
-          "thumbnail": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
-          "originalPrice": ""
+          "updatedAt": "2026-09-11T06:39:02.057Z"
         }
       ],
       "currencySymbol": "$"
@@ -511,7 +531,7 @@
     "custom_domain": null,
     "subdomain": null,
     "created_at": "2026-09-07T14:55:15.066192+00:00",
-    "updated_at": "2026-09-09T12:41:57.615Z"
+    "updated_at": "2026-09-11T06:39:02.057Z"
   },
   {
     "id": "06e897d3-d685-4cf7-bc84-c2c140834f5d",

@@ -55,8 +55,28 @@ export function useProducts(explicitStoreId?: string) {
         .then((data) => {
           const store = data?.store;
           if (store) {
-            const dbProducts = store.layout_config?.products || store.commerce_config?.products;
+            const commerceProds = Array.isArray(store.commerce_config?.products) ? store.commerce_config.products : [];
+            const layoutProds = Array.isArray(store.layout_config?.products) ? store.layout_config.products : [];
+
+            // Combine products: commerce_config is the authoritative catalog (includes drafts & published)
+            const productMap = new Map<string, any>();
+            commerceProds.forEach((p: any) => {
+              if (p && (p.id || p.sku)) productMap.set(p.id || p.sku, p);
+            });
+            layoutProds.forEach((p: any) => {
+              if (p && (p.id || p.sku) && !productMap.has(p.id || p.sku)) {
+                productMap.set(p.id || p.sku, p);
+              }
+            });
+            const dbProducts = Array.from(productMap.values());
+
             if (Array.isArray(dbProducts)) {
+              const validDateIso = (dateStr?: string) => {
+                if (!dateStr) return new Date().toISOString();
+                const d = new Date(dateStr);
+                return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+              };
+
               const converted: Product[] = dbProducts.map((p: any) => {
                 let userFormImg: string | undefined = undefined;
                 if (typeof window !== "undefined" && p.id) {
@@ -100,7 +120,7 @@ export function useProducts(explicitStoreId?: string) {
                   thumbnail: cleanImg,
                   image: cleanImg,
                   images: candidateImages,
-                  updatedAt: p.updatedAt || store.updated_at || new Date().toISOString(),
+                  updatedAt: validDateIso(p.updatedAt || p.updated_at || store.updated_at),
                   variantsCount: p.variantsCount || 0,
                   description: p.description || "",
                 };

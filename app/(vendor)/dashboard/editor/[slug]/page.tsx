@@ -986,12 +986,23 @@ export default function VisualLayoutEditor() {
             ? storeData.layout_config.products
             : [];
 
-          // Primary source of truth: the store's verified database products
-          const canonicalProducts = backendLayoutProducts.length > 0
-            ? backendLayoutProducts
-            : backendCommerceProducts.length > 0
-            ? backendCommerceProducts
-            : getStoredProducts(storeData.id);
+          // Primary source of truth: the store's verified database products (commerce_config holds all items including drafts)
+          const allCatalogMap = new Map<string, any>();
+          backendCommerceProducts.forEach((p: any) => {
+            if (p && (p.id || p.sku)) allCatalogMap.set(p.id || p.sku, p);
+          });
+          backendLayoutProducts.forEach((p: any) => {
+            if (p && (p.id || p.sku) && !allCatalogMap.has(p.id || p.sku)) {
+              allCatalogMap.set(p.id || p.sku, p);
+            }
+          });
+          const localCatalog = getStoredProducts(storeData.id);
+          localCatalog.forEach((p: any) => {
+            if (p && (p.id || p.sku) && !allCatalogMap.has(p.id || p.sku)) {
+              allCatalogMap.set(p.id || p.sku, p);
+            }
+          });
+          const canonicalProducts = allCatalogMap.size > 0 ? Array.from(allCatalogMap.values()) : localCatalog;
 
           // Strictly filter products to only those that belong to this store
           const productMap = new Map<string, any>();
@@ -1071,7 +1082,16 @@ export default function VisualLayoutEditor() {
                 ...sec,
                 props: {
                   ...sec.props,
-                  products: sec.props.products.filter((p: any) => p.status !== "draft"),
+                  products: sec.props.products
+                    .filter((p: any) => p.status !== "draft")
+                    .map((p: any) => {
+                      const match = mergedStoreCatalog.find(
+                        (cp) => cp.id === p.id || (cp.sku && cp.sku === p.sku)
+                      );
+                      return match
+                        ? { ...p, ...match, image: match.image, thumbnail: match.thumbnail }
+                        : toStorefrontProduct(p);
+                    }),
                 },
               };
             }
@@ -2558,11 +2578,14 @@ export default function VisualLayoutEditor() {
 
                       {/* Selected Product items list */}
                       <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                        {productsList.map((prod, pIdx) => (
+                        {productsList.map((prod, pIdx) => {
+                          const catalogMatch = sanitizedCatalog.find((cp) => cp.id === prod.id || (cp.sku && cp.sku === prod.sku));
+                          const displayImg = catalogMatch?.image || prod.image;
+                          return (
                           <div key={prod.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
                               <img
-                                src={prod.image}
+                                src={displayImg}
                                 alt={prod.name}
                                 className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
                                 onError={(e) => {
@@ -2591,7 +2614,8 @@ export default function VisualLayoutEditor() {
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                        ))}
+                        );
+                      })}
                       </div>
                     </div>
                   )}

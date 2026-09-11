@@ -253,11 +253,32 @@ export function toStorefrontProduct(p: any): any {
       ? `${Math.round(((p.compareAtPrice - numPrice) / p.compareAtPrice) * 100)}% OFF`
       : "");
 
+  let userFormImg: string | undefined = undefined;
+  if (typeof window !== "undefined" && p.id) {
+    try {
+      const rawForm = localStorage.getItem(`artrivo_vendor_product_form_${p.id}`);
+      if (rawForm) {
+        const parsedForm = JSON.parse(rawForm);
+        const primary = parsedForm.images?.find((img: any) => img.isPrimary)?.url;
+        const first = parsedForm.images?.[0]?.url;
+        if (isValidImageUrl(primary)) userFormImg = primary;
+        else if (isValidImageUrl(first)) userFormImg = first;
+      }
+    } catch {}
+  }
+
   const resolvedImage =
+    userFormImg ||
     (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
     (isValidImageUrl(p.image) && p.image) ||
     (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
     getCategoryDefaultImage(p.category, p.name);
+
+  const validDateIso = (dateStr?: string) => {
+    if (!dateStr) return new Date().toISOString();
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+  };
 
   return {
     id: p.id,
@@ -273,6 +294,7 @@ export function toStorefrontProduct(p: any): any {
     tag: p.category || p.tag || "Clothing",
     category: p.category || p.tag || "Clothing",
     inStock: p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),
+    updatedAt: validDateIso(p.updatedAt || p.updated_at),
   };
 }
 
