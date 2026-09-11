@@ -1128,16 +1128,15 @@ export default function StoreBuilderPage() {
   // Handle 1-Click Gemini AI Prompt Enhancement
   // -------------------------------------------------------------------------
   const handleEnhancePromptWithAi = async () => {
-    const raw = prompt.trim() || customStoreName.trim() || "luxury e-commerce store";
     setIsEnhancingPrompt(true);
     try {
       const res = await fetch("/api/ai/enhance-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: raw,
+          prompt: prompt.trim(),
           storeName: customStoreName.trim(),
-          niche: detectStoreNiche(customStoreName, raw),
+          niche: detectStoreNiche(customStoreName, prompt),
         }),
       });
       if (res.ok) {
