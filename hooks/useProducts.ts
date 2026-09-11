@@ -72,10 +72,21 @@ export function useProducts(explicitStoreId?: string) {
             const dbProducts = Array.from(productMap.values());
 
             if (Array.isArray(dbProducts)) {
-              const validDateIso = (dateStr?: string) => {
-                if (!dateStr) return new Date().toISOString();
-                const d = new Date(dateStr);
-                return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+              const resolveProductDate = (p: any) => {
+                if (p.updatedAt && !isNaN(new Date(p.updatedAt).getTime())) return new Date(p.updatedAt).toISOString();
+                if (p.updated_at && !isNaN(new Date(p.updated_at).getTime())) return new Date(p.updated_at).toISOString();
+                if (p.createdAt && !isNaN(new Date(p.createdAt).getTime())) return new Date(p.createdAt).toISOString();
+                if (p.created_at && !isNaN(new Date(p.created_at).getTime())) return new Date(p.created_at).toISOString();
+
+                // If product ID contains creation timestamp (e.g. prod_1788944746539_vzn2), use it as upload date
+                const match = typeof p.id === "string" ? p.id.match(/prod_(\d{10,15})/) : null;
+                if (match) {
+                  const ts = parseInt(match[1]);
+                  const d = new Date(ts);
+                  if (!isNaN(d.getTime())) return d.toISOString();
+                }
+
+                return new Date().toISOString();
               };
 
               const converted: Product[] = dbProducts.map((p: any) => {
@@ -108,6 +119,8 @@ export function useProducts(explicitStoreId?: string) {
                   candidateImages.unshift(cleanImg);
                 }
 
+                const itemUpdatedDate = resolveProductDate(p);
+
                 return {
                   id: p.id,
                   storeId: effectiveStoreId || store.id,
@@ -121,7 +134,8 @@ export function useProducts(explicitStoreId?: string) {
                   thumbnail: cleanImg,
                   image: cleanImg,
                   images: candidateImages,
-                  updatedAt: validDateIso(p.updatedAt || p.updated_at || store.updated_at),
+                  createdAt: p.createdAt || p.created_at || itemUpdatedDate,
+                  updatedAt: itemUpdatedDate,
                   variantsCount: p.variantsCount || 0,
                   description: p.description || "",
                 };

@@ -274,11 +274,23 @@ export function toStorefrontProduct(p: any): any {
     (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
     getCategoryDefaultImage(p.category, p.name);
 
-  const validDateIso = (dateStr?: string) => {
-    if (!dateStr) return new Date().toISOString();
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+  const resolveProductDate = (item: any) => {
+    if (item.updatedAt && !isNaN(new Date(item.updatedAt).getTime())) return new Date(item.updatedAt).toISOString();
+    if (item.updated_at && !isNaN(new Date(item.updated_at).getTime())) return new Date(item.updated_at).toISOString();
+    if (item.createdAt && !isNaN(new Date(item.createdAt).getTime())) return new Date(item.createdAt).toISOString();
+    if (item.created_at && !isNaN(new Date(item.created_at).getTime())) return new Date(item.created_at).toISOString();
+
+    const match = typeof item.id === "string" ? item.id.match(/prod_(\d{10,15})/) : null;
+    if (match) {
+      const ts = parseInt(match[1]);
+      const d = new Date(ts);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    }
+
+    return new Date().toISOString();
   };
+
+  const itemDate = resolveProductDate(p);
 
   return {
     id: p.id,
@@ -294,7 +306,8 @@ export function toStorefrontProduct(p: any): any {
     tag: p.category || p.tag || "Clothing",
     category: p.category || p.tag || "Clothing",
     inStock: p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),
-    updatedAt: validDateIso(p.updatedAt || p.updated_at),
+    createdAt: p.createdAt || p.created_at || itemDate,
+    updatedAt: itemDate,
   };
 }
 
@@ -519,6 +532,11 @@ export function saveProductFromForm(
     images: allImageObjects,
   };
 
+  const existingProduct = products.find((p) => p.id === productId);
+  const matchTs = productId.match(/prod_(\d{10,15})/);
+  const derivedCreated = matchTs ? new Date(parseInt(matchTs[1])).toISOString() : nowISO;
+  const createdAt = existingProduct?.createdAt || derivedCreated;
+
   const productRecord: Product = {
     id: productId,
     storeId: currentStoreId,
@@ -531,6 +549,7 @@ export function saveProductFromForm(
     status: targetStatus,
     thumbnail,
     image: thumbnail,
+    createdAt,
     updatedAt: nowISO,
     images: allImageUrls.length > 0 ? allImageUrls : [thumbnail],
     variantsCount: formData.variants?.length || 0,

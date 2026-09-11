@@ -23,6 +23,7 @@ export interface Product {
   status: ProductStatus;
   thumbnail: string;
   image?: string;
+  createdAt?: string;
   updatedAt: string;
   images?: string[];
   variantsCount?: number;
