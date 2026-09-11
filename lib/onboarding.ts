@@ -416,7 +416,7 @@ export function saveOnboardingState(state: OnboardingState): OnboardingState {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
     } catch (err) {
-      console.error("Failed to save onboarding state to localStorage", err);
+      console.warn("Failed to save onboarding state to localStorage", err);
     }
   }
   return updatedState;

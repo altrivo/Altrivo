@@ -1,6 +1,6 @@
 import type { InventoryItem } from "@/types/inventory";
 
-import { getStoredProducts, getStoredProductFormData, getCategoryDefaultImage, isValidImageUrl } from "./product-storage";
+import { getStoredProducts, getStoredProductFormData, getCategoryDefaultImage, isValidImageUrl, safeLocalStorageSet } from "./product-storage";
 
 const INVENTORY_STORAGE_KEY = "artrivo_vendor_inventory";
 
@@ -99,21 +99,13 @@ export function getStoredInventory(): InventoryItem[] {
   }
 
   const generated = generateMockInventory();
-  try {
-    localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(generated));
-  } catch (e) {
-    console.error("Error saving inventory storage:", e);
-  }
+  safeLocalStorageSet(INVENTORY_STORAGE_KEY, JSON.stringify(generated));
   return generated;
 }
 
 export function saveStoredInventory(items: InventoryItem[]): void {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(items));
-  } catch (e) {
-    console.error("Error saving inventory storage:", e);
-  }
+  safeLocalStorageSet(INVENTORY_STORAGE_KEY, JSON.stringify(items));
 }
 
 export const initialInventoryData: InventoryItem[] = generateMockInventory();

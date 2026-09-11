@@ -332,6 +332,100 @@ export function getStoredProducts(explicitStoreId?: string): Product[] {
 }
 
 /**
+ * Safely saves data to localStorage without throwing QuotaExceededError.
+ * If quota is exceeded, it:
+ * 1. Purges obsolete bulky product form keys and temporary drafts.
+ * 2. If still full, strips bulky base64 data URLs (> 50KB) from the cached copy,
+ *    substituting category default URLs so metadata (ID, SKU, title, price, status) fits cleanly.
+ * 3. Never throws or triggers console.error, preventing Next.js dev error overlays.
+ */
+export function safeLocalStorageSet(key: string, value: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    try {
+      // 1. Clean up old bulky form keys and stale store caches
+      const toDelete: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (
+          k &&
+          (k.startsWith("artrivo_vendor_product_form_") ||
+            (k.startsWith("artrivo_products_store_") && k !== key))
+        ) {
+          const val = localStorage.getItem(k) || "";
+          if (val.length > 50000 || k.startsWith("artrivo_vendor_product_form_")) {
+            toDelete.push(k);
+          }
+        }
+      }
+      toDelete.forEach((k) => {
+        try {
+          localStorage.removeItem(k);
+        } catch {}
+      });
+
+      // Try setting again after cleanup
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      // 2. If still exceeding quota, strip heavy base64 images from the local cache copy
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          const lightweight = parsed.map((item: any) => {
+            let img = item.image;
+            let thumb = item.thumbnail;
+            if (img && typeof img === "string" && img.startsWith("data:") && img.length > 50000) {
+              img = getCategoryDefaultImage(item.category || item.tag, item.name);
+            }
+            if (thumb && typeof thumb === "string" && thumb.startsWith("data:") && thumb.length > 50000) {
+              thumb = getCategoryDefaultImage(item.category || item.tag, item.name);
+            }
+            const cleanImages = Array.isArray(item.images)
+              ? item.images.map((im: string) =>
+                  im && typeof im === "string" && im.startsWith("data:") && im.length > 50000
+                    ? getCategoryDefaultImage(item.category || item.tag, item.name)
+                    : im
+                )
+              : [img];
+            return {
+              ...item,
+              image: img,
+              thumbnail: thumb,
+              images: cleanImages,
+            };
+          });
+          localStorage.setItem(key, JSON.stringify(lightweight));
+          return true;
+        } else if (parsed && typeof parsed === "object") {
+          if (Array.isArray(parsed.images)) {
+            parsed.images = parsed.images.map((im: any) => {
+              if (
+                im?.url &&
+                typeof im.url === "string" &&
+                im.url.startsWith("data:") &&
+                im.url.length > 50000
+              ) {
+                return { ...im, url: getCategoryDefaultImage(parsed.category, parsed.title) };
+              }
+              return im;
+            });
+          }
+          localStorage.setItem(key, JSON.stringify(parsed));
+          return true;
+        }
+      } catch {}
+      console.warn("[product-storage] LocalStorage quota reached; relying on database as source of truth.");
+      return false;
+    }
+  }
+}
+
+/**
  * Saves a list of products to localStorage and notifies listeners,
  * and automatically synchronizes to the Supabase database for this store.
  */
@@ -348,7 +442,7 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
     const filteredProducts = products.filter((p) => !p.storeId || p.storeId === storeId);
     const scopedProducts = filteredProducts.map((p) => ({ ...p, storeId }));
 
-    localStorage.setItem(key, JSON.stringify(scopedProducts));
+    safeLocalStorageSet(key, JSON.stringify(scopedProducts));
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
 
     // Synchronize to the backend / database for this store:
@@ -368,7 +462,7 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
       }),
     }).catch((err) => console.warn("[product-storage] DB sync background note:", err));
   } catch (e) {
-    console.error("Error saving stored products:", e);
+    console.warn("[product-storage] Error in saveStoredProducts background:", e);
   }
 }
 
@@ -445,14 +539,10 @@ export function saveProductFromForm(
 
   // Save the complete form state for future editing
   if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(
-        `${FORM_STORAGE_PREFIX}${productId}`,
-        JSON.stringify(updatedFormData),
-      );
-    } catch (e) {
-      console.error("Error saving product form data:", e);
-    }
+    safeLocalStorageSet(
+      `${FORM_STORAGE_PREFIX}${productId}`,
+      JSON.stringify(updatedFormData),
+    );
   }
 
   const existingIndex = products.findIndex((p) => p.id === productId);

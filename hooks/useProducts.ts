@@ -6,6 +6,7 @@ import { useVendorStore } from "@/context/VendorStoreContext";
 import {
   getStoredProducts,
   saveStoredProducts,
+  safeLocalStorageSet,
   getStorageKey,
   resolveStoreId,
   getCategoryDefaultImage,
@@ -131,10 +132,8 @@ export function useProducts(explicitStoreId?: string) {
 
               // Sync localStorage to match the authoritative database state for this store
               if (typeof window !== "undefined" && effectiveStoreId) {
-                try {
-                  const key = getStorageKey(effectiveStoreId);
-                  localStorage.setItem(key, JSON.stringify(converted));
-                } catch {}
+                const key = getStorageKey(effectiveStoreId);
+                safeLocalStorageSet(key, JSON.stringify(converted));
               }
             }
           }

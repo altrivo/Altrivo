@@ -62,6 +62,7 @@ import {
   toStorefrontProduct,
   isValidImageUrl,
   getCategoryDefaultImage,
+  safeLocalStorageSet,
 } from "@/lib/product-storage";
 
 // ---------------------------------------------------------------------------
@@ -1035,10 +1036,10 @@ export default function VisualLayoutEditor() {
           if (typeof window !== "undefined") {
             try {
               if (storeData.id) {
-                localStorage.setItem(`artrivo_products_store_${storeData.id}`, JSON.stringify(mergedStoreCatalog));
+                safeLocalStorageSet(`artrivo_products_store_${storeData.id}`, JSON.stringify(mergedStoreCatalog));
               }
               if (storeData.slug) {
-                localStorage.setItem(`artrivo_products_store_${storeData.slug}`, JSON.stringify(mergedStoreCatalog));
+                safeLocalStorageSet(`artrivo_products_store_${storeData.slug}`, JSON.stringify(mergedStoreCatalog));
               }
               const localDigi = localStorage.getItem("digishop_stores");
               if (localDigi) {
@@ -1060,7 +1061,7 @@ export default function VisualLayoutEditor() {
                     }
                     return s;
                   });
-                  localStorage.setItem("digishop_stores", JSON.stringify(updated));
+                  safeLocalStorageSet("digishop_stores", JSON.stringify(updated));
                 }
               }
             } catch {}
@@ -1233,7 +1234,7 @@ export default function VisualLayoutEditor() {
             ? { ...s, layout_config: payloadLayout, name: storeName, commerce_config: { products: productsList }, is_published: publish }
             : s
         );
-        localStorage.setItem("digishop_stores", JSON.stringify(updated));
+        safeLocalStorageSet("digishop_stores", JSON.stringify(updated));
       } catch {}
 
       if (publish) {
