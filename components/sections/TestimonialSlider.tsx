@@ -156,9 +156,9 @@ export default function TestimonialSlider({
       ) : (
         // Masonry/Grid Layout
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.slice(0, 3).map((item) => (
+          {testimonials.slice(0, 3).map((item, idx) => (
             <div
-              key={item.id}
+              key={item.id || item.name || `testim-${idx}`}
               className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-sm transition-all duration-300"
             >
               <div className="space-y-3">

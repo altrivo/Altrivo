@@ -4,24 +4,31 @@ import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface CategoryItem {
-  id: string;
-  name: string;
-  imageUrl: string;
+  id?: string;
+  name?: string;
+  title?: string;
+  imageUrl?: string;
+  image?: string;
+  img?: string;
   icon?: string;
   href?: string;
+  count?: string;
 }
 
 export interface CategoryCarouselProps {
   title?: string;
   categories: CategoryItem[];
   itemShape?: "circle" | "card";
+  layout?: "circle" | "card";
 }
 
 export default function CategoryCarouselInfinite({
   title = "Shop by Category",
   categories = [],
   itemShape = "card",
+  layout,
 }: CategoryCarouselProps) {
+  const effectiveShape = itemShape || (layout as any) || "card";
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(true);
   const [canScrollNext, setCanScrollNext] = useState(true);
@@ -128,33 +135,46 @@ export default function CategoryCarouselInfinite({
         className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory touch-pan-x"
         style={{ scrollSnapType: "x mandatory" }}
       >
-        {totalList.map((cat, idx) => {
+        {totalList.map((cat: any, idx: number) => {
           // Detect if this specific item is a clone
           const isClone = idx < clonesCount || idx >= totalList.length - clonesCount;
+          const key = `${cat.id || cat.title || cat.name || 'cat-inf'}-${idx}`;
+          const label = cat.name || cat.title || cat.label || `Category ${idx + 1}`;
+          const imgSrc =
+            cat.imageUrl ||
+            cat.image ||
+            cat.img ||
+            "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80";
 
           return (
             <div
-              key={`${cat.id || idx}-${idx}`}
+              key={key}
               className="flex-shrink-0 basis-[45%] sm:basis-[28%] md:basis-[22%] snap-start snap-always"
             >
               <a
-                href={cat.href || "#"}
+                href={cat.href || "#catalog"}
                 className="block w-full group/tile"
               >
                 <div 
                   className={`w-full aspect-[4/5] bg-slate-50 border border-slate-100 overflow-hidden transition-all duration-300 ${
-                    itemShape === "circle" ? "rounded-full aspect-square" : "rounded-3xl"
+                    effectiveShape === "circle" ? "rounded-full aspect-square" : "rounded-3xl"
                   }`}
                 >
                   <img
-                    src={cat.imageUrl}
-                    alt={cat.name}
+                    src={imgSrc}
+                    alt={label}
                     className="w-full h-full object-cover select-none pointer-events-none group-hover/tile:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
                 </div>
                 <span className="block text-center mt-3 text-xs font-black uppercase tracking-wider text-slate-800 group-hover/tile:text-slate-650">
-                  {cat.name} {isClone && <span className="text-[8px] text-slate-300 font-bold">(Clone)</span>}
+                  {label} {isClone && <span className="text-[8px] text-slate-300 font-bold">(Clone)</span>}
                 </span>
+                {cat.count && (
+                  <span className="block text-center text-[11px] text-slate-400 font-medium mt-0.5">
+                    {cat.count}
+                  </span>
+                )}
               </a>
             </div>
           );

@@ -49,9 +49,9 @@ export default function ProductGridFeatured({
       {/* Grid Layout */}
       {visibleProducts.length > 0 ? (
         <div className={`grid gap-3 sm:gap-6 ${gridColClass}`}>
-          {visibleProducts.map((product) => (
+          {visibleProducts.map((product, pIdx) => (
             <ProductCard
-              key={product.id}
+              key={product.id || product.name || `prod-feat-${pIdx}`}
               {...product}
               storeSlug={storeSlug}
             />

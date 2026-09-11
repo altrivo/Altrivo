@@ -138,7 +138,7 @@ export default function ProductGridStaggered({
 
             return (
               <div
-                key={product.id}
+                key={product.id || product.name || `prod-stag-${index}`}
                 style={{
                   opacity: 1,
                   transform: "translateY(0)",
