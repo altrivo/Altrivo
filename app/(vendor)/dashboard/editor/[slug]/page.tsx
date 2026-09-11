@@ -1079,20 +1079,21 @@ export default function VisualLayoutEditor() {
 
           const cleanSections = (storeData.layout_config?.sections || []).map((sec: any) => {
             if (sec.props && Array.isArray(sec.props.products)) {
+              const mapped = sec.props.products.map((p: any) => {
+                const match = mergedStoreCatalog.find(
+                  (cp) => cp.id === p.id || (cp.sku && cp.sku === p.sku)
+                );
+                return match
+                  ? { ...p, ...match, image: match.image, thumbnail: match.thumbnail }
+                  : toStorefrontProduct(p);
+              });
+              // STRICT STOREFRONT ISOLATION: Draft products must NEVER appear in live storefront sections
+              const publishedOnly = mapped.filter((p: any) => p && p.status === "published");
               return {
                 ...sec,
                 props: {
                   ...sec.props,
-                  products: sec.props.products
-                    .filter((p: any) => p.status !== "draft")
-                    .map((p: any) => {
-                      const match = mergedStoreCatalog.find(
-                        (cp) => cp.id === p.id || (cp.sku && cp.sku === p.sku)
-                      );
-                      return match
-                        ? { ...p, ...match, image: match.image, thumbnail: match.thumbnail }
-                        : toStorefrontProduct(p);
-                    }),
+                  products: publishedOnly,
                 },
               };
             }
@@ -1175,20 +1176,26 @@ export default function VisualLayoutEditor() {
         ],
       };
       const fallbackCats = defaultCategoriesByNiche[activeNiche] || defaultCategoriesByNiche.shoes;
-
       const targetIdentifier = storeId || slug;
+
+      // Ensure productsList only contains published products for storefront layout
+      const publishedStorefront = productsList.filter((p) => p.status === "published");
+
+      // Maintain the full store catalog (published + drafts) in commerce_config so drafts are not wiped
+      const fullCatalog = (sanitizedCatalog.length > 0 ? sanitizedCatalog : storeCatalogProducts).map((p) => toStorefrontProduct(p));
+
       const payloadLayout = {
         ...layoutConfig,
         storeName,
         categories: layoutConfig.categories || fallbackCats,
-        products: productsList,
+        products: publishedStorefront,
         sections: layoutConfig.sections.map((s) => {
           if (s.type === "ProductGridFeatured" || s.type.includes("ProductGrid")) {
             return {
               ...s,
               props: {
                 ...s.props,
-                products: productsList,
+                products: publishedStorefront,
               },
             };
           }
@@ -1202,7 +1209,7 @@ export default function VisualLayoutEditor() {
         body: JSON.stringify({
           name: storeName,
           layout_config: payloadLayout,
-          commerce_config: { products: productsList },
+          commerce_config: { products: fullCatalog.length > 0 ? fullCatalog : publishedStorefront },
           is_published: publish,
         }),
       });
@@ -1220,7 +1227,7 @@ export default function VisualLayoutEditor() {
           body: JSON.stringify({
             name: storeName,
             layout_config: payloadLayout,
-            commerce_config: { products: productsList },
+            commerce_config: { products: fullCatalog.length > 0 ? fullCatalog : publishedStorefront },
             is_published: publish,
           }),
         }).catch(() => {});
@@ -1231,7 +1238,7 @@ export default function VisualLayoutEditor() {
         const local = JSON.parse(localStorage.getItem("digishop_stores") || "[]");
         const updated = local.map((s: any) =>
           s.slug === slug || s.id === storeId
-            ? { ...s, layout_config: payloadLayout, name: storeName, commerce_config: { products: productsList }, is_published: publish }
+            ? { ...s, layout_config: payloadLayout, name: storeName, commerce_config: { products: fullCatalog.length > 0 ? fullCatalog : publishedStorefront }, is_published: publish }
             : s
         );
         safeLocalStorageSet("digishop_stores", JSON.stringify(updated));
@@ -1445,6 +1452,13 @@ export default function VisualLayoutEditor() {
     );
 
     if (found) {
+      if (found.status === "draft") {
+        setSkuFeedback({
+          type: "error",
+          message: `"${found.name}" is currently in Draft mode. Draft products cannot be added to storefront sections. Please publish it from Products first.`,
+        });
+        return;
+      }
       const alreadyInList = productsList.some((p) => p.id === found.id || (p.sku && p.sku === found.sku));
       if (!alreadyInList) {
         const converted = toStorefrontProduct(found);
@@ -1464,10 +1478,14 @@ export default function VisualLayoutEditor() {
 
   // Toggle Product Inclusion from the Store Catalog Items
   const handleToggleProductFromCatalog = (catalogItem: any) => {
-    const exists = productsList.some((p) => p.id === catalogItem.id || (p.sku && p.sku === catalogItem.sku));
+    const exists = productsList.some((p) => p.id === catalogItem.id || (p.sku && catalogItem.sku && p.sku === catalogItem.sku));
     if (exists) {
       setProductsList(productsList.filter((p) => p.id !== catalogItem.id && (!catalogItem.sku || p.sku !== catalogItem.sku)));
     } else {
+      if (catalogItem.status === "draft") {
+        alert(`"${catalogItem.name}" is a Draft product. Draft products cannot be added to storefront sections. Please publish it from the Products tab first.`);
+        return;
+      }
       const converted = toStorefrontProduct(catalogItem);
       setProductsList([...productsList, converted]);
     }
@@ -2513,23 +2531,23 @@ export default function VisualLayoutEditor() {
                       {/* Quick Collection Populator derived dynamically from sanitizedCatalog */}
                       {sanitizedCatalog.length > 0 && (
                         <div className="space-y-1">
-                          <label className="text-[10px] text-slate-500 font-bold block">Quick Fill by Category:</label>
+                          <label className="text-[10px] text-slate-500 font-bold block">Quick Fill by Category (Published Only):</label>
                           <div className="flex flex-wrap gap-1.5 text-[10px]">
                             <button
                               type="button"
-                              onClick={() => setProductsList([...sanitizedCatalog])}
+                              onClick={() => setProductsList([...sanitizedCatalog.filter((p) => p.status === "published")])}
                               className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
                             >
-                              All ({sanitizedCatalog.length})
+                              All Published ({sanitizedCatalog.filter((p) => p.status === "published").length})
                             </button>
-                            {Array.from(new Set(sanitizedCatalog.map((p) => p.category || p.tag).filter(Boolean))).map((catName) => {
-                              const count = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName).length;
+                            {Array.from(new Set(sanitizedCatalog.filter((p) => p.status === "published").map((p) => p.category || p.tag).filter(Boolean))).map((catName) => {
+                              const count = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName && p.status === "published").length;
                               return (
                                 <button
                                   key={catName}
                                   type="button"
                                   onClick={() => {
-                                    const filtered = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName);
+                                    const filtered = sanitizedCatalog.filter((p) => (p.category || p.tag) === catName && p.status === "published");
                                     setProductsList(filtered);
                                   }}
                                   className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold transition-colors cursor-pointer"
@@ -3333,17 +3351,17 @@ export default function VisualLayoutEditor() {
             {/* Quick Actions Counter */}
             <div className="flex items-center justify-between text-xs text-slate-500 px-1">
               <span className="font-bold text-[#312038]">
-                {productsList.length} products currently active in this section
+                {productsList.filter((p) => p.status !== "draft").length} products currently active in this section
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    setProductsList([...sanitizedCatalog.filter(p => p.status === "published")]);
+                    setProductsList([...sanitizedCatalog.filter((p) => p.status === "published")]);
                   }}
                   className="text-[11px] text-primary-600 hover:text-primary-700 font-bold cursor-pointer"
                 >
-                  Select All Published ({sanitizedCatalog.filter(p => p.status === "published").length})
+                  Select All Published ({sanitizedCatalog.filter((p) => p.status === "published").length})
                 </button>
                 <span>•</span>
                 <button
@@ -3371,7 +3389,8 @@ export default function VisualLayoutEditor() {
                   return matchCat && matchQuery;
                 })
                 .map((item) => {
-                  const isSelected = productsList.some((p) => p.id === item.id || (p.sku && item.sku && p.sku === item.sku));
+                  const isDraft = item.status === "draft";
+                  const isSelected = !isDraft && productsList.some((p) => p.id === item.id || (p.sku && item.sku && p.sku === item.sku));
                   const displayPrice = typeof item.price === "string" && item.price.startsWith("$")
                     ? item.price
                     : `$${typeof item.price === "number" ? item.price : parseFloat(String(item.price).replace(/[^0-9.]/g, "")) || 0}`;
@@ -3385,12 +3404,21 @@ export default function VisualLayoutEditor() {
                   return (
                     <div
                       key={item.id || item.sku}
-                      onClick={() => handleToggleProductFromCatalog(item)}
-                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 select-none ${
-                        isSelected
-                          ? "bg-purple-50/70 border-[#312038] shadow-xs ring-1 ring-[#312038]/30"
-                          : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-xs"
+                      onClick={() => {
+                        if (isDraft) {
+                          alert(`"${item.name}" is currently a Draft product. Draft products cannot be added to storefront sections. Please publish this product in the Products tab first.`);
+                          return;
+                        }
+                        handleToggleProductFromCatalog(item);
+                      }}
+                      className={`p-3.5 rounded-2xl border transition-all select-none ${
+                        isDraft
+                          ? "bg-slate-50/60 border-slate-200 border-dashed opacity-80 cursor-not-allowed"
+                          : isSelected
+                          ? "bg-purple-50/70 border-[#312038] shadow-xs ring-1 ring-[#312038]/30 cursor-pointer"
+                          : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-xs cursor-pointer"
                       }`}
+                      title={isDraft ? "Draft products cannot be added to storefront sections until published" : undefined}
                     >
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
                         <img
@@ -3401,7 +3429,7 @@ export default function VisualLayoutEditor() {
                             (e.target as HTMLImageElement).src = getCategoryDefaultImage(item.category || item.tag, item.name);
                           }}
                         />
-                        {isSelected && (
+                        {isSelected && !isDraft && (
                           <div className="absolute inset-0 bg-[#312038]/70 flex items-center justify-center">
                             <Check className="w-5 h-5 text-white stroke-[3]" />
                           </div>
@@ -3430,11 +3458,11 @@ export default function VisualLayoutEditor() {
                             </span>
                           )}
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ml-auto ${
-                            item.status === "draft"
-                              ? "bg-slate-100 border border-slate-200 text-slate-500"
+                            isDraft
+                              ? "bg-slate-200/80 border border-slate-300 text-slate-600"
                               : "bg-emerald-50 border border-emerald-200 text-emerald-700"
                           }`}>
-                            {item.status === "draft" ? "Draft" : "Published"}
+                            {isDraft ? "Draft" : "Published"}
                           </span>
                         </div>
                       </div>

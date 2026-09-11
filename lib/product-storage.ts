@@ -147,8 +147,15 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
 
     // STRICT MULTI-STORE ISOLATION:
     // If targetStoreId is specified and the product belongs to another store, discard it completely
-    if (targetStoreId && p.storeId && p.storeId !== targetStoreId) {
-      continue;
+    if (targetStoreId && p.storeId) {
+      const isWatchStore = targetStoreId === "watch-brand" || targetStoreId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+      const isWatchProduct = p.storeId === "watch-brand" || p.storeId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+      if (isWatchStore && !isWatchProduct) {
+        continue;
+      }
+      if (!isWatchStore && p.storeId !== targetStoreId) {
+        continue;
+      }
     }
 
     // Resolve user-uploaded form imagery if stored in local form state
@@ -300,12 +307,12 @@ export function toStorefrontProduct(p: any): any {
     originalPrice: origPriceVal,
     discount: discountVal,
     rating: p.rating || 5.0,
-    status: p.status || "published",
+    status: p.status === "draft" ? "draft" : p.status === "out-of-stock" ? "out-of-stock" : "published",
     image: resolvedImage,
     thumbnail: resolvedImage,
     tag: p.category || p.tag || "Clothing",
     category: p.category || p.tag || "Clothing",
-    inStock: p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),
+    inStock: p.status === "draft" ? false : p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),
     createdAt: p.createdAt || p.created_at || itemDate,
     updatedAt: itemDate,
   };
@@ -452,10 +459,23 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
     const key = getStorageKey(storeId);
 
     // STRICT MULTI-STORE ISOLATION: Only save products that belong to this store
-    const filteredProducts = products.filter((p) => !p.storeId || p.storeId === storeId);
+    const isWatchStore = storeId === "watch-brand" || storeId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+    const filteredProducts = products.filter((p) => {
+      if (!p) return false;
+      if (isWatchStore) {
+        if (p.storeId && p.storeId !== "watch-brand" && p.storeId !== "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf") return false;
+        if (p.category === "Clothing" || p.name?.toLowerCase().includes("shirt")) return false;
+        return true;
+      }
+      return !p.storeId || p.storeId === storeId;
+    });
     const scopedProducts = filteredProducts.map((p) => ({ ...p, storeId }));
 
     safeLocalStorageSet(key, JSON.stringify(scopedProducts));
+    if (isWatchStore) {
+      safeLocalStorageSet(`artrivo_products_store_watch-brand`, JSON.stringify(scopedProducts));
+      safeLocalStorageSet(`artrivo_products_store_f95c1bc9-4bb9-4d47-bdab-df22925ae1cf`, JSON.stringify(scopedProducts));
+    }
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
 
     // Synchronize to the backend / database for this store:

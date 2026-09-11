@@ -13,6 +13,7 @@ import {
   generateUniqueSku,
   isValidImageUrl,
   PRODUCTS_UPDATED_EVENT,
+  toStorefrontProduct,
 } from "@/lib/product-storage";
 import type {
   Product,
@@ -350,92 +351,86 @@ export function useProducts(explicitStoreId?: string) {
 
   const bulkChangeStatus = useCallback(
     (status: ProductStatus) => {
+      const nowISO = new Date().toISOString();
+      let nextProducts: Product[] = [];
       setProducts((prev) => {
-        const next = prev.map((p) =>
+        nextProducts = prev.map((p) =>
           selectedIds.has(p.id)
             ? {
                 ...p,
                 status,
+                updatedAt: nowISO,
                 stock:
                   status === "out-of-stock" ? 0 : p.stock === 0 ? 10 : p.stock,
               }
             : p,
         );
-        saveStoredProducts(next, effectiveStoreId);
-        return next;
+        return nextProducts;
       });
       setSelectedIds(new Set());
+
+      saveStoredProducts(nextProducts, effectiveStoreId);
+
+      const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+      if (storeLookup) {
+        const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
+        const publishedStorefront = nextProducts
+          .filter((p) => p.status === "published")
+          .map((p) => toStorefrontProduct(p));
+
+        fetch(`/api/stores/${storeLookup}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commerce_config: { products: storefrontAll },
+            layout_config: { products: publishedStorefront },
+          }),
+        }).catch((err) => console.warn("[useProducts] DB sync error:", err));
+      }
     },
-    [selectedIds, effectiveStoreId],
+    [selectedIds, effectiveStoreId, activeStore?.slug, activeStore?.id],
   );
 
   const toggleProductStatus = useCallback(
     (id: string) => {
       let targetProduct: Product | undefined;
+      const nowISO = new Date().toISOString();
+      let nextProducts: Product[] = [];
+
       setProducts((prev) => {
-        const next = prev.map((p) => {
+        nextProducts = prev.map((p) => {
           if (p.id === id) {
             const nextStatus: ProductStatus = p.status === "published" ? "draft" : "published";
-            targetProduct = { ...p, status: nextStatus };
+            targetProduct = { ...p, status: nextStatus, updatedAt: nowISO };
             return targetProduct;
           }
           return p;
         });
-        saveStoredProducts(next, effectiveStoreId);
-
-        // Sync updated status with backend store
-        const storeLookup = effectiveStoreId || activeStore?.id;
-        if (storeLookup && targetProduct) {
-          fetch(`/api/stores/${storeLookup}`)
-            .then((res) => (res.ok ? res.json() : null))
-            .then((storeData) => {
-              const currentStore = storeData?.store;
-              if (currentStore) {
-                const allCatalogProducts = currentStore.commerce_config?.products || currentStore.layout_config?.products || [];
-                const updatedCatalog = allCatalogProducts.map((sp: any) =>
-                  sp.id === id ? { ...sp, status: targetProduct!.status } : sp
-                );
-                const publishedStorefront = updatedCatalog.filter((sp: any) => sp.status === "published");
-
-                const updatedSections = (currentStore.layout_config?.sections || []).map((sec: any) => {
-                  if (sec.props && Array.isArray(sec.props.products)) {
-                    return {
-                      ...sec,
-                      props: {
-                        ...sec.props,
-                        products: sec.props.products.filter((p: any) =>
-                          p.id === id ? targetProduct!.status === "published" : p.status !== "draft"
-                        ),
-                      },
-                    };
-                  }
-                  return sec;
-                });
-
-                fetch(`/api/stores/${storeLookup}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    layout_config: {
-                      ...currentStore.layout_config,
-                      sections: updatedSections,
-                      products: publishedStorefront,
-                    },
-                    commerce_config: {
-                      ...currentStore.commerce_config,
-                      products: updatedCatalog,
-                    },
-                  }),
-                }).catch(() => {});
-              }
-            })
-            .catch(() => {});
-        }
-
-        return next;
+        return nextProducts;
       });
+
+      // Persist to local storage immediately
+      saveStoredProducts(nextProducts, effectiveStoreId);
+
+      // Authoritative real-time sync with backend store
+      const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+      if (storeLookup && targetProduct) {
+        const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
+        const publishedStorefront = nextProducts
+          .filter((p) => p.status === "published")
+          .map((p) => toStorefrontProduct(p));
+
+        fetch(`/api/stores/${storeLookup}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commerce_config: { products: storefrontAll },
+            layout_config: { products: publishedStorefront },
+          }),
+        }).catch((err) => console.warn("[useProducts] DB sync error:", err));
+      }
     },
-    [effectiveStoreId, activeStore?.id],
+    [effectiveStoreId, activeStore?.slug, activeStore?.id],
   );
 
   const hasActiveFilters = Boolean(
