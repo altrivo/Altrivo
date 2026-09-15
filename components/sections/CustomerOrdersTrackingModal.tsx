@@ -502,199 +502,104 @@ export default function CustomerOrdersTrackingModal({
         );
 
       case "shipped":
-
         return (
-
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F5EFF7] text-[#5A3D63] border border-[#D1B2DB] flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#694873] animate-pulse" />
             <span>In Transit (TCS Courier)</span>
-
           </span>
-
         );
 
       case "delivered":
-
         return (
-
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F5EFF7] text-[#4A3252] border border-[#D1B2DB] flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-[#694873]" />
             <span>Delivered &amp; Signed</span>
-
           </span>
-
         );
 
       case "cancelled":
-
         return (
-
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
-
             Cancelled
-
           </span>
-
         );
 
       default:
-
         return (
-
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700">
-
             {status}
-
           </span>
-
         );
-
     }
-
   };
-
-
 
   const copyTrackingNumber = (text: string) => {
-
     navigator.clipboard.writeText(text);
-
     setCopiedTracking(true);
-
     setTimeout(() => setCopiedTracking(false), 2000);
-
   };
 
-
-
   return (
-
     <div className="fixed inset-0 z-50 overflow-y-auto select-none">
-
       {/* Backdrop */}
-
       <div
-
         className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm transition-opacity"
-
         onClick={onClose}
-
       />
 
-
-
       <div className="min-h-full flex items-center justify-center p-4 sm:p-6 text-slate-800 relative z-10">
-
         <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in-50 zoom-in-95">
-
-          
-
           {/* Header */}
-
           <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-
             <div className="flex items-center gap-3">
-
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md">
-
+              <div className="w-10 h-10 rounded-2xl bg-[#694873] text-white flex items-center justify-center shadow-md">
                 <Package className="w-5 h-5" />
-
               </div>
-
               <div>
-
                 <h3 className="font-black text-base sm:text-lg text-slate-900">
-
                   {selectedOrder ? "Live Order Tracking & Invoice" : "My Orders & Live Tracking"}
-
                 </h3>
-
                 <p className="text-xs text-slate-500">
-
                   Track your delivery status with TCS Express Courier ({storeName})
-
                 </p>
-
               </div>
-
             </div>
-
-
 
             <button
-
               onClick={onClose}
-
               className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-
             >
-
               <X className="w-5 h-5" />
-
             </button>
-
           </div>
 
-
-
           {/* Navigation Sub-Tabs */}
-
           {!selectedOrder && (
-
             <div className="flex border-b border-slate-100 bg-slate-50/30 px-6 pt-3 gap-6 text-xs font-bold">
-
               <button
-
                 onClick={() => setActiveTab("my_orders")}
-
                 className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-
                   activeTab === "my_orders"
-
-                    ? "border-emerald-500 text-emerald-600"
-
+                    ? "border-[#694873] text-[#694873]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
-
                 }`}
-
               >
-
                 <ShoppingBag className="w-4 h-4" />
-
                 <span>My Recent Orders ({ordersList.length})</span>
-
               </button>
-
-
 
               <button
-
                 onClick={() => setActiveTab("search_tracking")}
-
                 className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-
                   activeTab === "search_tracking"
-
-                    ? "border-emerald-500 text-emerald-600"
-
+                    ? "border-[#694873] text-[#694873]"
                     : "border-transparent text-slate-500 hover:text-slate-800"
-
                 }`}
-
               >
-
                 <Search className="w-4 h-4" />
-
                 <span>Track By Order # / Phone</span>
-
               </button>
-
             </div>
-
           )}
 
 
@@ -763,7 +668,7 @@ export default function CustomerOrdersTrackingModal({
 
                         >
 
-                          {copiedTracking ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedTracking ? <Check className="w-3.5 h-3.5 text-[#D1B2DB]" /> : <Copy className="w-3.5 h-3.5" />}
 
                         </button>
 
@@ -799,7 +704,7 @@ export default function CustomerOrdersTrackingModal({
 
                       <span className="text-slate-400 block text-[10px]">Total Amount</span>
 
-                      <span className="font-black text-emerald-400 text-sm">
+                      <span className="font-black text-[#D1B2DB] text-sm">
 
                         $ {selectedOrder.totalAmount?.toLocaleString()}
 
@@ -829,7 +734,7 @@ export default function CustomerOrdersTrackingModal({
 
                       <span className="font-bold text-slate-200 flex items-center gap-1">
 
-                        <Truck className="w-3.5 h-3.5 text-emerald-400" />
+                        <Truck className="w-3.5 h-3.5 text-[#D1B2DB]" />
 
                         <span>TCS Express (Air)</span>
 
@@ -851,13 +756,13 @@ export default function CustomerOrdersTrackingModal({
 
                     <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
 
-                      <Truck className="w-4 h-4 text-emerald-600" />
+                      <Truck className="w-4 h-4 text-[#694873]" />
 
                       <span>Live Delivery Timeline</span>
 
                     </h4>
 
-                    <span className="text-[11px] font-bold text-emerald-600">
+                    <span className="text-[11px] font-bold text-[#694873]">
 
                       Estimated Arrival: 2-4 Days
 
@@ -875,7 +780,7 @@ export default function CustomerOrdersTrackingModal({
 
                     <div className="flex items-start gap-3">
 
-                      <div className="w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
+                      <div className="w-7 h-7 rounded-full bg-[#694873] text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
 
                         <Check className="w-3.5 h-3.5" />
 
@@ -905,7 +810,7 @@ export default function CustomerOrdersTrackingModal({
 
                         selectedOrder.deliveryStatus !== "pending"
 
-                          ? "bg-emerald-500 text-slate-950"
+                          ? "bg-[#694873] text-white"
 
                           : "bg-slate-200 text-slate-500"
 
@@ -943,7 +848,7 @@ export default function CustomerOrdersTrackingModal({
 
                         selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
 
-                          ? "bg-emerald-500 text-white animate-pulse"
+                          ? "bg-[#694873] text-white animate-pulse"
 
                           : "bg-slate-200 text-slate-500"
 
@@ -989,7 +894,7 @@ export default function CustomerOrdersTrackingModal({
 
                         selectedOrder.deliveryStatus === "delivered"
 
-                          ? "bg-emerald-500 text-slate-950"
+                          ? "bg-[#694873] text-white"
 
                           : "bg-slate-200 text-slate-500"
 
@@ -1121,11 +1026,11 @@ export default function CustomerOrdersTrackingModal({
 
                 {/* Customer Support Links */}
 
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/60 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-[#F5EFF7] border border-[#D1B2DB]/60 text-xs">
 
-                  <div className="flex items-center gap-2 text-emerald-900 font-semibold">
+                  <div className="flex items-center gap-2 text-[#4A3252] font-semibold">
 
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <ShieldCheck className="w-4 h-4 text-[#694873]" />
 
                     <span>Need help with this order? Contact vendor directly on WhatsApp</span>
 
@@ -1139,7 +1044,7 @@ export default function CustomerOrdersTrackingModal({
 
                     rel="noopener noreferrer"
 
-                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                    className="px-3.5 py-2 rounded-xl bg-[#694873] hover:bg-[#5A3D63] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
 
                   >
 
@@ -1171,7 +1076,7 @@ export default function CustomerOrdersTrackingModal({
 
                       onClick={() => setSelectedOrder(ord)}
 
-                      className="p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-emerald-500/50 hover:bg-slate-50/80 transition-all cursor-pointer group shadow-xs space-y-3"
+                      className="p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-[#694873]/50 hover:bg-slate-50/80 transition-all cursor-pointer group shadow-xs space-y-3"
 
                     >
 
@@ -1179,7 +1084,7 @@ export default function CustomerOrdersTrackingModal({
 
                         <div className="flex items-center gap-2.5">
 
-                          <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-emerald-100 group-hover:text-emerald-700 text-slate-700 flex items-center justify-center font-bold text-xs transition-colors">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-[#E8D8ED] group-hover:text-[#4A3252] text-slate-700 flex items-center justify-center font-bold text-xs transition-colors">
 
                             <Package className="w-4 h-4" />
 
@@ -1187,7 +1092,7 @@ export default function CustomerOrdersTrackingModal({
 
                           <div>
 
-                            <span className="font-mono font-black text-xs sm:text-sm text-slate-900 group-hover:text-emerald-600 transition-colors">
+                            <span className="font-mono font-black text-xs sm:text-sm text-slate-900 group-hover:text-[#694873] transition-colors">
 
                               {ord.orderNumber}
 
@@ -1223,7 +1128,7 @@ export default function CustomerOrdersTrackingModal({
 
 
 
-                        <button className="text-emerald-600 font-extrabold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                        <button className="text-[#694873] hover:text-[#5A3D63] font-extrabold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
 
                           <span>Track Order</span>
 
@@ -1277,7 +1182,7 @@ export default function CustomerOrdersTrackingModal({
 
                           }}
 
-                          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm cursor-pointer"
+                          className="px-5 py-2.5 rounded-xl bg-[#694873] hover:bg-[#5A3D63] text-white font-bold text-xs shadow-sm cursor-pointer transition-all"
 
                         >
 
@@ -1333,7 +1238,7 @@ export default function CustomerOrdersTrackingModal({
 
                       placeholder="e.g. #ORD-8942 or 03001234567"
 
-                      className="w-full pl-10 pr-28 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-xs"
+                      className="w-full pl-10 pr-28 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#694873] focus:ring-2 focus:ring-[#694873]/20 focus:bg-white transition-all shadow-xs"
 
                     />
 
@@ -1345,7 +1250,7 @@ export default function CustomerOrdersTrackingModal({
 
                       type="submit"
 
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs shadow-sm active:scale-95 transition-all"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-xl bg-[#694873] hover:bg-[#5A3D63] text-white font-extrabold text-xs shadow-sm active:scale-95 transition-all"
 
                     >
 
