@@ -14,18 +14,14 @@ interface TrafficOverviewCardsProps {
 export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverviewCardsProps) {
   if (loading) {
     return (
-      <div className="space-y-3">
-        {/* Live badge skeleton */}
-        <div className="h-5 w-28 skeleton-bone rounded-full" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-card border border-default shadow-card space-y-3 animate-pulse">
-              <div className="h-4 w-24 skeleton-bone" />
-              <div className="h-8 w-32 skeleton-bone" />
-              <div className="h-4 w-20 skeleton-bone" />
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="p-5 rounded-2xl bg-card border border-default shadow-card space-y-3 animate-pulse">
+            <div className="h-4 w-24 skeleton-bone" />
+            <div className="h-8 w-32 skeleton-bone" />
+            <div className="h-4 w-20 skeleton-bone" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -79,26 +75,7 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
   ];
 
   return (
-    <div className="space-y-3">
-      {/* Live / Simulated indicator */}
-      <div className="flex items-center gap-2">
-        {isLive ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-success-50 text-success-700 border border-success-200 shadow-xs">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success-600" />
-            </span>
-            LIVE — Real Storefront Traffic
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-muted text-subtle border border-default shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-subtle/60" />
-            Simulated — No visits recorded yet. Open your storefront to start tracking.
-          </span>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {cards.map((card) => {
           const Icon  = card.icon;
           const isUp  = card.change >= 0;
@@ -148,6 +125,5 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
           );
         })}
       </div>
-    </div>
   );
 }
