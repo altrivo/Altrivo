@@ -207,19 +207,14 @@ export default function MyStoresPage() {
         )}
 
         {/* Store Cards Grid */}
-        {!isLoading && stores.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {((!showAllStores && (activeStoreId || activeStore?.id)
-              ? stores.filter((s) => s.id === (activeStoreId || activeStore?.id))
-              : stores
-            ).length > 0
-              ? (!showAllStores && (activeStoreId || activeStore?.id)
-                  ? stores.filter((s) => s.id === (activeStoreId || activeStore?.id))
-                  : stores)
-              : stores
-            ).map((store) => {
-              const isCurrent = store.id === (activeStoreId || activeStore?.id);
-              return (
+        {/* Store Cards Grid - Strictly Only The Active Store */}
+        {!isLoading && stores.length > 0 && (() => {
+          const currentStore = stores.find((s) => s.id === (activeStoreId || activeStore?.id)) || stores[0];
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {[currentStore].map((store) => {
+                const isCurrent = true;
+                return (
               <div
                 key={store.id}
                 className={`group rounded-3xl bg-card border shadow-card hover:shadow-card-hover transition-all duration-normal overflow-hidden flex flex-col justify-between ${
@@ -382,7 +377,8 @@ export default function MyStoresPage() {
             );
           })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Store Delete Confirmation Modal */}
@@ -410,7 +406,7 @@ export default function MyStoresPage() {
                   Permanently Delete Store?
                 </h3>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Yeh action permanent aur irreversible hai. Store delete hone k baad wapis restore nahi kiya ja sakay ga.
+                  This action is permanent and irreversible. Once deleted, this store and its data cannot be restored.
                 </p>
               </div>
             </div>
@@ -436,10 +432,10 @@ export default function MyStoresPage() {
                 <span>⚠️ Important Consequences:</span>
               </h4>
               <ul className="space-y-1.5 text-[11px] text-red-700/90 list-disc list-inside leading-relaxed font-medium">
-                <li>Storefront website (<span className="font-mono font-bold">/{storeToDelete.slug}</span>) foran offline ho jaye gi.</li>
-                <li>Is store k tamam layout sections, custom designs aur banners database sy permanently delete ho jayenge.</li>
-                <li>Is specific store k customers aur orders ka record mukammal wipe out ho jaye ga.</li>
-                <li><span className="font-bold">Aapka vendor account aur baki tamam stores bilkul mehfooz rahenge.</span></li>
+                <li>Storefront website (<span className="font-mono font-bold">/{storeToDelete.slug}</span>) will immediately go offline.</li>
+                <li>All layout sections, custom designs, banners, and catalog products will be permanently deleted from the database.</li>
+                <li>All customer records, tracking timelines, and orders for this specific store will be permanently erased.</li>
+                <li><span className="font-bold">Your vendor account and all other stores will remain completely safe and active.</span></li>
               </ul>
             </div>
 

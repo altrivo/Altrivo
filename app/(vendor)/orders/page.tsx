@@ -45,11 +45,10 @@ export default function OrdersPage() {
         if (data.orders && Array.isArray(data.orders)) {
           backendOrders = activeStoreId
             ? data.orders.filter((o: any) => {
-                // Backend uses snake_case store_id; also check camelCase storeId for compatibility
                 const sid = o.store_id || o.storeId;
-                return !sid || sid === activeStoreId || (activeStore?.slug && sid === activeStore.slug);
+                return sid === activeStoreId || (activeStore?.slug && sid === activeStore.slug);
               })
-            : data.orders;
+            : [];
         }
       }
 
