@@ -53,7 +53,11 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
   const fetchNotifications = async () => {
     try {
       setLoadingNotifs(true);
-      const res = await fetch("/api/notifications");
+      const params = new URLSearchParams();
+      if (vendor?.id) params.set("userId", vendor.id);
+      if (activeStore?.id) params.set("storeId", activeStore.id);
+
+      const res = await fetch(`/api/notifications?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -70,7 +74,7 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [vendor?.id, activeStore?.id]);
 
   // Handle Mark All Read API call
   const handleMarkAllRead = async () => {
@@ -78,12 +82,17 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
       const res = await fetch("/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAllRead: true }),
+        body: JSON.stringify({
+          markAllRead: true,
+          markAll: true,
+          userId: vendor?.id,
+          storeId: activeStore?.id,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          setNotifications(data.notifications || []);
+          setNotifications((prev) => prev.map((n) => ({ ...n, read: true, is_read: true })));
           setUnreadCount(0);
         }
       }
@@ -91,6 +100,38 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
       console.error("Failed to mark notifications read:", err);
     }
   };
+
+  // Listen to real-time notification broadcasts
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("vendor_notifications_channel");
+      bc.onmessage = (event) => {
+        if (event.data?.type === "NEW_NOTIFICATION") {
+          const newNotif = event.data.notification;
+          // Only show if it matches current active store
+          if (!activeStore?.id || !newNotif.store_id || newNotif.store_id === activeStore.id) {
+            const formatted: NotificationItem = {
+              ...newNotif,
+              description: newNotif.message || newNotif.description,
+              read: false,
+              is_read: false,
+              timestamp: newNotif.created_at
+                ? new Date(newNotif.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "Just now",
+            };
+            setNotifications((prev) => [formatted, ...prev.filter((n) => n.id !== formatted.id)]);
+            setUnreadCount((c) => c + 1);
+          }
+        }
+      };
+    } catch (e) {}
+
+    return () => {
+      if (bc) bc.close();
+    };
+  }, [activeStore?.id]);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -320,7 +361,7 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                     <p className="px-2 py-3 text-xs text-subtle text-center italic">No stores yet</p>
                   ) : (
                     stores.map((s) => {
-                      const isCurrent = (activeStore?.id || stores[0]?.id) === s.id;
+                      const isCurrent = activeStoreId === s.id;
                       const initial = s.name.charAt(0).toUpperCase();
                       return (
                         <button

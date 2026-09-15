@@ -35,10 +35,22 @@ interface VendorStoreContextType {
 
 const VendorStoreContext = createContext<VendorStoreContextType | undefined>(undefined);
 
+// Read saved store ID from localStorage synchronously before any render
+function getPersistedStoreId(): string | null {
+  try {
+    return typeof window !== "undefined" ? localStorage.getItem("active_store_id") : null;
+  } catch {
+    return null;
+  }
+}
+
 export function VendorStoreProvider({ children }: { children: React.ReactNode }) {
   const [stores, setStores] = useState<VendorStore[]>([]);
   const [vendor, setVendor] = useState<VendorProfile | null>(null);
-  const [activeStoreId, setActiveStoreIdState] = useState<string | null>(null);
+
+  // Initialize from localStorage immediately — no delay, no flash
+  const [activeStoreId, setActiveStoreIdState] = useState<string | null>(getPersistedStoreId);
+
   const [isLoading, setIsLoading] = useState(true);
 
   // Set active store ID with persistent cookie and localStorage storage
@@ -61,23 +73,20 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
           setStores(vendorStores);
 
           if (newStoreIdToActivate) {
+            // Explicit activation request (e.g. after creating a store)
             setActiveStoreId(newStoreIdToActivate);
           } else {
-            // Check stored preference
-            let preferredId: string | null = null;
-            try {
-              preferredId = localStorage.getItem("active_store_id");
-            } catch {}
+            // Restore the persisted preference — read again in case it changed
+            const persistedId = getPersistedStoreId();
+            const currentId = persistedId;
 
-            // Validate that preferredId actually belongs to this vendor
-            const match = vendorStores.find((s) => s.id === preferredId);
-            if (match) {
-              setActiveStoreIdState(match.id);
-            } else if (vendorStores.length > 0) {
+            // Only change if the current saved store doesn't belong to this vendor
+            const match = currentId ? vendorStores.find((s) => s.id === currentId) : null;
+            if (!match && vendorStores.length > 0) {
+              // Persisted store not found for this vendor — default to first and save it
               setActiveStoreId(vendorStores[0].id);
-            } else {
-              setActiveStoreIdState(null);
             }
+            // If match found, keep the existing state — no update needed (avoids flicker)
           }
         } else {
           setVendor(null);
@@ -96,7 +105,12 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
     refreshStores();
   }, [refreshStores]);
 
-  const activeStore = stores.find((s) => s.id === activeStoreId) || (stores.length > 0 ? stores[0] : null);
+  // Derive activeStore strictly from activeStoreId — never auto-switch to stores[0]
+  const activeStore = activeStoreId
+    ? (stores.find((s) => s.id === activeStoreId) ?? null)
+    : stores.length > 0
+    ? stores[0]  // Only use stores[0] as fallback if NO preference was ever saved
+    : null;
 
   return (
     <VendorStoreContext.Provider

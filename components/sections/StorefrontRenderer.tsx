@@ -212,7 +212,7 @@ export default function StorefrontRenderer({
   onDeleteSection,
 }: StorefrontRendererProps) {
   const { theme, sections = [] } = config;
-  const storeIdentifier = (config as any).slug || (config as any).subdomain || config.storeName || "store_default";
+  const storeIdentifier = (config as any).slug || (config as any).subdomain || (config as any).storeId || config.storeName || "store_default";
   const rawCatalog = (products && Array.isArray(products) && products.length > 0)
     ? products
     : (Array.isArray((config as any).products) && (config as any).products.length > 0)
@@ -252,9 +252,6 @@ export default function StorefrontRenderer({
   const handlePageChange = (p: string) => {
     setInternalPage(p);
     onNavigatePage?.(p);
-    if (typeof window !== "undefined") {
-      window.location.hash = `#${p}`;
-    }
   };
 
   return (
@@ -292,6 +289,8 @@ export default function StorefrontRenderer({
               products={catalogProducts}
               deviceMode={deviceMode}
               activePage={currentPage}
+              storeSlug={storeIdentifier}
+              isEditorMode={isEditorMode}
               onNavigatePage={handlePageChange}
             />
           </div>
@@ -302,6 +301,8 @@ export default function StorefrontRenderer({
             products={catalogProducts}
             deviceMode={deviceMode}
             activePage={currentPage}
+            storeSlug={storeIdentifier}
+            isEditorMode={isEditorMode}
             onNavigatePage={handlePageChange}
           />
         )}
@@ -326,6 +327,7 @@ export default function StorefrontRenderer({
               products={catalogProducts}
               categories={config.categories || categories}
               config={config.pages?.shop}
+              storeSlug={storeIdentifier}
               isEditorMode={isEditorMode}
               activeSectionId={activeSectionId}
               onSelectSection={onSelectSection}

@@ -67,12 +67,12 @@ export default async function PublicStorefrontLayout({
     "@type": "OnlineStore",
     name: config.storeName,
     description: config.tagline,
-    url: host ? `https://${host}` : "https://artrivo.com",
+    url: host ? `https://${host}` : "https://altrivo.com",
     telephone: config.supportPhone,
-    priceRange: "₨₨",
+    priceRange: "$$",
     offers: {
       "@type": "AggregateOffer",
-      priceCurrency: "PKR",
+      priceCurrency: "USD",
       offerCount: "50+",
     },
   };
@@ -83,7 +83,7 @@ export default async function PublicStorefrontLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <StorefrontBeacon vendorId={config.vendorId} />
+      <StorefrontBeacon vendorId={config.vendorId} storeId={config.storeId} />
       <StorefrontShell config={config}>{children}</StorefrontShell>
     </>
   );

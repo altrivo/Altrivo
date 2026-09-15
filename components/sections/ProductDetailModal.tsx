@@ -107,6 +107,7 @@ export default function ProductDetailModal({
 
   const handleAddToCart = () => {
     setIsAdded(true);
+    const itemSku = product.sku || product.product_sku || (product.id ? `SKU-${product.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}` : "SKU-ALT-001");
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: `${product.id || "p"}_${selectedVariant}`,
@@ -114,6 +115,8 @@ export default function ProductDetailModal({
         price: `$${rawPrice.toLocaleString()}`,
         originalPrice: `$${rawComparePrice.toLocaleString()}`,
         image: images[activeImgIndex] || product.thumbnail || product.image,
+        variant: selectedVariant,
+        sku: itemSku,
       });
     }
     setTimeout(() => setIsAdded(false), 2000);

@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
 import { EmailTemplates, StoreBranding } from "./email-templates";
+import { EmailService } from "./email-service";
 import {
   Notification,
   NotificationDelivery,
@@ -83,10 +84,10 @@ export class NotificationService {
    */
   static async dispatch(payload: NotificationEventPayload): Promise<Notification | null> {
     const {
-      eventId = `${payload.eventType}_${payload.order?.orderNumber || payload.recipientUserId || crypto.randomUUID()}`,
+      eventId = `${payload.eventType}_${payload.recipientType}_${payload.order?.orderNumber || payload.recipientUserId || crypto.randomUUID()}`,
       eventType,
       storeId,
-      storeName = "DigiShop Store",
+      storeName = "Altrivo Store",
       storeLogo,
       recipientUserId,
       recipientType,
@@ -127,18 +128,29 @@ export class NotificationService {
     // 3. Persist notification in database
     if (supabaseAdmin) {
       try {
-        await supabaseAdmin.from("notifications").insert({
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipientUserId);
+        const validUserId = isUUID ? recipientUserId : crypto.randomUUID();
+
+        const { error: insertErr } = await supabaseAdmin.from("notifications").insert({
           id: notificationId,
-          recipient_user_id: recipientUserId,
+          user_id: validUserId,
+          user_type: recipientType,
+          type: eventType,
+          recipient_user_id: validUserId,
           store_id: storeId,
           recipient_type: recipientType,
           event_type: eventType,
           title,
           message,
           data: createdNotification.data,
+          payload: createdNotification.data,
           is_read: false,
           created_at: createdNotification.created_at,
         });
+
+        if (insertErr) {
+          console.error("[NotificationService] DB notification insert error:", insertErr);
+        }
       } catch (dbErr) {
         console.warn("[NotificationService] DB notification insert fallback:", dbErr);
       }
@@ -157,14 +169,14 @@ export class NotificationService {
     const storeBranding: StoreBranding = {
       name: storeName,
       logoUrl: storeLogo,
-      primaryColor: recipientType === "vendor" ? "#1e293b" : "#3e2845",
+      primaryColor: recipientType === "vendor" ? "#0f172a" : "#3e2845",
       supportPhone: "0300-1234567",
-      supportEmail: "support@digishop.pk",
+      supportEmail: "support@altrivo.com",
     };
 
     const shouldSendEmail = this.checkEmailAllowed(eventType, userPrefs);
     if (shouldSendEmail && recipientEmail && recipientEmail.includes("@")) {
-      await this.sendEmailDelivery(notificationId, recipientEmail, eventType, order, shipment, storeBranding, data);
+      await this.sendEmailDelivery(notificationId, recipientEmail, eventType, recipientType, order, shipment, storeBranding, data);
     } else if (recipientEmail) {
       await this.logDelivery(notificationId, "email", "skipped", "resend", "User preference disabled or invalid email");
     }
@@ -256,13 +268,14 @@ export class NotificationService {
     notificationId: string,
     toEmail: string,
     eventType: NotificationEventType,
+    recipientType: "vendor" | "customer" | "admin" = "customer",
     order?: any,
     shipment?: any,
     store?: StoreBranding,
     data?: any
   ) {
     let emailContent: { subject: string; html: string } | null = null;
-    const storeName = store?.name || "DigiShop";
+    const storeName = store?.name || "Altrivo Store";
 
     try {
       switch (eventType) {
@@ -284,7 +297,9 @@ export class NotificationService {
 
         case "ORDER_CREATED":
         case "ORDER_CONFIRMED":
-          if (order) {
+          if (recipientType === "vendor") {
+            emailContent = EmailTemplates.vendorNewOrderAlert(order, store);
+          } else if (order) {
             emailContent = EmailTemplates.customerOrderConfirmation(order, store);
           }
           break;
@@ -354,21 +369,23 @@ export class NotificationService {
       }
 
       if (emailContent) {
-        const { data: resData, error } = await resend.emails.send({
-          from: `${storeName} <onboarding@resend.dev>`,
-          to: [toEmail],
+        const fromEmail = process.env.RESEND_FROM_EMAIL || "Altrivo <onboarding@resend.dev>";
+        const sendResult = await EmailService.sendEmail({
+          to: toEmail,
           subject: emailContent.subject,
           html: emailContent.html,
+          from: fromEmail,
+          recipientType,
         });
 
-        const status = error ? "failed" : "sent";
+        const status = sendResult.success ? "sent" : "failed";
         await this.logDelivery(
           notificationId,
           "email",
           status,
           "resend",
-          error?.message,
-          resData?.id
+          sendResult.error,
+          sendResult.id
         );
       }
     } catch (err: any) {
@@ -444,7 +461,7 @@ export class NotificationService {
         let query = supabaseAdmin
           .from("notifications")
           .select("*")
-          .eq("recipient_user_id", userId)
+          .or(`recipient_user_id.eq.${userId},user_id.eq.${userId}`)
           .order("created_at", { ascending: false })
           .limit(30);
 
@@ -453,48 +470,16 @@ export class NotificationService {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const unreadCount = data.filter((n) => !n.is_read).length;
           return { notifications: data as Notification[], unreadCount };
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn("[NotificationService] getNotifications DB lookup note:", e);
+      }
     }
 
-    // Default mock notifications for active UI testing
-    const mockNotifs: Notification[] = [
-      {
-        id: "notif-1",
-        recipient_user_id: userId,
-        recipient_type: "vendor",
-        event_type: "ORDER_CREATED",
-        title: "New Order #ORD-9407 Received",
-        message: "Customer placed a new order for ₨ 10,400 via Cash on Delivery.",
-        is_read: false,
-        created_at: new Date().toISOString(),
-      },
-      {
-        id: "notif-2",
-        recipient_user_id: userId,
-        recipient_type: "vendor",
-        event_type: "SHIPMENT_CREATED",
-        title: "Trax Courier Booked #TRX-9407",
-        message: "Waybill generated and parcel assigned to rider pickup.",
-        is_read: false,
-        created_at: new Date(Date.now() - 1800000).toISOString(),
-      },
-      {
-        id: "notif-3",
-        recipient_user_id: userId,
-        recipient_type: "vendor",
-        event_type: "STORE_PUBLISHED",
-        title: "Storefront Live & Synced",
-        message: "Your store 'stepcraft-premium' is live and accepting customer orders.",
-        is_read: true,
-        created_at: new Date(Date.now() - 7200000).toISOString(),
-      },
-    ];
-
-    return { notifications: mockNotifs, unreadCount: 2 };
+    return { notifications: [], unreadCount: 0 };
   }
 
   /**
@@ -514,13 +499,19 @@ export class NotificationService {
   /**
    * Mark all notifications as read
    */
-  static async markAllAsRead(userId: string) {
+  static async markAllAsRead(userId: string, storeId?: string) {
     if (supabaseAdmin) {
       try {
-        await supabaseAdmin
+        let query = supabaseAdmin
           .from("notifications")
           .update({ is_read: true, read_at: new Date().toISOString() })
-          .eq("recipient_user_id", userId);
+          .or(`recipient_user_id.eq.${userId},user_id.eq.${userId}`);
+
+        if (storeId) {
+          query = query.eq("store_id", storeId);
+        }
+
+        await query;
       } catch (e) {}
     }
   }

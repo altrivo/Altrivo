@@ -21,6 +21,7 @@ import {
   Filter,
 } from "lucide-react";
 import { Card, Button } from "@/components/shared";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 interface NotificationItem {
   id: string;
@@ -33,9 +34,11 @@ interface NotificationItem {
   created_at?: string;
   timestamp?: string;
   data?: any;
+  store_id?: string;
 }
 
 export default function NotificationsPage() {
+  const { vendor, activeStore } = useVendorStore();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +60,9 @@ export default function NotificationsPage() {
 
   const fetchPreferences = async () => {
     try {
-      const res = await fetch("/api/notifications/preferences?userId=vendor_dev_123");
+      const currentUserId = vendor?.id;
+      if (!currentUserId) return;
+      const res = await fetch(`/api/notifications/preferences?userId=${currentUserId}`);
       if (res.ok) {
         const data = await res.json();
         if (data.preferences) {
@@ -77,11 +82,13 @@ export default function NotificationsPage() {
   const handleSavePreferences = async () => {
     setIsSavingPrefs(true);
     try {
+      const currentUserId = vendor?.id;
       const res = await fetch("/api/notifications/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "vendor_dev_123",
+          userId: currentUserId,
+          storeId: activeStore?.id,
           preferences: {
             email_order_updates: prefs.emailNewOrder,
             email_shipping_updates: prefs.emailShipmentUpdate,
@@ -106,7 +113,11 @@ export default function NotificationsPage() {
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/notifications?userId=vendor_dev_123");
+      const params = new URLSearchParams();
+      if (vendor?.id) params.set("userId", vendor.id);
+      if (activeStore?.id) params.set("storeId", activeStore.id);
+
+      const res = await fetch(`/api/notifications?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.notifications) {
@@ -132,8 +143,11 @@ export default function NotificationsPage() {
       bc.onmessage = (event) => {
         if (event.data?.type === "NEW_NOTIFICATION") {
           const newNotif = event.data.notification;
-          setNotifications((prev) => [newNotif, ...prev.filter((n) => n.id !== newNotif.id)]);
-          setUnreadCount((prev) => prev + 1);
+          // Filter by active store
+          if (!activeStore?.id || !newNotif.store_id || newNotif.store_id === activeStore.id) {
+            setNotifications((prev) => [newNotif, ...prev.filter((n) => n.id !== newNotif.id)]);
+            setUnreadCount((prev) => prev + 1);
+          }
         }
       };
     } catch (e) {}
@@ -141,14 +155,19 @@ export default function NotificationsPage() {
     return () => {
       if (bc) bc.close();
     };
-  }, []);
+  }, [vendor?.id, activeStore?.id]);
 
   const handleMarkAllRead = async () => {
     try {
       await fetch("/api/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAll: true, userId: "vendor_dev_123" }),
+        body: JSON.stringify({
+          markAll: true,
+          markAllRead: true,
+          userId: vendor?.id,
+          storeId: activeStore?.id,
+        }),
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, read: true })));
       setUnreadCount(0);

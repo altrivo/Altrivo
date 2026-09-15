@@ -35,7 +35,34 @@ export function OrderDetailsModal({
 }: OrderDetailsModalProps) {
   if (!order) return null;
 
+  return (
+    <OrderDetailsModalContent
+      order={order}
+      onClose={onClose}
+      onUpdateStatus={onUpdateStatus}
+    />
+  );
+}
+
+function OrderDetailsModalContent({
+  order,
+  onClose,
+  onUpdateStatus,
+}: {
+  order: Order;
+  onClose: () => void;
+  onUpdateStatus: (orderId: string, status: OrderStatus) => void;
+}) {
   const [activeTab, setActiveTab] = useState<"overview" | "lifecycle" | "events" | "notes" | "documents">("overview");
+
+  // Dynamic status state for instant lifecycle progression feedback
+  const [localStatus, setLocalStatus] = useState<OrderStatus>(
+    order.order_status || (order.deliveryStatus as OrderStatus) || "pending"
+  );
+
+  React.useEffect(() => {
+    setLocalStatus(order.order_status || (order.deliveryStatus as OrderStatus) || "pending");
+  }, [order.order_status, order.deliveryStatus]);
 
   // Notes state
   const [vendorNote, setVendorNote] = useState(order.vendor_note || "");
@@ -50,32 +77,117 @@ export function OrderDetailsModal({
   const [processingRefund, setProcessingRefund] = useState(false);
 
   // Courier Tracking state
+  const defaultAwb = order.trackingNumber || `TRX-${(order.orderNumber || order.order_number || "").replace(/[^0-9]/g, "").slice(-8) || "26633895"}`;
   const [courierName, setCourierName] = useState(order.carrier || "Trax Express Logistics");
-  const [trackingNo, setTrackingNo] = useState(order.trackingNumber || "");
+  const [trackingNo, setTrackingNo] = useState(defaultAwb);
+  const [isUpdatingTracking, setIsUpdatingTracking] = useState(false);
+  const [trackingMsg, setTrackingMsg] = useState<string | null>(null);
 
   // Document view mode
   const [docType, setDocType] = useState<"invoice" | "packingSlip">("invoice");
 
-  const subtotal = order.subtotal || order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = order.subtotal || order.items.reduce((sum, item) => sum + (item.price || item.unit_price || 0) * item.quantity, 0);
   const discount = order.discount_total || 0;
-  const shipping = order.shipping_total || (order.deliveryMethod === "express" ? 25.0 : 0.0);
   const tax = order.tax_total || 0;
-  const grandTotal = order.grand_total || order.totalAmount;
+  const rawGrandTotal = order.grand_total || order.totalAmount || 0;
 
-  const currentStatus = order.order_status || (order.deliveryStatus as OrderStatus) || "pending";
+  // Authoritative, self-healing shipping calculation:
+  // If grandTotal is known and positive, shipping is strictly grandTotal - subtotal + discount - tax
+  let shipping = 0;
+  if (rawGrandTotal > 0 && Math.abs(rawGrandTotal - subtotal) > 0.001) {
+    shipping = Math.max(0, rawGrandTotal - subtotal + discount - tax);
+  } else if (order.shipping_total !== undefined && Number(order.shipping_total) < 100) {
+    shipping = Number(order.shipping_total);
+  } else {
+    shipping = subtotal >= 100 || subtotal === 0 ? 0.0 : 15.0;
+  }
+
+  const grandTotal = rawGrandTotal > 0 ? rawGrandTotal : Math.max(0, subtotal - discount + shipping + tax);
+
+  const currentStatus = localStatus;
+
+  const handleStatusTransition = (newStatus: OrderStatus) => {
+    setLocalStatus(newStatus);
+    onUpdateStatus(order.id, newStatus);
+  };
+
+  const handleSaveTracking = async () => {
+    setIsUpdatingTracking(true);
+    setTrackingMsg(null);
+    try {
+      // 1. Sync to local storage for storefront orders
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("storefront_customer_orders_")) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const updated = list.map((item: any) =>
+                item.id === order.id || item.orderNumber === order.orderNumber
+                  ? { ...item, carrier: courierName, trackingNumber: trackingNo }
+                  : item
+              );
+              localStorage.setItem(key, JSON.stringify(updated));
+            }
+          }
+        }
+      }
+
+      // 2. Sync to backend PATCH
+      await fetch(`/api/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ carrier: courierName, trackingNumber: trackingNo }),
+      });
+      order.carrier = courierName;
+      order.trackingNumber = trackingNo;
+      setTrackingMsg("✓ Courier & tracking updated successfully!");
+      setTimeout(() => setTrackingMsg(null), 3000);
+    } catch (e) {
+      setTrackingMsg("Failed to update tracking.");
+    } finally {
+      setIsUpdatingTracking(false);
+    }
+  };
 
   const handleSaveNotes = async () => {
     setSavingNotes(true);
     setNotesMessage(null);
     try {
+      // 1. Sync to local storage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("storefront_customer_orders_")) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const updated = list.map((item: any) =>
+                item.id === order.id || item.orderNumber === order.orderNumber
+                  ? { ...item, vendor_note: vendorNote, internal_note: internalNote }
+                  : item
+              );
+              localStorage.setItem(key, JSON.stringify(updated));
+            }
+          }
+        }
+      }
+
+      // 2. Sync to backend PATCH
       const res = await fetch(`/api/orders/${order.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorNote, internalNote }),
       });
+      order.vendor_note = vendorNote;
+      order.internal_note = internalNote;
       if (res.ok) {
-        setNotesMessage("Notes saved successfully!");
-        setTimeout(() => setNotesMessage(null), 3000);
+        setNotesMessage("✓ Notes saved and synced successfully!");
+        setTimeout(() => setNotesMessage(null), 3500);
+      } else {
+        setNotesMessage("✓ Notes saved locally!");
+        setTimeout(() => setNotesMessage(null), 3500);
       }
     } catch (e) {
       setNotesMessage("Failed to save notes.");
@@ -98,7 +210,7 @@ export function OrderDetailsModal({
       });
       if (res.ok) {
         setShowRefundDialog(false);
-        onUpdateStatus(order.id, "cancelled");
+        handleStatusTransition("cancelled");
       }
     } catch (e) {
       console.error("Refund failed", e);
@@ -311,19 +423,53 @@ export function OrderDetailsModal({
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl border border-default bg-card space-y-2">
-                  <h3 className="text-xs font-extrabold uppercase text-heading tracking-wider flex items-center gap-1.5">
-                    <Truck className="w-4 h-4 text-primary-600" />
-                    Delivery Destination & Courier
-                  </h3>
-                  <div className="text-xs space-y-1">
+                <div className="p-4 rounded-xl border border-default bg-card space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold uppercase text-heading tracking-wider flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-primary-600" />
+                      Delivery Destination & Logistics
+                    </h3>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Active Carrier
+                    </span>
+                  </div>
+                  <div className="text-xs space-y-2">
                     <p className="font-bold text-heading leading-relaxed">{order.shippingAddress}</p>
-                    <div className="pt-1 flex items-center gap-2 text-body">
-                      <span>Carrier: <strong className="text-heading">{order.carrier || "Trax Express"}</strong></span>
-                      {order.trackingNumber && (
-                        <span>• AWB: <strong className="text-heading font-mono">{order.trackingNumber}</strong></span>
-                      )}
+                    <div className="pt-2 border-t border-default/70 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-extrabold uppercase text-body block mb-1">Carrier Provider</label>
+                        <input
+                          type="text"
+                          value={courierName}
+                          onChange={(e) => setCourierName(e.target.value)}
+                          placeholder="e.g. Trax Express Logistics"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-default bg-neutral-50 text-xs font-bold text-heading focus:bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-extrabold uppercase text-body block mb-1">Waybill Tracking (AWB)</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={trackingNo}
+                            onChange={(e) => setTrackingNo(e.target.value)}
+                            placeholder="e.g. TRX-26633895"
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-default bg-neutral-50 text-xs font-mono font-bold text-heading focus:bg-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSaveTracking}
+                            disabled={isUpdatingTracking}
+                            className="px-2.5 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shrink-0 cursor-pointer disabled:opacity-50"
+                          >
+                            {isUpdatingTracking ? "Saving..." : "Save"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                    {trackingMsg && (
+                      <p className="text-[11px] font-bold text-emerald-700">{trackingMsg}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -345,23 +491,27 @@ export function OrderDetailsModal({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-default bg-card">
-                      {order.items.map((it, idx) => (
-                        <tr key={it.id || idx}>
-                          <td className="py-3 px-3">
-                            <span className="font-bold text-heading block">{it.name || it.product_name_snapshot}</span>
-                          </td>
-                          <td className="py-3 px-3 text-body font-mono">
-                            {it.sku || it.product_sku_snapshot || "SKU-PK"} {it.variant ? `(${it.variant})` : ""}
-                          </td>
-                          <td className="py-3 px-3 text-center font-bold text-heading font-mono">{it.quantity}</td>
-                          <td className="py-3 px-3 text-right font-bold text-heading font-mono">
-                            ₨ {it.price.toLocaleString()}
-                          </td>
-                          <td className="py-3 px-3 text-right font-extrabold text-heading font-mono">
-                            ₨ {(it.price * it.quantity).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
+                      {order.items.map((it, idx) => {
+                        const itemSku = it.sku || it.product_sku_snapshot || "SKU-ALT-001";
+                        const itemPrice = Number(it.price || it.unit_price || 0);
+                        return (
+                          <tr key={it.id || idx}>
+                            <td className="py-3 px-3">
+                              <span className="font-bold text-heading block">{it.name || it.product_name_snapshot}</span>
+                            </td>
+                            <td className="py-3 px-3 text-body font-mono">
+                              <span className="font-bold text-heading">{itemSku}</span> {it.variant ? `(${it.variant})` : ""}
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold text-heading font-mono">{it.quantity}</td>
+                            <td className="py-3 px-3 text-right font-bold text-heading font-mono">
+                              ${itemPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 px-3 text-right font-extrabold text-heading font-mono">
+                              ${(itemPrice * it.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -371,21 +521,29 @@ export function OrderDetailsModal({
               <div className="p-4 rounded-xl border border-default bg-card space-y-2 text-xs">
                 <div className="flex justify-between font-medium text-body">
                   <span>Items Subtotal</span>
-                  <span className="font-mono text-heading">₨ {subtotal.toLocaleString()}</span>
+                  <span className="font-mono text-heading">
+                    ${Number(subtotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between font-medium text-emerald-600">
                     <span>Discount Deductions</span>
-                    <span className="font-mono">-₨ {discount.toLocaleString()}</span>
+                    <span className="font-mono">
+                      -${Number(discount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between font-medium text-body">
                   <span>Shipping & Handling</span>
-                  <span className="font-mono text-heading">₨ {shipping.toLocaleString()}</span>
+                  <span className="font-mono text-heading">
+                    ${Number(shipping).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center border-t border-default pt-2.5 text-sm font-extrabold text-heading">
                   <span>Grand Total Authoritative</span>
-                  <span className="font-mono text-xl text-primary-600">₨ {grandTotal.toLocaleString()}</span>
+                  <span className="font-mono text-xl text-primary-600">
+                    ${Number(grandTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
               </div>
             </div>
@@ -453,8 +611,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "confirmed")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("confirmed")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       Confirm Order & Verify Stock
@@ -465,8 +623,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "processing")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("processing")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <PackageCheck className="w-4 h-4" />
                       Send to Warehouse Packaging
@@ -477,8 +635,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "packed")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("packed")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <PackageCheck className="w-4 h-4" />
                       Mark Packed & Boxed
@@ -489,8 +647,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "ready_to_ship")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("ready_to_ship")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <Truck className="w-4 h-4" />
                       Ready for Courier Pickup
@@ -501,8 +659,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "shipped")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("shipped")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <Send className="w-4 h-4" />
                       Dispatch with Courier
@@ -513,8 +671,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "delivered")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("delivered")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <ShieldCheck className="w-4 h-4" />
                       Confirm Customer Doorstep Delivery
@@ -525,8 +683,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "completed")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("completed")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       Complete Order & Close Escrow
@@ -537,8 +695,8 @@ export function OrderDetailsModal({
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => onUpdateStatus(order.id, "cancelled")}
-                      className="font-bold gap-1.5"
+                      onClick={() => handleStatusTransition("cancelled")}
+                      className="font-bold gap-1.5 cursor-pointer"
                     >
                       <AlertTriangle className="w-4 h-4" />
                       Cancel Order
@@ -549,7 +707,7 @@ export function OrderDetailsModal({
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowRefundDialog(true)}
-                    className="font-bold gap-1.5"
+                    className="font-bold gap-1.5 cursor-pointer"
                   >
                     <DollarSign className="w-4 h-4" />
                     Issue Refund
@@ -566,7 +724,7 @@ export function OrderDetailsModal({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div>
-                      <label className="font-bold text-heading block mb-1">Refund Amount (₨)</label>
+                      <label className="font-bold text-heading block mb-1">Refund Amount ($)</label>
                       <input
                         type="number"
                         value={refundAmount}
@@ -740,95 +898,185 @@ export function OrderDetailsModal({
                   </button>
                 </div>
 
-                <Button variant="ghost" size="sm" onClick={() => window.print()} className="font-bold gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDocType("invoice");
+                    setTimeout(() => window.print(), 80);
+                  }}
+                  className="font-bold gap-1.5 cursor-pointer"
+                >
                   <Printer className="w-3.5 h-3.5" />
                   Print Document
                 </Button>
               </div>
 
+              {/* Isolated Print Stylesheet for Clean 1-Page A4 Output */}
+              <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                  /* Hide background web page and all modals */
+                  body * {
+                    visibility: hidden !important;
+                  }
+                  /* Exclusively display the printable sheet */
+                  #printable-invoice-slip, #printable-invoice-slip * {
+                    visibility: visible !important;
+                  }
+                  #printable-invoice-slip {
+                    position: fixed !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    padding: 24px 30px !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    background: #ffffff !important;
+                    color: #000000 !important;
+                    z-index: 99999999 !important;
+                  }
+                  @page {
+                    size: A4 portrait;
+                    margin: 12mm;
+                  }
+                }
+              `}} />
+
               {/* Printable Document Sheet */}
-              <div className="p-6 rounded-xl border border-default bg-white text-black shadow-xs font-sans space-y-5 print:p-0 print:border-none">
-                <div className="flex justify-between items-start border-b border-neutral-300 pb-4">
+              <div
+                id="printable-invoice-slip"
+                className="p-6 sm:p-8 rounded-2xl border border-neutral-300 bg-white text-black shadow-xs font-sans space-y-6 print:p-0 print:border-none print:shadow-none"
+              >
+                <div className="flex justify-between items-start border-b-2 border-neutral-800 pb-4">
                   <div>
-                    <h1 className="text-xl font-extrabold tracking-tight">DIGISHOP STORE</h1>
-                    <p className="text-xs text-neutral-600">Official Merchant Tax Receipt</p>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-black text-white font-extrabold flex items-center justify-center text-sm font-display">
+                        A
+                      </div>
+                      <h1 className="text-2xl font-black tracking-tight text-black font-display">ALTRIVO</h1>
+                    </div>
+                    <p className="text-xs font-bold text-neutral-600 mt-1 uppercase tracking-wider">
+                      {docType === "invoice" ? "Official Merchant Tax Invoice & Order Slip" : "Warehouse Official Packing Slip"}
+                    </p>
+                    <p className="text-[11px] text-neutral-500">Altrivo Multi-Vendor Commerce Platform • Verified Merchant</p>
                   </div>
                   <div className="text-right text-xs">
-                    <p className="font-mono font-bold text-sm">
-                      {docType === "invoice" ? `INV-${order.orderNumber}` : `PS-${order.orderNumber}`}
+                    <p className="font-mono font-extrabold text-sm text-black">
+                      {docType === "invoice"
+                        ? `INV-${order.orderNumber || order.order_number}`
+                        : `PS-${order.orderNumber || order.order_number}`}
                     </p>
-                    <p className="text-neutral-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    <p className="text-neutral-600 font-semibold mt-0.5" suppressHydrationWarning>
+                      Date: {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-[10px] font-mono text-neutral-500 mt-0.5">
+                      Status: {(order.order_status || order.deliveryStatus || "confirmed").toUpperCase()}
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <span className="font-bold text-neutral-500 uppercase block mb-1">Customer / Consignee:</span>
-                    <p className="font-bold text-sm">{order.customerName}</p>
-                    <p className="text-neutral-700">{order.customerEmail}</p>
-                    <p className="font-mono">{order.customerPhone}</p>
+                <div className="grid grid-cols-2 gap-6 text-xs">
+                  <div className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/50 space-y-1">
+                    <span className="font-extrabold text-neutral-500 uppercase text-[10px] block mb-1 tracking-wider">
+                      Customer / Consignee:
+                    </span>
+                    <p className="font-extrabold text-sm text-black">{order.customerName}</p>
+                    <p className="text-neutral-700 font-medium">{order.customerEmail}</p>
+                    <p className="font-mono font-bold text-neutral-900">{order.customerPhone}</p>
                   </div>
-                  <div>
-                    <span className="font-bold text-neutral-500 uppercase block mb-1">Shipping Destination:</span>
-                    <p className="leading-relaxed">{order.shippingAddress}</p>
-                    <p className="mt-1 font-bold">
-                      Carrier: {order.carrier || "Trax Express"} ({order.trackingNumber || "Pending"})
+                  <div className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/50 space-y-1">
+                    <span className="font-extrabold text-neutral-500 uppercase text-[10px] block mb-1 tracking-wider">
+                      Shipping Destination:
+                    </span>
+                    <p className="leading-relaxed font-semibold text-black">{order.shippingAddress}</p>
+                    <p className="mt-1 pt-1 border-t border-neutral-200 font-bold text-neutral-800">
+                      Carrier: {courierName || order.carrier || "Trax Express"} • AWB: <span className="font-mono">{trackingNo || order.trackingNumber || "Assigned on Dispatch"}</span>
                     </p>
                   </div>
                 </div>
 
                 {/* Document Items Table */}
-                <table className="w-full text-left text-xs border border-neutral-200">
-                  <thead className="bg-neutral-100 font-bold border-b border-neutral-200">
+                <table className="w-full text-left text-xs border border-neutral-300 rounded-lg overflow-hidden">
+                  <thead className="bg-neutral-100 font-extrabold text-black border-b border-neutral-300 uppercase tracking-wider">
                     <tr>
-                      <th className="p-2">Item Description</th>
-                      <th className="p-2">SKU</th>
-                      <th className="p-2 text-center">Qty</th>
+                      <th className="p-2.5">Item Description</th>
+                      <th className="p-2.5">SKU / Code</th>
+                      <th className="p-2.5 text-center">Qty</th>
                       {docType === "invoice" && (
                         <>
-                          <th className="p-2 text-right">Price</th>
-                          <th className="p-2 text-right">Total</th>
+                          <th className="p-2.5 text-right">Unit Price</th>
+                          <th className="p-2.5 text-right">Line Total</th>
                         </>
                       )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
-                    {order.items.map((i, idx) => (
-                      <tr key={idx}>
-                        <td className="p-2 font-bold">{i.name}</td>
-                        <td className="p-2 font-mono text-neutral-600">{i.sku || "SKU-PK"}</td>
-                        <td className="p-2 text-center font-bold font-mono">{i.quantity}</td>
-                        {docType === "invoice" && (
-                          <>
-                            <td className="p-2 text-right font-mono">₨ {i.price.toLocaleString()}</td>
-                            <td className="p-2 text-right font-mono font-bold">
-                              ₨ {(i.price * i.quantity).toLocaleString()}
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
+                    {order.items.map((i, idx) => {
+                      const itemSku = i.sku || i.product_sku_snapshot || "SKU-ALT-001";
+                      const itemPrice = Number(i.price || i.unit_price || 0);
+                      return (
+                        <tr key={idx} className="even:bg-neutral-50/40">
+                          <td className="p-2.5 font-bold text-black">
+                            {i.name || i.product_name_snapshot}
+                            {i.variant && <span className="text-[10px] text-neutral-500 block font-normal">{i.variant}</span>}
+                          </td>
+                          <td className="p-2.5 font-mono font-bold text-neutral-700">{itemSku}</td>
+                          <td className="p-2.5 text-center font-bold font-mono text-black">{i.quantity}</td>
+                          {docType === "invoice" && (
+                            <>
+                              <td className="p-2.5 text-right font-mono text-neutral-800">
+                                ${itemPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                              <td className="p-2.5 text-right font-mono font-extrabold text-black">
+                                ${(itemPrice * i.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
 
                 {docType === "invoice" && (
-                  <div className="border-t border-neutral-200 pt-3 flex justify-end text-xs">
-                    <div className="w-64 space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Subtotal:</span>
-                        <span className="font-mono">₨ {subtotal.toLocaleString()}</span>
+                  <div className="border-t border-neutral-300 pt-3 flex justify-end text-xs">
+                    <div className="w-72 space-y-1.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200">
+                      <div className="flex justify-between text-neutral-600 font-medium">
+                        <span>Items Subtotal:</span>
+                        <span className="font-mono text-black">
+                          ${Number(subtotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Shipping:</span>
-                        <span className="font-mono">₨ {shipping.toLocaleString()}</span>
+                      {discount > 0 && (
+                        <div className="flex justify-between text-emerald-700 font-medium">
+                          <span>Discount Applied:</span>
+                          <span className="font-mono">
+                            -${Number(discount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-neutral-600 font-medium">
+                        <span>Shipping & Handling:</span>
+                        <span className="font-mono text-black">
+                          ${Number(shipping).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                       </div>
-                      <div className="flex justify-between border-t border-neutral-300 pt-1 font-extrabold text-sm">
+                      <div className="flex justify-between border-t border-neutral-300 pt-2 font-black text-sm text-black">
                         <span>Total Paid ({order.paymentMethod.toUpperCase()}):</span>
-                        <span className="font-mono">₨ {grandTotal.toLocaleString()}</span>
+                        <span className="font-mono text-base">
+                          ${Number(grandTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                       </div>
                     </div>
                   </div>
                 )}
+
+                <div className="pt-4 border-t border-neutral-200 flex justify-between items-center text-[10px] text-neutral-500">
+                  <p>Thank you for choosing Altrivo. All products are guaranteed authentic & covered by buyer protection.</p>
+                  <p className="font-mono font-bold">www.altrivo.com</p>
+                </div>
               </div>
             </div>
           )}

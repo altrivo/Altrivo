@@ -11,6 +11,7 @@ export interface CartItem {
   image: string;
   quantity: number;
   variant?: string; // E.g., "Black / 42" or "Automatic 40mm"
+  sku?: string;
   storeId?: string;
 }
 
@@ -69,23 +70,89 @@ export function CartProvider({
     setSelectedProductForDetail(product);
   };
 
-  const customerSessionKey = `storefront_customer_session_${storeId || "default_store"}`;
+  const normalizedStoreId = (storeId || "default_store").trim().toLowerCase();
+  const customerSessionKey = `storefront_customer_session_${normalizedStoreId}`;
 
-  // Load customer session & cart from localStorage on mount
+  // Sync customer session across browser tabs/windows (STRICTLY scoped to this store)
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("customer_auth_channel");
+      bc.onmessage = (event) => {
+        // Strictly ignore events intended for a different store!
+        const eventStore = event.data?.storeId ? String(event.data.storeId).trim().toLowerCase() : "";
+        if (eventStore && eventStore !== normalizedStoreId) {
+          return;
+        }
+
+        if (event.data?.type === "CUSTOMER_LOGIN" && event.data.customer) {
+          const cust = event.data.customer;
+          const matches =
+            (cust.store_slug && cust.store_slug.toLowerCase() === normalizedStoreId) ||
+            (cust.store_id && cust.store_id.toLowerCase() === normalizedStoreId) ||
+            cust.store_id === storeId ||
+            cust.store_slug === storeId;
+
+          if (matches) {
+            setCustomer(cust);
+          }
+        } else if (event.data?.type === "CUSTOMER_LOGOUT") {
+          setCustomer(null);
+        }
+      };
+    } catch (e) {}
+
+    return () => {
+      try {
+        bc?.close();
+      } catch (e) {}
+    };
+  }, [normalizedStoreId, storeId]);
+
+  // Load customer session & cart from localStorage on mount (STRICTLY scoped to this store)
   useEffect(() => {
     try {
-      // 1. First restore customer session if exists
-      const savedCustomer = localStorage.getItem(customerSessionKey);
+      // 1. Purge legacy global un-scoped session keys so they never leak across stores
+      localStorage.removeItem("storefront_customer_session");
+      localStorage.removeItem("digishop_customer_session");
+      localStorage.removeItem("altrivo_customer_session");
+
+      // 2. Read ONLY from store-scoped session key
+      const savedCustomerRaw = localStorage.getItem(customerSessionKey);
       let activeCustomer: StoreCustomer | null = null;
-      if (savedCustomer) {
-        activeCustomer = JSON.parse(savedCustomer);
-        setCustomer(activeCustomer);
+
+      if (savedCustomerRaw) {
+        try {
+          const parsed: StoreCustomer = JSON.parse(savedCustomerRaw);
+          const matches =
+            Boolean(parsed) &&
+            (
+              (parsed.store_slug && parsed.store_slug.toLowerCase() === normalizedStoreId) ||
+              (parsed.store_id && parsed.store_id.toLowerCase() === normalizedStoreId) ||
+              parsed.store_id === storeId ||
+              parsed.store_slug === storeId
+            );
+
+          if (matches) {
+            activeCustomer = parsed;
+            setCustomer(activeCustomer);
+          } else {
+            // Belongs to another store! Do NOT login on this store.
+            localStorage.removeItem(customerSessionKey);
+            setCustomer(null);
+          }
+        } catch {
+          localStorage.removeItem(customerSessionKey);
+          setCustomer(null);
+        }
+      } else {
+        setCustomer(null);
       }
 
-      // 2. Load cart strictly scoped to this customer (or guest)
+      // 3. Load cart strictly scoped to this store and customer (or guest)
       const activeStorageKey = activeCustomer
-        ? `storefront_cart_${storeId}_user_${activeCustomer.id}`
-        : `storefront_cart_${storeId}_guest`;
+        ? `storefront_cart_${normalizedStoreId}_user_${activeCustomer.id}`
+        : `storefront_cart_${normalizedStoreId}_guest`;
 
       const savedCart = localStorage.getItem(activeStorageKey);
       if (savedCart) {
@@ -94,32 +161,39 @@ export function CartProvider({
         setCartItems([]);
       }
 
-      // Clean up any un-scoped legacy test cart from old sessions
+      // Clean up legacy un-scoped carts
       localStorage.removeItem(`storefront_cart_${storeId}`);
+      localStorage.removeItem(`storefront_cart_${normalizedStoreId}`);
     } catch (e) {
       console.error("Failed to load session/cart from storage", e);
     }
-  }, [storeId, customerSessionKey]);
+  }, [storeId, customerSessionKey, normalizedStoreId]);
 
   // Sync cart to customer-scoped localStorage on changes
   useEffect(() => {
     try {
       const activeStorageKey = customer
-        ? `storefront_cart_${storeId}_user_${customer.id}`
-        : `storefront_cart_${storeId}_guest`;
+        ? `storefront_cart_${normalizedStoreId}_user_${customer.id}`
+        : `storefront_cart_${normalizedStoreId}_guest`;
       localStorage.setItem(activeStorageKey, JSON.stringify(cartItems));
     } catch (e) {
       console.error("Failed to save cart to storage", e);
     }
-  }, [cartItems, customer, storeId]);
+  }, [cartItems, customer, normalizedStoreId]);
 
   // Sync customer session to localStorage & isolate their cart
   const handleSetCustomer = (newCustomer: StoreCustomer | null) => {
     setCustomer(newCustomer);
     try {
+      // Purge legacy global keys
+      localStorage.removeItem("storefront_customer_session");
+      localStorage.removeItem("digishop_customer_session");
+      localStorage.removeItem("altrivo_customer_session");
+
       if (newCustomer) {
         localStorage.setItem(customerSessionKey, JSON.stringify(newCustomer));
-        const userCartKey = `storefront_cart_${storeId}_user_${newCustomer.id}`;
+
+        const userCartKey = `storefront_cart_${normalizedStoreId}_user_${newCustomer.id}`;
         const savedUserCart = localStorage.getItem(userCartKey);
         if (savedUserCart) {
           setCartItems(JSON.parse(savedUserCart));
@@ -131,14 +205,23 @@ export function CartProvider({
         setCartItems([]);
       }
     } catch (e) {}
+
+    try {
+      const bc = new BroadcastChannel("customer_auth_channel");
+      bc.postMessage({
+        type: newCustomer ? "CUSTOMER_LOGIN" : "CUSTOMER_LOGOUT",
+        storeId: normalizedStoreId,
+        customer: newCustomer,
+      });
+      bc.close();
+    } catch (e) {}
   };
 
   const logoutCustomer = () => {
-    setCustomer(null);
-    setCartItems([]);
+    handleSetCustomer(null);
     try {
-      localStorage.removeItem(customerSessionKey);
-      localStorage.removeItem(`storefront_cart_${storeId}_guest`);
+      localStorage.removeItem(`storefront_cart_${normalizedStoreId}_guest`);
+      localStorage.removeItem(`storefront_cart_${normalizedStoreId}`);
       localStorage.removeItem(`storefront_cart_${storeId}`);
     } catch (e) {}
   };

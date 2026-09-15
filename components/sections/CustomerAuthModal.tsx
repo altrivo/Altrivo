@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { X, Lock, Mail, User, Phone, ShieldCheck, ArrowRight, CheckCircle2, ShoppingBag, AlertCircle } from "lucide-react";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "./CartContext";
 
 export interface CustomerAuthModalProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ export default function CustomerAuthModal({
   storeName = "Artisanal Store",
   isCheckoutGate = false,
 }: CustomerAuthModalProps) {
-  const { setCustomer, setIsCheckoutOpen, storeId } = useCart() as any;
+  const { setCustomer, setIsCheckoutOpen, storeId } = useCart();
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -31,6 +31,33 @@ export default function CustomerAuthModal({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const persistCustomerSession = (customerData: any) => {
+    const normalizedStoreId = (storeId || "default_store").trim().toLowerCase();
+    const specificKey = `storefront_customer_session_${normalizedStoreId}`;
+
+    try {
+      localStorage.setItem(specificKey, JSON.stringify(customerData));
+      // Purge legacy global keys
+      localStorage.removeItem("storefront_customer_session");
+      localStorage.removeItem("digishop_customer_session");
+      localStorage.removeItem("altrivo_customer_session");
+    } catch (e) {}
+
+    if (typeof setCustomer === "function") {
+      setCustomer(customerData);
+    }
+
+    try {
+      const bc = new BroadcastChannel("customer_auth_channel");
+      bc.postMessage({
+        type: "CUSTOMER_LOGIN",
+        storeId: normalizedStoreId,
+        customer: customerData,
+      });
+      bc.close();
+    } catch (e) {}
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +88,7 @@ export default function CustomerAuthModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            store_id: storeId || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+            store_id: storeId || "default_store",
             name: name.trim(),
             email: email.trim(),
             phone: phone.trim(),
@@ -71,10 +98,7 @@ export default function CustomerAuthModal({
 
         const data = await res.json();
         if (data.success && data.customer) {
-          if (typeof setCustomer === "function") setCustomer(data.customer);
-          try {
-            localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
-          } catch {}
+          persistCustomerSession(data.customer);
 
           setSuccessMsg("Welcome! Your account is ready.");
           setTimeout(() => {
@@ -82,7 +106,7 @@ export default function CustomerAuthModal({
             if (isCheckoutGate && typeof setIsCheckoutOpen === "function") {
               setIsCheckoutOpen(true);
             }
-          }, 600);
+          }, 500);
         } else {
           setErrorMsg(data.error || "Failed to create account.");
         }
@@ -104,7 +128,7 @@ export default function CustomerAuthModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            store_id: storeId || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+            store_id: storeId || "default_store",
             email: email.trim(),
             password,
           }),
@@ -112,10 +136,7 @@ export default function CustomerAuthModal({
 
         const data = await res.json();
         if (data.success && data.customer) {
-          if (typeof setCustomer === "function") setCustomer(data.customer);
-          try {
-            localStorage.setItem("digishop_customer_session", JSON.stringify(data.customer));
-          } catch {}
+          persistCustomerSession(data.customer);
 
           setSuccessMsg("Welcome back!");
           setTimeout(() => {

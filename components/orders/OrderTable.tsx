@@ -69,33 +69,6 @@ export function OrderTable({
 
   return (
     <div className="rounded-2xl border border-default bg-card shadow-card overflow-hidden transition-all duration-normal">
-      {/* Real-time Incoming Orders Banner */}
-      {realtimeNewOrders.length > 0 && (
-        <div className="bg-primary-50 border-b border-primary-200 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-pulse">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3.5 w-3.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-primary-600"></span>
-            </span>
-            <div>
-              <p className="text-sm font-extrabold text-primary-950 font-display">
-                🔔 {realtimeNewOrders.length} New Order{realtimeNewOrders.length > 1 ? "s" : ""} Received!
-              </p>
-              <p className="text-xs font-semibold text-primary-800">
-                Pushed via Supabase Realtime channel stream without page reload.
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onLoadRealtimeOrders}
-            className="shadow-sm font-bold shrink-0"
-          >
-            Load New Orders Into Table
-          </Button>
-        </div>
-      )}
 
       {/* Table Container */}
       <div className="overflow-x-auto">

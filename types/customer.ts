@@ -8,6 +8,8 @@ export interface StoreCustomer {
   avatar_url?: string;
   created_at: string;
   updated_at?: string;
+  store_slug?: string;
+  store_name?: string;
 }
 
 export interface CustomerAddress {

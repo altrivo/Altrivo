@@ -26,7 +26,8 @@ export const supabaseAdmin: SupabaseClient | null = supabaseUrl && supabaseServi
  */
 export function subscribeToOrders(
   onNewOrder: (order: Order) => void,
-  onOrderUpdate?: (order: Order) => void
+  onOrderUpdate?: (order: Order) => void,
+  onOrderChange?: () => void
 ) {
   if (!supabase) {
     console.warn("Supabase is not configured. Realtime fallback mode active.");
@@ -34,23 +35,28 @@ export function subscribeToOrders(
   }
 
   const channel = supabase
-    .channel("realtime-vendor-orders")
+    .channel("realtime-vendor-orders-global")
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "orders" },
+      { event: "*", schema: "public", table: "orders" },
       (payload) => {
-        if (payload.new) {
+        if (payload.eventType === "INSERT" && payload.new) {
           const newOrder = payload.new as Order;
           onNewOrder({ ...newOrder, isNew: true });
+        } else if (payload.eventType === "UPDATE" && payload.new && onOrderUpdate) {
+          onOrderUpdate(payload.new as Order);
+        }
+        if (onOrderChange) {
+          onOrderChange();
         }
       }
     )
     .on(
       "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "orders" },
-      (payload) => {
-        if (payload.new && onOrderUpdate) {
-          onOrderUpdate(payload.new as Order);
+      { event: "*", schema: "public", table: "order_items" },
+      () => {
+        if (onOrderChange) {
+          onOrderChange();
         }
       }
     )

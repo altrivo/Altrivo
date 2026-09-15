@@ -33,15 +33,118 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
       if (vendorId) url += `&vendorId=${encodeURIComponent(vendorId)}`;
       if (storeId) url += `&storeId=${encodeURIComponent(storeId)}`;
 
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setOrders(data.orders);
-          setTotalPages(data.totalPages);
-          setTotalOrders(data.totalOrders);
+      let backendOrders: OrderItem[] = [];
+      let backendTotal = 0;
+
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.orders)) {
+            backendOrders = data.orders;
+            backendTotal = data.totalOrders || data.orders.length;
+          }
         }
-      }
+      } catch (e) {}
+
+      // 2. Read local customer placed orders strictly for real-time responsiveness
+      let localOrders: OrderItem[] = [];
+      try {
+        const storeKeys = [
+          storeId ? `storefront_customer_orders_${storeId}` : "",
+          "storefront_customer_orders_Watch-Brand",
+        ].filter(Boolean);
+
+        const allLsKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i) || "";
+          if (k.startsWith("storefront_customer_orders_")) {
+            allLsKeys.push(k);
+          }
+        }
+
+        const rawList: any[] = [];
+        for (const key of Array.from(new Set([...storeKeys, ...allLsKeys]))) {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                rawList.push(...parsed);
+              }
+            } catch {}
+          }
+        }
+
+        localOrders = rawList.map((lo: any) => {
+          const orderDate = new Date(lo.createdAt || lo.created_at || Date.now());
+          const isToday = orderDate.toDateString() === new Date().toDateString();
+          const isYesterday =
+            orderDate.toDateString() ===
+            new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+
+          let dateLabel = orderDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+          if (isToday) dateLabel = "Today";
+          else if (isYesterday) dateLabel = "Yesterday";
+
+          const timeLabel = orderDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+
+          const amtNumber = Number(lo.totalAmount || lo.total || lo.grand_total) || 0;
+
+          let st: OrderItem["status"] = "Pending";
+          const rawSt = (lo.deliveryStatus || lo.status || "pending").toLowerCase();
+          if (rawSt === "processing" || rawSt === "confirmed") st = "Processing";
+          else if (rawSt === "shipped") st = "Shipped";
+          else if (rawSt === "delivered" || rawSt === "completed") st = "Delivered";
+          else if (rawSt === "cancelled" || rawSt === "refunded") st = "Cancelled";
+
+          return {
+            id: lo.id || lo.orderNumber,
+            orderNumber: lo.orderNumber || lo.order_number || `#ORD-${String(lo.id).substring(0, 4)}`,
+            customerName: lo.customerName || lo.customer_name || "Customer",
+            customerEmail: lo.customerEmail || lo.customer_email || "customer@example.com",
+            amount: `$${amtNumber.toLocaleString()}`,
+            rawAmount: amtNumber,
+            currency: "$",
+            status: st,
+            itemsCount: lo.items?.length || 1,
+            date: dateLabel,
+            time: timeLabel,
+          };
+        });
+      } catch (e) {}
+
+      // 3. Merge backend and local orders without duplicates (latest first)
+      const mergedMap = new Map<string, OrderItem>();
+      localOrders.forEach((lo) => {
+        const key = lo.orderNumber?.toLowerCase() || lo.id;
+        mergedMap.set(key, lo);
+      });
+      backendOrders.forEach((bo) => {
+        const key = bo.orderNumber?.toLowerCase() || bo.id;
+        if (mergedMap.has(key)) {
+          const existing = mergedMap.get(key)!;
+          mergedMap.set(key, { ...existing, status: bo.status || existing.status });
+        } else {
+          mergedMap.set(key, bo);
+        }
+      });
+
+      const allMerged = Array.from(mergedMap.values());
+      const totalMerged = allMerged.length;
+      const startIndex = (pageNum - 1) * 5;
+      const paginated = allMerged.slice(startIndex, startIndex + 5);
+
+      setOrders(paginated);
+      setTotalOrders(totalMerged);
+      setTotalPages(Math.max(1, Math.ceil(totalMerged / 5)));
     } catch (err) {
       console.error("Failed to fetch recent orders:", err);
     } finally {

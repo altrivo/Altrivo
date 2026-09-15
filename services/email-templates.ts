@@ -1,5 +1,5 @@
 /**
- * DigiShop AI — Master Responsive Email Templates
+ * Altrivo — Master Responsive Email Templates
  * Branded for individual multi-tenant stores and platform events.
  */
 
@@ -25,8 +25,8 @@ function getHeader(storeName: string, subtitle: string, primaryColor: string, lo
 function getFooter(storeName: string, supportPhone?: string, supportEmail?: string) {
   return `
     <div style="background: #f8fafc; padding: 20px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.6;">
-      <p style="margin: 0 0 4px 0;">© ${new Date().getFullYear()} ${storeName}. Powered by DigiShop AI Multi-Tenant Platform.</p>
-      ${supportPhone || supportEmail ? `<p style="margin: 0; color: #94a3b8;">Need assistance? Contact support: ${[supportEmail, supportPhone].filter(Boolean).join(" • ")}</p>` : ""}
+      <p style="margin: 0 0 4px 0;">© ${new Date().getFullYear()} ${storeName}. Powered by Altrivo Platform.</p>
+      ${supportPhone || supportEmail ? `<p style="margin: 0; color: #94a3b8;">Need assistance? Contact support: ${[supportEmail || "support@altrivo.com", supportPhone].filter(Boolean).join(" • ")}</p>` : ""}
     </div>
   `;
 }
@@ -59,7 +59,7 @@ export class EmailTemplates {
    * 1. Email Verification
    */
   static verifyEmail(user: { name?: string; email: string }, verifyUrl: string, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop AI";
+    const storeName = store?.name || "Altrivo";
     const primaryColor = store?.primaryColor || "#3e2845";
     const displayName = user.name || user.email.split("@")[0];
 
@@ -96,7 +96,7 @@ export class EmailTemplates {
    * 2. Welcome Email
    */
   static welcomeEmail(user: { name?: string; email: string; role?: string }, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop AI";
+    const storeName = store?.name || "Altrivo";
     const primaryColor = store?.primaryColor || "#3e2845";
     const displayName = user.name || user.email.split("@")[0];
     const isVendor = user.role === "vendor";
@@ -131,7 +131,7 @@ export class EmailTemplates {
    * 3. Password Reset Request
    */
   static resetPassword(user: { name?: string; email: string }, resetUrl: string, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop AI";
+    const storeName = store?.name || "Altrivo";
     const primaryColor = store?.primaryColor || "#3e2845";
     const displayName = user.name || user.email.split("@")[0];
 
@@ -167,7 +167,7 @@ export class EmailTemplates {
    * 4. Password Changed Security Confirmation
    */
   static passwordChanged(user: { name?: string; email: string }, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop AI";
+    const storeName = store?.name || "Altrivo";
     const displayName = user.name || user.email.split("@")[0];
 
     const content = `
@@ -197,7 +197,7 @@ export class EmailTemplates {
    * 5. Customer Order Confirmation Email Template
    */
   static customerOrderConfirmation(order: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
     const itemsListHtml = (order.items || [])
       .map(
@@ -319,7 +319,7 @@ export class EmailTemplates {
    * 7. Customer Payment Confirmed
    */
   static customerPaymentConfirmed(order: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
 
     const content = `
@@ -365,7 +365,7 @@ export class EmailTemplates {
    * 8. Shipment Dispatched & Live Tracking Email Template
    */
   static shipmentDispatched(order: any, shipment: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
     const trackingNumber = shipment?.tracking_number || order.orderNumber;
     const courierName = shipment?.courier_name || "Trax Express Logistics";
@@ -408,7 +408,7 @@ export class EmailTemplates {
    * 9. Out For Delivery Alert
    */
   static outForDelivery(order: any, shipment: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
 
     const content = `
@@ -463,7 +463,7 @@ export class EmailTemplates {
    * 10. Order Delivered Confirmation
    */
   static orderDelivered(order: any, shipment?: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
 
     const content = `
@@ -498,7 +498,7 @@ export class EmailTemplates {
    * 11. Order Cancelled
    */
   static orderCancelled(order: any, reason?: string, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
 
     const content = `
       <div style="text-align: center; margin-bottom: 24px;">
@@ -526,7 +526,7 @@ export class EmailTemplates {
    * 12. Order Refunded
    */
   static orderRefunded(order: any, refund?: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const refundAmount = refund?.amount || order.totalAmount || 0;
 
     const content = `
@@ -555,7 +555,7 @@ export class EmailTemplates {
    * 13. COD Verification Request
    */
   static codVerificationRequired(order: any, verifyUrl: string, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
 
     const content = `
@@ -586,7 +586,7 @@ export class EmailTemplates {
    * 14. COD Confirmed
    */
   static codConfirmed(order: any, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
 
     const content = `
       <div style="text-align: center; margin-bottom: 20px;">
@@ -610,7 +610,7 @@ export class EmailTemplates {
    * 15. Abandoned Cart Recovery
    */
   static abandonedCart(cart: any, checkoutUrl: string, store?: StoreBranding): { subject: string; html: string } {
-    const storeName = store?.name || "DigiShop Store";
+    const storeName = store?.name || "Altrivo Store";
     const primaryColor = store?.primaryColor || "#3e2845";
 
     const content = `

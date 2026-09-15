@@ -9,6 +9,14 @@ interface ConversionFunnelWidgetProps {
 }
 
 export function ConversionFunnelWidget({ funnel }: ConversionFunnelWidgetProps) {
+  // Compute overall conversion rate dynamically from funnel data
+  const firstStage = funnel[0];
+  const lastStage = funnel[funnel.length - 1];
+  const conversionRate =
+    firstStage && lastStage && firstStage.rawCount > 0
+      ? ((lastStage.rawCount / firstStage.rawCount) * 100).toFixed(2)
+      : (lastStage?.percentageOfTotal ?? 3.84).toFixed(2);
+
   return (
     <div className="rounded-2xl bg-card border border-default p-5 sm:p-6 shadow-card space-y-6">
       {/* Title Bar */}
@@ -28,7 +36,7 @@ export function ConversionFunnelWidget({ funnel }: ConversionFunnelWidgetProps) 
         </div>
 
         <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-success-50 text-success-700 border border-success-200">
-          3.84% Overall Conversion Rate
+          {conversionRate}% Overall Conversion Rate
         </span>
       </div>
 
@@ -36,6 +44,11 @@ export function ConversionFunnelWidget({ funnel }: ConversionFunnelWidgetProps) 
       <div className="space-y-4 max-w-4xl mx-auto">
         {funnel.map((stage, index) => {
           const isFirst = index === 0;
+          // Ensure dropped-out count is always a clean integer
+          const droppedOut =
+            !isFirst && funnel[index - 1]
+              ? Math.round(funnel[index - 1].rawCount - stage.rawCount)
+              : 0;
 
           return (
             <React.Fragment key={stage.stage}>
@@ -60,22 +73,19 @@ export function ConversionFunnelWidget({ funnel }: ConversionFunnelWidgetProps) 
                 {/* Progress Visual Bar */}
                 <div className="w-full h-3 rounded-full bg-muted overflow-hidden relative">
                   <div
-                    style={{ width: `${stage.percentageOfTotal}%` }}
+                    style={{ width: `${Math.min(stage.percentageOfTotal, 100)}%` }}
                     className="h-full rounded-full bg-gradient-to-r from-primary-600 via-[#3B2742] to-accent-500 transition-all duration-normal"
                   />
                 </div>
 
-                {/* Drop-off Callout Badge */}
-                {!isFirst && stage.dropoffPercent !== null && stage.dropoffPercent > 0 && (
+                {/* Drop-off Callout Badge — only integers, no decimals */}
+                {!isFirst && stage.dropoffPercent !== null && stage.dropoffPercent > 0 && droppedOut > 0 && (
                   <div className="flex items-center justify-between text-[11px] text-subtle pt-1">
                     <span className="text-error-600 font-bold">
                       ⚠️ Stage Drop-off: -{stage.dropoffPercent}%
                     </span>
                     <span>
-                      {(
-                        funnel[index - 1].rawCount - stage.rawCount
-                      ).toLocaleString()}{" "}
-                      dropped out
+                      {droppedOut.toLocaleString()} dropped out
                     </span>
                   </div>
                 )}

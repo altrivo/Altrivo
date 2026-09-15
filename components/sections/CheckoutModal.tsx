@@ -40,15 +40,6 @@ export default function CheckoutModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<any | null>(null);
 
-  // Enforce mandatory authentication: If unauthenticated user opens checkout, route to auth modal
-  React.useEffect(() => {
-    if (isOpen && !customer && !confirmedOrder) {
-      onClose();
-      setIsCheckoutGate(true);
-      setIsCustomerAuthOpen(true);
-    }
-  }, [isOpen, customer, confirmedOrder, onClose, setIsCheckoutGate, setIsCustomerAuthOpen]);
-
   // Auto fill when customer logs in
   React.useEffect(() => {
     if (customer) {
@@ -60,14 +51,32 @@ export default function CheckoutModal({
 
   if (!isOpen) return null;
 
-  const shippingCost = rawSubtotal >= 5000 || rawSubtotal === 0 ? 0 : 250;
+  const shippingCost = rawSubtotal >= 100 || rawSubtotal === 0 ? 0 : 15;
   const finalTotalAmount = rawSubtotal + shippingCost;
 
   const saveToLocalOrders = (orderToSave: any) => {
     try {
-      const key = `storefront_customer_orders_${storeId || "default_store"}_${customer?.id || "guest"}`;
+      const normalizedStoreId = (storeId || "default_store").trim().toLowerCase();
+      // Key 1: scoped to store + customer (for customer tracking modal)
+      const key = `storefront_customer_orders_${normalizedStoreId}_${customer?.id || "guest"}`;
       const existing = JSON.parse(localStorage.getItem(key) || "[]");
       localStorage.setItem(key, JSON.stringify([orderToSave, ...existing]));
+
+      // Key 2: scoped to store only (for vendor orders dashboard)
+      const storeKey = `storefront_customer_orders_${normalizedStoreId}`;
+      const storeExisting = JSON.parse(localStorage.getItem(storeKey) || "[]");
+      if (!storeExisting.some((o: any) => o.id === orderToSave.id || o.orderNumber === orderToSave.orderNumber)) {
+        localStorage.setItem(storeKey, JSON.stringify([orderToSave, ...storeExisting]));
+      }
+
+      // Key 3: legacy alias with raw storeId for backward compatibility
+      if (storeId && storeId.toLowerCase() !== normalizedStoreId) {
+        const rawStoreKey = `storefront_customer_orders_${storeId}`;
+        const rawExisting = JSON.parse(localStorage.getItem(rawStoreKey) || "[]");
+        if (!rawExisting.some((o: any) => o.id === orderToSave.id || o.orderNumber === orderToSave.orderNumber)) {
+          localStorage.setItem(rawStoreKey, JSON.stringify([orderToSave, ...rawExisting]));
+        }
+      }
 
       // Broadcast to vendor dashboard tabs instantly
       try {
@@ -91,25 +100,29 @@ export default function CheckoutModal({
 
     try {
       const orderPayload = {
-        vendor_id: "vendor_dev_123",
         store_id: storeId || "default_store",
         customer_id: customer?.id || null,
         customerName: customerName.trim(),
         customerEmail: customerEmail.trim() || `${customerPhone.replace(/[^0-9]/g, "")}@customer.store`,
         customerPhone: customerPhone.trim(),
         shippingAddress: `${shippingAddress.trim()}, ${city}, Pakistan`,
+        subtotal: rawSubtotal,
+        shippingTotal: shippingCost,
+        shipping_total: shippingCost,
         totalAmount: finalTotalAmount,
+        grandTotal: finalTotalAmount,
         paymentStatus: paymentMethod === "card" ? "paid" : "pending",
         paymentMethod: paymentMethod,
         deliveryStatus: "pending",
         deliveryMethod: "express",
         notes: orderNotes.trim(),
-        items: cartItems.map((item) => ({
+        items: cartItems.map((item, idx) => ({
           id: item.id,
           name: item.name,
+          sku: item.sku || (item.id ? `SKU-${item.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}` : `SKU-ALT-00${idx + 1}`),
           variant: item.variant || "Standard",
           quantity: item.quantity,
-          price: parseInt(item.price.replace(/[^\d]/g, "")) || 5000,
+          price: parseInt(item.price.replace(/[^\d]/g, "")) || 50,
           image: item.image,
         })),
       };
@@ -221,7 +234,7 @@ export default function CheckoutModal({
                 <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
                   <span className="text-slate-500 font-semibold">Total Amount</span>
                   <span className="font-black text-slate-900 text-sm">
-                    ${confirmedOrder.totalAmount?.toLocaleString() || finalTotalAmount.toLocaleString()}
+                    ${(confirmedOrder.totalAmount || finalTotalAmount)?.toLocaleString()}
                   </span>
                 </div>
 
@@ -303,19 +316,8 @@ export default function CheckoutModal({
               {/* Main Content Form */}
               <div className="p-5 sm:p-6 space-y-5 max-h-[75vh] overflow-y-auto">
                 
-                {/* Customer Account Quick Login or Verified Banner */}
-                {customer ? (
-                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-between text-xs text-emerald-950 font-semibold">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shadow-xs">
-                        <Check className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <span>Signed in as <strong>{customer.name}</strong> ({customer.email})</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
+                {/* Customer Account Quick Login for guests */}
+                {!customer && (
                   <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-slate-500" />
@@ -489,7 +491,7 @@ export default function CheckoutModal({
                   </div>
 
                   <div className="flex items-center justify-between font-black text-sm text-slate-900 pt-2 border-t border-slate-200/60">
-                    <span>Total Amount (USD)</span>
+                    <span>Total Amount</span>
                     <span className="text-base text-slate-900 font-extrabold">
                       ${finalTotalAmount.toLocaleString()}
                     </span>

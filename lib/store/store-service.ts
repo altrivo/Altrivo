@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export interface StoreRow {
   id: string;
@@ -709,15 +710,59 @@ export async function unpublishStore(storeId: string): Promise<StoreRow> {
 }
 
 export async function deleteStore(storeId: string): Promise<void> {
-  try {
-    const supabase = await createClient();
-    await supabase.from("stores").delete().eq("id", storeId);
-  } catch {
-    // Fall back to local persistent store
+  const store = await getStoreById(storeId);
+  const storeSlug = store?.slug;
+
+  if (supabaseAdmin) {
+    try {
+      // 1. Delete notifications related to this store
+      await supabaseAdmin.from("notifications").delete().eq("store_id", storeId);
+
+      // 2. Delete store customers registered for this store
+      await supabaseAdmin.from("store_customers").delete().eq("store_id", storeId);
+
+      // 3. Delete orders and child records specifically belonging to this store
+      const { data: storeOrders } = await supabaseAdmin
+        .from("orders")
+        .select("id")
+        .eq("store_id", storeId);
+
+      if (storeOrders && storeOrders.length > 0) {
+        const orderIds = storeOrders.map((o) => o.id);
+        await supabaseAdmin.from("order_items").delete().in("order_id", orderIds);
+        await supabaseAdmin.from("shipments").delete().in("order_id", orderIds);
+        await supabaseAdmin.from("order_events").delete().in("order_id", orderIds);
+        await supabaseAdmin.from("orders").delete().in("id", orderIds);
+      }
+
+      if (storeSlug) {
+        const { data: slugOrders } = await supabaseAdmin
+          .from("orders")
+          .select("id")
+          .eq("store_id", storeSlug);
+
+        if (slugOrders && slugOrders.length > 0) {
+          const sOrderIds = slugOrders.map((o) => o.id);
+          await supabaseAdmin.from("order_items").delete().in("order_id", sOrderIds);
+          await supabaseAdmin.from("shipments").delete().in("order_id", sOrderIds);
+          await supabaseAdmin.from("order_events").delete().in("order_id", sOrderIds);
+          await supabaseAdmin.from("orders").delete().in("id", sOrderIds);
+        }
+      }
+
+      // 4. Delete the store record itself from Supabase
+      const { error: delErr } = await supabaseAdmin.from("stores").delete().eq("id", storeId);
+      if (delErr) {
+        console.error("[deleteStore] Error deleting store from Supabase:", delErr);
+      }
+    } catch (err) {
+      console.error("[deleteStore] Error during store cascade deletion:", err);
+    }
   }
 
+  // 5. Remove store from local persistent JSON store
   const stores = getStoresArray();
-  saveStoresArray(stores.filter((s) => s.id !== storeId));
+  saveStoresArray(stores.filter((s) => s.id !== storeId && (!storeSlug || s.slug !== storeSlug)));
 }
 
 export async function generateUniqueSlug(baseName: string): Promise<string> {

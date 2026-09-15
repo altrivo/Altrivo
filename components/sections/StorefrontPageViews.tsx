@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { 
   Pencil, 
   ShoppingBag, 
@@ -225,11 +226,12 @@ export function AboutPageView({
 // ============================================================================
 export interface ShopPageProps {
   storeName: string;
-  products: any[];
+  products?: any[];
   categories?: any[];
   config?: {
     hero?: { title: string; subtitle: string; imageUrl?: string };
   };
+  storeSlug?: string;
   isEditorMode?: boolean;
   activeSectionId?: string | null;
   onSelectSection?: (id: string) => void;
@@ -240,6 +242,7 @@ export function ShopPageView({
   products = [],
   categories = [],
   config,
+  storeSlug = "",
   isEditorMode,
   activeSectionId,
   onSelectSection,
@@ -276,6 +279,21 @@ export function ShopPageView({
     if (!pStr) return 0;
     const clean = String(pStr).replace(/[^0-9.]/g, "");
     return parseFloat(clean) || 0;
+  };
+
+  // Determine product detail path prefix
+  const getProductHref = (productId: string) => {
+    if (typeof window !== "undefined") {
+      const p = window.location.pathname;
+      if (p.startsWith("/preview/")) {
+        const slug = p.split("/")[2] || storeSlug;
+        return `/preview/${slug}/product/${productId}`;
+      }
+    }
+    if (storeSlug) {
+      return `/store/${storeSlug}/product/${productId}`;
+    }
+    return `/product/${productId}`;
   };
 
   // Dynamic categories from products list + passed categories
@@ -414,12 +432,10 @@ export function ShopPageView({
         <div className="pt-6">
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((p) => (
-                <div
-                  key={p.id}
-                  className="group rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-200 flex flex-col justify-between"
-                >
-                  <div>
+              {filteredProducts.map((p) => {
+                const productHref = getProductHref(p.id);
+                const CardInner = (
+                  <>
                     <div className="relative aspect-square overflow-hidden bg-slate-100">
                       <img
                         src={p.image}
@@ -455,32 +471,50 @@ export function ShopPageView({
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </>
+                );
 
-                  <div className="p-4 pt-0">
-                    <button
-                      onClick={() => handleAddToCart(p)}
-                      className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer ${
-                        addedIds[p.id]
-                          ? "bg-emerald-500 text-slate-950"
-                          : "bg-slate-900 hover:bg-emerald-500 text-white hover:text-slate-950"
-                      }`}
-                    >
-                      {addedIds[p.id] ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Added to Cart!</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="w-3.5 h-3.5" />
-                          <span>Add to Cart</span>
-                        </>
-                      )}
-                    </button>
+                return (
+                  <div
+                    key={p.id}
+                    className="group rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-200 flex flex-col justify-between"
+                  >
+                    {isEditorMode ? (
+                      <div>{CardInner}</div>
+                    ) : (
+                      <Link href={productHref} className="block cursor-pointer">
+                        {CardInner}
+                      </Link>
+                    )}
+
+                    <div className="p-4 pt-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(p);
+                        }}
+                        className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all cursor-pointer ${
+                          addedIds[p.id]
+                            ? "bg-emerald-500 text-slate-950"
+                            : "bg-slate-900 hover:bg-emerald-500 text-white hover:text-slate-950"
+                        }`}
+                      >
+                        {addedIds[p.id] ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Added to Cart!</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingBag className="w-3.5 h-3.5" />
+                            <span>Add to Cart</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="p-12 text-center bg-slate-50 border border-dashed border-slate-300 rounded-3xl space-y-3">

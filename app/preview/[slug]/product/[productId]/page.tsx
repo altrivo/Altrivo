@@ -72,6 +72,21 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     );
   }
 
+  // 1b. Search in config / dynamicSchema catalog
+  if (!product) {
+    const configProducts = [
+      ...(config.featuredProducts || []),
+      ...(dynamicSchema.products || []),
+      ...((config as any)._dbLayoutConfig?.products || []),
+    ];
+    product = configProducts.find(
+      (p: any) =>
+        p.id?.toLowerCase() === normalizedId ||
+        p.sku?.toLowerCase() === normalizedId ||
+        (p.name || p.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedId
+    );
+  }
+
   // 2. If not found in store products, try mockProducts as fallback
   if (!product) {
     product = mockProducts.find(
@@ -167,6 +182,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           logoText={config.storeName || "Artisanal Store"}
           navigation={dynamicSchema.categories || config.categoryTiles?.map((c) => ({ name: c.title, href: c.href })) || []}
           products={headerProducts}
+          storeSlug={slug}
         />
 
         {/* Interactive Product Details & 2-Row Recommendations */}

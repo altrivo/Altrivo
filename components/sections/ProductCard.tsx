@@ -18,6 +18,7 @@ export interface ProductCardProps {
   aspectRatio?: "square" | "portrait";
   storeSlug?: string;
   href?: string;
+  sku?: string;
   onAddToCart?: (id: string) => void;
   onClick?: () => void;
 }
@@ -34,6 +35,7 @@ export default function ProductCard({
   aspectRatio = "portrait",
   storeSlug,
   href,
+  sku,
   onAddToCart,
   onClick,
 }: ProductCardProps) {
@@ -61,12 +63,14 @@ export default function ProductCard({
     e.preventDefault();
     e.stopPropagation();
     setIsAdded(true);
+    const resolvedSku = sku || (id ? `SKU-${id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}` : "SKU-ALT-001");
     addToCart({
       id,
       name,
       price: formatPrice(price),
       originalPrice: formatCutPrice(price, originalPrice),
       image,
+      sku: resolvedSku,
     });
     if (onAddToCart) {
       onAddToCart(id);

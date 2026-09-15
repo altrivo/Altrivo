@@ -31,26 +31,46 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
+    let updatedOrder = await OrdersBackendService.getOrderById(id);
+
     // 1. If updating notes
-    if (body.customerNote !== undefined || body.vendorNote !== undefined || body.internalNote !== undefined) {
-      const updated = await OrdersBackendService.updateNotes(id, {
-        customerNote: body.customerNote,
+    if (
+      body.customerNote !== undefined ||
+      body.vendorNote !== undefined ||
+      body.internalNote !== undefined ||
+      body.notes !== undefined
+    ) {
+      updatedOrder = await OrdersBackendService.updateNotes(id, {
+        customerNote: body.customerNote || body.notes,
         vendorNote: body.vendorNote,
         internalNote: body.internalNote,
       });
-      return NextResponse.json({ success: true, order: updated });
     }
 
-    // 2. If transitioning status
+    // 2. If updating tracking or courier details directly
+    if (body.trackingNumber || body.carrier) {
+      updatedOrder = await OrdersBackendService.updateTracking(id, {
+        trackingNumber: body.trackingNumber,
+        carrier: body.carrier,
+      });
+    }
+
+    // 3. If transitioning status
     const status = body.status || body.orderStatus || body.deliveryStatus;
     if (status) {
-      const updated = await OrdersBackendService.transitionStatus(id, status, {
+      updatedOrder = await OrdersBackendService.transitionStatus(id, status, {
         actorType: body.actorType || "vendor",
         actorId: body.actorId,
         reason: body.reason,
-        courierDetails: body.courierDetails,
+        courierDetails: body.courierDetails || {
+          trackingNumber: body.trackingNumber,
+          courierName: body.carrier,
+        },
       });
-      return NextResponse.json({ success: true, order: updated });
+    }
+
+    if (updatedOrder) {
+      return NextResponse.json({ success: true, order: updatedOrder });
     }
 
     return NextResponse.json(

@@ -35,7 +35,6 @@ export const VENDOR_NAV_ITEMS: NavItem[] = [
   { name: "Wallet", href: "/wallet", icon: Wallet },
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Domain", href: "/domain", icon: Globe },
-  { name: "Storefront", href: "/storefront", icon: Sparkles },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

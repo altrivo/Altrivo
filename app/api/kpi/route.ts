@@ -58,17 +58,13 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Fetch real orders specifically for THIS vendor and STORE from Supabase
+    // 3. Fetch real orders specifically for THIS vendor from Supabase
     let vendorOrders: any[] = [];
     if (supabaseAdmin) {
       let query = supabaseAdmin
         .from("orders")
-        .select("id, total, status, created_at, store_id")
+        .select("id, total, delivery_status, payment_status, created_at")
         .eq("vendor_id", vendorId);
-
-      if (storeId) {
-        query = query.eq("store_id", storeId);
-      }
 
       const { data: orders, error } = await query;
 
@@ -100,9 +96,9 @@ export async function GET(request: Request) {
       sales: {
         id: "sales",
         title: "Total Store Sales",
-        formattedValue: `₨ ${totalSales.toLocaleString()}`,
+        formattedValue: `$${totalSales.toLocaleString()}`,
         rawValue: totalSales,
-        currencySymbol: "₨",
+        currencySymbol: "$",
         changePercent: 12.0,
         trend: "up",
         sparkline: [
@@ -177,9 +173,9 @@ function getZeroMetrics(dates: string[]): Record<string, KPIMetric> {
     sales: {
       id: "sales",
       title: "Total Store Sales",
-      formattedValue: "₨ 0",
+      formattedValue: "$0",
       rawValue: 0,
-      currencySymbol: "₨",
+      currencySymbol: "$",
       changePercent: 0,
       trend: "up",
       sparkline: [0, 0, 0, 0, 0],

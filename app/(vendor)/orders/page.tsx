@@ -44,7 +44,11 @@ export default function OrdersPage() {
         const data = await res.json();
         if (data.orders && Array.isArray(data.orders)) {
           backendOrders = activeStoreId
-            ? data.orders.filter((o: any) => !o.storeId || o.storeId === activeStoreId || (activeStore?.slug && o.storeId === activeStore.slug))
+            ? data.orders.filter((o: any) => {
+                // Backend uses snake_case store_id; also check camelCase storeId for compatibility
+                const sid = o.store_id || o.storeId;
+                return !sid || sid === activeStoreId || (activeStore?.slug && sid === activeStore.slug);
+              })
             : data.orders;
         }
       }
@@ -53,12 +57,25 @@ export default function OrdersPage() {
       let localOrders: Order[] = [];
       try {
         if (activeStoreId || activeStore?.slug) {
-          const validKeys = [
+          // Collect all possible keys (store-only key + all customer-suffixed keys)
+          const storeKeys = [
             `storefront_customer_orders_${activeStoreId}`,
             activeStore?.slug ? `storefront_customer_orders_${activeStore.slug}` : "",
           ].filter(Boolean);
 
-          for (const key of validKeys) {
+          // Also scan for customer-specific keys matching this store
+          const allLsKeys: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i) || "";
+            if (activeStoreId && k.startsWith(`storefront_customer_orders_${activeStoreId}_`)) {
+              allLsKeys.push(k);
+            }
+            if (activeStore?.slug && k.startsWith(`storefront_customer_orders_${activeStore.slug}_`)) {
+              allLsKeys.push(k);
+            }
+          }
+
+          for (const key of [...storeKeys, ...allLsKeys]) {
             const raw = localStorage.getItem(key);
             if (raw) {
               const parsed = JSON.parse(raw);
@@ -106,6 +123,7 @@ export default function OrdersPage() {
     }
   };
 
+
   // Initial load and auto-polling every 3 seconds
   useEffect(() => {
     fetchOrders();
@@ -135,7 +153,6 @@ export default function OrdersPage() {
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
           });
-          setRealtimeNewOrders((prev) => [newOrder, ...prev]);
         } else if (event.data?.type === "ORDER_STATUS_UPDATED") {
           const { orderId, newStatus } = event.data;
           setOrders((prev) =>
@@ -155,24 +172,24 @@ export default function OrdersPage() {
     };
   }, []);
 
-  // Subscribe to Supabase Realtime changes
+  // Subscribe to Supabase Realtime changes for automated instant updates
   useEffect(() => {
     const unsubscribe = subscribeToOrders(
       (newOrder) => {
-        setRealtimeNewOrders((prev) => [newOrder, ...prev]);
-        setOrders((prev) => [newOrder, ...prev]);
+        fetchOrders();
       },
       (updatedOrder) => {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
-        );
+        fetchOrders();
+      },
+      () => {
+        fetchOrders();
       }
     );
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [activeStoreId]);
 
   // Keyboard shortcut listener for search '/'
   useEffect(() => {
@@ -338,25 +355,59 @@ export default function OrdersPage() {
 
   // Status update handler (Optimistic UI + Local Storage + Broadcast + Backend DB Sync)
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
-    // 1. Optimistic UI update
+    const nowISO = new Date().toISOString();
+
+    // 1. Optimistic UI update across all orders
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId || o.orderNumber === orderId
-          ? { ...o, deliveryStatus: newStatus }
+          ? { ...o, deliveryStatus: newStatus, order_status: newStatus }
           : o
       )
     );
 
+    // 2. Update selected modal order with live audit trail and timeline
     if (
       selectedOrderForDetails &&
       (selectedOrderForDetails.id === orderId || selectedOrderForDetails.orderNumber === orderId)
     ) {
-      setSelectedOrderForDetails((prev) =>
-        prev ? { ...prev, deliveryStatus: newStatus } : null
-      );
+      setSelectedOrderForDetails((prev) => {
+        if (!prev) return null;
+        const updatedEvents = [...(prev.events || [])];
+        updatedEvents.unshift({
+          id: `ev-${Date.now()}`,
+          order_id: prev.id,
+          store_id: prev.store_id || "store",
+          event_type: `ORDER_${newStatus.toUpperCase()}`,
+          old_status: prev.order_status || prev.deliveryStatus,
+          new_status: newStatus,
+          actor_type: "vendor",
+          message: `Order status updated to ${newStatus.replace(/_/g, " ").toUpperCase()}`,
+          created_at: nowISO,
+        });
+
+        const updatedTimeline = [...(prev.timeline || [])];
+        updatedTimeline.push({
+          id: `tl-${Date.now()}`,
+          title: newStatus.replace(/_/g, " ").toUpperCase(),
+          description: `Order marked ${newStatus.replace(/_/g, " ")} by vendor`,
+          timestamp: nowISO,
+          step: (newStatus === "cancelled" ? "cancelled" : newStatus === "delivered" ? "delivered" : "confirmed") as any,
+          completed: true,
+          current: true,
+        });
+
+        return {
+          ...prev,
+          deliveryStatus: newStatus,
+          order_status: newStatus,
+          events: updatedEvents,
+          timeline: updatedTimeline,
+        };
+      });
     }
 
-    // 2. Update local storage across all stores
+    // 3. Update local storage across all stores
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -367,7 +418,7 @@ export default function OrdersPage() {
             if (Array.isArray(list)) {
               const updatedList = list.map((item: any) =>
                 item.id === orderId || item.orderNumber === orderId
-                  ? { ...item, deliveryStatus: newStatus }
+                  ? { ...item, deliveryStatus: newStatus, order_status: newStatus }
                   : item
               );
               localStorage.setItem(key, JSON.stringify(updatedList));
@@ -377,20 +428,34 @@ export default function OrdersPage() {
       }
     } catch (e) {}
 
-    // 3. Broadcast to storefront tabs
+    // 4. Broadcast to storefront tabs
     try {
       const bc = new BroadcastChannel("vendor_orders_channel");
       bc.postMessage({ type: "ORDER_STATUS_UPDATED", orderId, newStatus });
       bc.close();
     } catch (e) {}
 
-    // 4. Update backend server & Supabase database
+    // 5. Update backend server & Supabase database
     try {
-      await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.order) {
+          setOrders((prev) =>
+            prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, ...data.order } : o))
+          );
+          if (
+            selectedOrderForDetails &&
+            (selectedOrderForDetails.id === orderId || selectedOrderForDetails.orderNumber === orderId)
+          ) {
+            setSelectedOrderForDetails((prev) => (prev ? { ...prev, ...data.order } : null));
+          }
+        }
+      }
     } catch (err) {
       console.error("Failed to update status on server", err);
     }
@@ -417,9 +482,6 @@ export default function OrdersPage() {
         activeStatusTab={filters.deliveryStatus}
         onSelectStatusTab={handleSelectStatusTab}
         onExportCSV={handleExportCSV}
-        onSimulateNewOrder={handleSimulateNewOrder}
-        onRefresh={fetchOrders}
-        isRealtimeActive={isSupabaseConfigured}
         statusCounts={statusCounts}
       />
 
@@ -457,11 +519,13 @@ export default function OrdersPage() {
       />
 
       {/* Order Details Modal Drawer */}
-      <OrderDetailsModal
-        order={selectedOrderForDetails}
-        onClose={() => setSelectedOrderForDetails(null)}
-        onUpdateStatus={handleUpdateOrderStatus}
-      />
+      {selectedOrderForDetails && (
+        <OrderDetailsModal
+          order={selectedOrderForDetails}
+          onClose={() => setSelectedOrderForDetails(null)}
+          onUpdateStatus={handleUpdateOrderStatus}
+        />
+      )}
     </div>
   );
 }

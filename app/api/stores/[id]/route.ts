@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { getStoreById, updateStore, deleteStore } from '@/lib/store/store-service';
 import { createSnapshot } from '@/lib/store/version-manager';
@@ -72,12 +73,20 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return NextResponse.json({ error: 'Store not found' }, { status: 404 });
     }
     
-    if (user && store.vendor_id && store.vendor_id !== user.id && store.vendor_id !== "vendor_dev_123") {
+    let authedVendorId: string | null = user?.id || null;
+    if (!authedVendorId) {
+      try {
+        const cookieStore = await cookies();
+        authedVendorId = cookieStore.get("active_vendor_id")?.value || null;
+      } catch {}
+    }
+
+    if (authedVendorId && store.vendor_id && store.vendor_id !== authedVendorId && store.vendor_id !== "vendor_dev_123") {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     await deleteStore(id);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'Store and all associated data permanently deleted' });
   } catch (error: any) {
     console.error('Error deleting store:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

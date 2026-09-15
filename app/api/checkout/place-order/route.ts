@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       customerId,
-      storeId = "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
       customerName,
       customerEmail,
       customerPhone,
@@ -31,6 +30,8 @@ export async function POST(request: NextRequest) {
       idempotency_key,
       items,
     } = body;
+    const storeId = body.store_id || body.storeId;
+    const vendorId = body.vendor_id || body.vendorId;
 
     // 1. Mandatory field checks
     if (!customerName?.trim()) {
@@ -60,7 +61,12 @@ export async function POST(request: NextRequest) {
       let unitPrice = 150.0;
       let itemName = clientItem.title || clientItem.name || "Handcrafted Product";
       let variantName = clientItem.variantName || clientItem.variant || "";
-      let productSku = product?.sku || clientItem.sku || "SKU-PK-100";
+      let productSku =
+        product?.sku ||
+        clientItem.sku ||
+        (clientItem.productId || clientItem.id
+          ? `SKU-${String(clientItem.productId || clientItem.id).replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase()}`
+          : "SKU-ALT-001");
       let productImage = product?.media?.[0]?.url || clientItem.image || "";
 
       if (product) {
@@ -86,6 +92,7 @@ export async function POST(request: NextRequest) {
         product_id: clientItem.productId || clientItem.id || "e43de5ec-df94-46b8-96cc-eeb4e85e747e",
         variant_id: clientItem.variantId || null,
         name: itemName,
+        sku: productSku,
         product_name_snapshot: itemName,
         product_sku_snapshot: productSku,
         variant_snapshot: variantName,
@@ -125,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     const newOrder = await OrdersBackendService.createOrder({
       store_id: storeId,
-      vendor_id: "vendor_dev_123",
+      vendor_id: vendorId,
       customer_id: customerId || null,
       idempotency_key: cleanIdempotencyKey,
       customerName: customerName.trim(),

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       type: "recovery",
       email: cleanEmail,
       options: {
-        redirectTo: `${origin}/auth/reset-password`,
+        redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
       },
     });
 
@@ -65,13 +65,28 @@ export async function POST(request: Request) {
 
       const recipientName = vendorData?.name || linkData.user?.user_metadata?.name;
 
-      // Dispatch Altrivo branded email via Resend
-      await EmailService.sendPasswordReset(cleanEmail, actionLink, recipientName);
+      // Dispatch Altrivo branded email purely via Resend
+      const resendResult = await EmailService.sendPasswordReset(cleanEmail, actionLink, recipientName);
+
+      const delivered = Boolean(resendResult?.success && !resendResult?.sandboxForwarded);
+      const isSandbox = Boolean(resendResult?.sandboxForwarded);
+      const deliveredEmail = resendResult?.deliveredTo || null;
+
+      return NextResponse.json({
+        success: true,
+        delivered,
+        isSandbox,
+        deliveredEmail,
+        message: delivered
+          ? "A password recovery email has been sent to your address."
+          : "Recovery link generated successfully. (Resend Sandbox preview active).",
+        recoveryLink: actionLink || undefined,
+      });
     }
 
     return NextResponse.json({
       success: true,
-      message: "A password recovery email from Altrivo has been sent to your address.",
+      message: "If that email is registered with Altrivo, a recovery link has been dispatched.",
     });
   } catch (error: any) {
     console.error("[Forgot Password] Server error:", error);

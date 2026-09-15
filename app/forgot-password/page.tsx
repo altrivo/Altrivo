@@ -13,6 +13,9 @@ function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [recoveryLink, setRecoveryLink] = useState<string | null>(null);
+  const [delivered, setDelivered] = useState<boolean>(false);
+  const [deliveredEmail, setDeliveredEmail] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
@@ -35,6 +38,11 @@ function ForgotPasswordForm() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to send password reset email.");
       }
+      if (data.recoveryLink) {
+        setRecoveryLink(data.recoveryLink);
+      }
+      setDelivered(Boolean(data.delivered));
+      setDeliveredEmail(data.deliveredEmail || null);
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message || "Failed to send password reset email.");
@@ -49,10 +57,36 @@ function ForgotPasswordForm() {
         <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-6 h-6 text-emerald-600" />
         </div>
-        <h1 className="text-xl font-bold text-black">Check Your Inbox</h1>
-        <p className="text-xs text-[#5c3d5c] leading-relaxed">
-          We have sent a secure password reset link to <strong className="text-black">{email}</strong>. Please follow the instructions in the email to set a new password.
-        </p>
+        <h1 className="text-xl font-bold text-black">
+          {delivered ? "Check Your Inbox" : "Recovery Link Ready"}
+        </h1>
+        {delivered ? (
+          <p className="text-xs text-[#5c3d5c] leading-relaxed">
+            We have sent a secure password reset link to <strong className="text-black">{email}</strong>. Please follow the instructions in the email to set a new password.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-[#5c3d5c] leading-relaxed">
+              Resend Free Sandbox mode is active. Click the button below to reset your password immediately without waiting for email delivery:
+            </p>
+            {deliveredEmail && (
+              <p className="text-[11px] text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                Sandbox email copy dispatched to registered admin: <strong>{deliveredEmail}</strong>
+              </p>
+            )}
+          </div>
+        )}
+        {recoveryLink && (
+          <div className="pt-2">
+            <a
+              href={recoveryLink}
+              className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#3e2845] hover:bg-[#2d1a33] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+            >
+              <span>Click Here to Reset Password Now</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        )}
         <div className="pt-4">
           <Link
             href={`/login${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`}

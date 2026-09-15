@@ -178,9 +178,12 @@ export default function CheckoutPage() {
         items: items.map((it) => ({
           productId: it.productId,
           variantId: it.sku || "default",
+          sku: it.sku || (it.productId ? `SKU-${it.productId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}` : "SKU-ALT-001"),
           title: it.title,
           quantity: it.quantity,
           price: it.price,
+          image: it.image,
+          variantName: it.variantName,
         })),
       };
 

@@ -14,8 +14,19 @@ export interface NotificationItem {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId") || "vendor_dev_123";
+    let userId = searchParams.get("userId");
+    if (!userId || userId === "null" || userId === "undefined") {
+      userId = request.cookies.get("active_vendor_id")?.value || "";
+    }
     const storeId = searchParams.get("storeId") || undefined;
+
+    if (!userId) {
+      return NextResponse.json({
+        success: true,
+        notifications: [],
+        unreadCount: 0,
+      });
+    }
 
     const data = await NotificationService.getNotifications(userId, storeId);
     
@@ -43,10 +54,14 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { notificationId, markAll, userId } = body;
+    const { notificationId, markAll, markAllRead, storeId } = body;
+    let userId = body.userId;
+    if (!userId || userId === "null" || userId === "undefined") {
+      userId = request.cookies.get("active_vendor_id")?.value || "";
+    }
 
-    if (markAll && userId) {
-      await NotificationService.markAllAsRead(userId);
+    if ((markAll || markAllRead) && userId) {
+      await NotificationService.markAllAsRead(userId, storeId);
       return NextResponse.json({ success: true, message: "All notifications marked as read" });
     }
 

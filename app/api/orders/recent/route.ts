@@ -60,17 +60,13 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Fetch real orders specifically for THIS vendor and STORE from Supabase
+    // 3. Fetch real orders specifically for THIS vendor from Supabase
     let vendorOrders: any[] = [];
     if (supabaseAdmin) {
       let query = supabaseAdmin
         .from("orders")
         .select("*, order_items(*)")
         .eq("vendor_id", vendorId);
-
-      if (storeId) {
-        query = query.eq("store_id", storeId);
-      }
 
       const { data: orders, error } = await query.order("created_at", { ascending: false });
 
@@ -124,12 +120,12 @@ export async function GET(request: Request) {
 
       return {
         id: o.id,
-        orderNumber: `#ORD-${o.id.substring(0, 4).toUpperCase()}`,
+        orderNumber: o.order_number || `#ORD-${o.id.substring(0, 4).toUpperCase()}`,
         customerName: o.customer_name || "Customer",
         customerEmail: o.customer_email || "customer@example.com",
-        amount: `₨ ${totalAmt.toLocaleString()}`,
+        amount: `$${totalAmt.toLocaleString()}`,
         rawAmount: totalAmt,
-        currency: "₨",
+        currency: "$",
         status: mappedStatus,
         itemsCount: o.order_items?.length || 1,
         date: dateLabel,

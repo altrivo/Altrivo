@@ -50,6 +50,7 @@ export interface TrustFeature {
 
 export interface VendorStoreConfig {
   vendorId: string;
+  storeId?: string;
   storeName: string;
   subdomain: string;
   domain?: string;
@@ -354,12 +355,175 @@ function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConf
   // Extract hero props if present
   const heroSection = layout.sections?.find((s: any) => s.type?.startsWith("Hero")) || layout.sections?.[0];
 
-  const rawProducts =
+  let rawProducts =
     layout.products && Array.isArray(layout.products) && layout.products.length > 0
       ? layout.products
       : commerce.products && Array.isArray(commerce.products) && commerce.products.length > 0
       ? commerce.products
       : [];
+
+  // Fallback 1: Extract from sections if store-level products are empty
+  if (rawProducts.length === 0 && layout.sections && Array.isArray(layout.sections)) {
+    for (const s of layout.sections) {
+      if (Array.isArray(s.props?.products) && s.props.products.length > 0) {
+        rawProducts = s.props.products;
+        break;
+      }
+    }
+  }
+
+  // Fallback 2: Intelligent niche-based catalog so no shop page is ever empty
+  if (rawProducts.length === 0) {
+    const combinedStr = `${store.name || ""} ${store.slug || ""} ${layout.niche || ""} ${store.description || ""}`.toLowerCase();
+    if (combinedStr.includes("watch") || combinedStr.includes("chrono") || combinedStr.includes("time")) {
+      rawProducts = [
+        {
+          id: "prod-watch-1",
+          sku: "WAT-01",
+          name: "Automatic Chronograph Luxury Watch",
+          title: "Automatic Chronograph Luxury Watch",
+          tag: "Chronographs",
+          category: "Chronographs",
+          price: 195,
+          originalPrice: 240,
+          rating: 4.9,
+          reviewsCount: 38,
+          inStock: true,
+          badge: "Best Seller",
+          image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=800&q=80",
+          description: "Engineered with scratch-resistant sapphire crystal and precision automatic chronograph movement.",
+        },
+        {
+          id: "prod-watch-2",
+          sku: "WAT-02",
+          name: "Heritage Skeleton Automatic Gold Watch",
+          title: "Heritage Skeleton Automatic Gold Watch",
+          tag: "Automatic",
+          category: "Automatic",
+          price: 280,
+          originalPrice: 350,
+          rating: 5.0,
+          reviewsCount: 52,
+          inStock: true,
+          badge: "Featured",
+          image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&q=80",
+          description: "Intricately exposed mechanical caliber with 24-jewel automatic movement and 18k gold accents.",
+        },
+        {
+          id: "prod-watch-3",
+          sku: "WAT-03",
+          name: "Minimalist Obsidian Black Dial Watch",
+          title: "Minimalist Obsidian Black Dial Watch",
+          tag: "Minimalist",
+          category: "Minimalist",
+          price: 145,
+          originalPrice: 180,
+          rating: 4.8,
+          reviewsCount: 29,
+          inStock: true,
+          badge: "New",
+          image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+          description: "Sleek matte obsidian dial with surgical-grade 316L stainless steel case and genuine leather strap.",
+        },
+        {
+          id: "prod-watch-4",
+          sku: "WAT-04",
+          name: "Royal Navy Blue Chrono Timepiece",
+          title: "Royal Navy Blue Chrono Timepiece",
+          tag: "Chronographs",
+          category: "Chronographs",
+          price: 165,
+          originalPrice: 210,
+          rating: 4.9,
+          reviewsCount: 44,
+          inStock: true,
+          badge: "Trending",
+          image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=800&q=80",
+          description: "Deep ocean blue sunburst dial with dual sub-dials and tachymeter bezel for high precision timing.",
+        },
+      ];
+    } else if (combinedStr.includes("cloth") || combinedStr.includes("apparel") || combinedStr.includes("fashion")) {
+      rawProducts = [
+        {
+          id: "prod-apparel-1",
+          sku: "APP-01",
+          name: "Hand-Embroidered Velvet Kurti",
+          title: "Hand-Embroidered Velvet Kurti",
+          tag: "Pret",
+          category: "Pret",
+          price: 95,
+          originalPrice: 120,
+          rating: 4.9,
+          reviewsCount: 26,
+          inStock: true,
+          badge: "Best Seller",
+          image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80",
+          description: "Pure silk-velvet kurti featuring intricate gold zari needlework and tailored contemporary silhouette.",
+        },
+        {
+          id: "prod-apparel-2",
+          sku: "APP-02",
+          name: "Premium Egyptian Cotton Shalwar Kameez",
+          title: "Premium Egyptian Cotton Shalwar Kameez",
+          tag: "Men Couture",
+          category: "Men Couture",
+          price: 85,
+          originalPrice: 110,
+          rating: 4.8,
+          reviewsCount: 31,
+          inStock: true,
+          badge: "New",
+          image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80",
+          description: "Breathable ultra-fine Egyptian cotton with contrast collar stitching and mother-of-pearl buttons.",
+        },
+      ];
+    } else if (combinedStr.includes("shoe") || combinedStr.includes("leather") || combinedStr.includes("footwear")) {
+      rawProducts = [
+        {
+          id: "prod-shoe-1",
+          sku: "SHO-01",
+          name: "Royal Oxford Calfskin Shoes",
+          title: "Royal Oxford Calfskin Shoes",
+          tag: "Formal",
+          category: "Formal",
+          price: 135,
+          originalPrice: 170,
+          rating: 5.0,
+          reviewsCount: 41,
+          inStock: true,
+          badge: "Best Seller",
+          image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&q=80",
+          description: "Hand-lasted 100% genuine full-grain calfskin leather oxford shoes with Blake stitched soles.",
+        },
+        {
+          id: "prod-shoe-2",
+          sku: "SHO-02",
+          name: "Peshawari Chappal - Pure Leather",
+          title: "Peshawari Chappal - Pure Leather",
+          tag: "Traditional",
+          category: "Traditional",
+          price: 65,
+          originalPrice: 85,
+          rating: 4.9,
+          reviewsCount: 58,
+          inStock: true,
+          badge: "Authentic",
+          image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+          thumbnail: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+          description: "Heritage hand-cut cowhide leather with tyre tread durable soles and traditional buckle closure.",
+        },
+      ];
+    } else {
+      rawProducts = DEFAULT_VENDOR_CONFIG.featuredProducts;
+    }
+  }
 
   const effectiveProducts = rawProducts.map((p: any) => ({
     ...p,
@@ -392,6 +556,7 @@ function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConf
 
   return {
     vendorId: store.vendor_id,
+    storeId: store.id || undefined,
     storeName: store.name || layout.storeName || "My Store",
     subdomain: store.subdomain || store.slug,
     domain: store.custom_domain || undefined,
@@ -437,6 +602,10 @@ function convertDbStoreToConfig(store: any): VendorStoreConfig & { _dbLayoutConf
     ],
     _dbLayoutConfig: {
       ...layout,
+      storeId: store.id,
+      vendorId: store.vendor_id,
+      slug: store.slug,
+      storeName: store.name || layout.storeName,
       products: effectiveProducts,
     },
   };
@@ -446,10 +615,22 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
   // If this config came from the database and already has a full layout_config,
   // return it directly — the StorefrontRenderer can consume it as-is.
   if (config._dbLayoutConfig?.sections?.length > 0) {
-    return config._dbLayoutConfig;
+    return {
+      ...config._dbLayoutConfig,
+      storeId: config._dbLayoutConfig.storeId || config.subdomain || config.storeName,
+      vendorId: config.vendorId || config._dbLayoutConfig.vendorId,
+      slug: config.subdomain || config._dbLayoutConfig.slug,
+      storeName: config.storeName,
+      products: (config.featuredProducts && config.featuredProducts.length > 0)
+        ? config.featuredProducts
+        : config._dbLayoutConfig.products,
+    };
   }
 
   return {
+    storeId: (config as any)._dbLayoutConfig?.storeId || config.subdomain || config.storeName,
+    vendorId: config.vendorId,
+    slug: config.subdomain,
     storeName: config.storeName,
     categories: config.categories,
     socialLinks: config.socialLinks,

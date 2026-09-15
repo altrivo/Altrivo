@@ -10,9 +10,9 @@ interface OrderHeaderProps {
   activeStatusTab: string;
   onSelectStatusTab: (status: string) => void;
   onExportCSV: () => void;
-  onSimulateNewOrder: () => void;
+  onSimulateNewOrder?: () => void;
   onRefresh?: () => void;
-  isRealtimeActive: boolean;
+  isRealtimeActive?: boolean;
   statusCounts: {
     all: number;
     pending: number;
@@ -50,18 +50,9 @@ export function OrderHeader({
       {/* Top Banner & Action Buttons */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-heading font-display">
-              Orders Management
-            </h1>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-xs font-bold text-success-700 border border-success-200 shadow-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-success-500"></span>
-              </span>
-              {isRealtimeActive ? "Supabase Live Engine" : "Realtime Active"}
-            </div>
-          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-heading font-display">
+            Orders Management
+          </h1>
           <p className="mt-1 text-sm font-medium text-body">
             Monitor incoming customer purchases, fulfill shipments, track payments, and export store reports.
           </p>
@@ -69,53 +60,6 @@ export function OrderHeader({
 
         {/* Primary Action Buttons */}
         <div className="flex flex-wrap items-center gap-3">
-          {onRefresh && (
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={onRefresh}
-              className="flex items-center gap-2 border border-default transition-all hover:bg-neutral-100 font-semibold"
-              title="Refresh orders from database"
-            >
-              <svg
-                className="h-4 w-4 text-neutral-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh
-            </Button>
-          )}
-
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={onSimulateNewOrder}
-            className="flex items-center gap-2 transition-all duration-normal hover:border-primary-500 hover:text-primary-600 font-semibold"
-            title="Trigger an incoming order to test Realtime stream"
-          >
-            <svg
-              className="h-4 w-4 text-primary-500 animate-pulse"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            Simulate Live Order
-          </Button>
 
           <Button
             variant="primary"

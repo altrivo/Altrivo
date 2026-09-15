@@ -1,5 +1,40 @@
 import { NextResponse, NextRequest } from "next/server";
+import fs from "fs";
+import path from "path";
 
+// ---------------------------------------------------------------------------
+// File-backed Event Store — persists to .data/tracking_events.json
+// ---------------------------------------------------------------------------
+const EVENTS_FILE = path.join(process.cwd(), ".data", "tracking_events.json");
+
+function loadEvents(): any[] {
+  try {
+    if (fs.existsSync(EVENTS_FILE)) {
+      return JSON.parse(fs.readFileSync(EVENTS_FILE, "utf-8"));
+    }
+  } catch {}
+  return [];
+}
+
+function appendEvent(event: any): void {
+  try {
+    const dir = path.dirname(EVENTS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const events = loadEvents();
+    events.push(event);
+
+    // Keep last 50,000 events to prevent unbounded growth
+    const trimmed = events.length > 50000 ? events.slice(events.length - 50000) : events;
+    fs.writeFileSync(EVENTS_FILE, JSON.stringify(trimmed), "utf-8");
+  } catch (err) {
+    console.warn("[Track API] Could not persist event:", err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// POST /api/track — ingest a storefront visit event
+// ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
     let body: Record<string, unknown> = {};
@@ -21,6 +56,7 @@ export async function POST(req: NextRequest) {
     const city =
       req.headers.get("x-vercel-ip-city") ||
       req.headers.get("cf-ipcity") ||
+      (body.city as string) ||
       "Karachi";
 
     const country =
@@ -31,6 +67,7 @@ export async function POST(req: NextRequest) {
     const eventRecord = {
       id: "evt_" + Math.random().toString(36).substring(2, 9),
       vendorId: body.vendorId || "v-default",
+      storeId: body.storeId || null,
       sessionId: body.sessionId || "sess_unknown",
       page: body.page || "/",
       referrer: body.referrer || "direct",
@@ -42,6 +79,9 @@ export async function POST(req: NextRequest) {
       timestamp: body.timestamp || new Date().toISOString(),
       receivedAt: new Date().toISOString(),
     };
+
+    // Persist to disk
+    appendEvent(eventRecord);
 
     return NextResponse.json(
       {
@@ -63,10 +103,15 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// GET /api/track — health check + raw event stats
+// ---------------------------------------------------------------------------
 export async function GET() {
+  const events = loadEvents();
   return NextResponse.json({
     success: true,
-    service: "Artrivo Storefront Tracking Beacon Ingestion API",
+    service: "Altrivo Storefront Tracking Beacon Ingestion API",
     status: "healthy",
+    totalEventsStored: events.length,
   });
 }

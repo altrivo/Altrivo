@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get("searchQuery") || "";
     const storeId = searchParams.get("storeId") || undefined;
-    const vendorId = searchParams.get("vendorId") || "vendor_dev_123";
+    const vendorId = searchParams.get("vendorId") || undefined;
+    const customerId = searchParams.get("customerId") || undefined;
+    const customerEmail = searchParams.get("customerEmail") || undefined;
     const orderStatus = searchParams.get("orderStatus") || searchParams.get("status") || "all";
     const deliveryStatus = searchParams.get("deliveryStatus") || "all";
     const paymentStatus = searchParams.get("paymentStatus") || "all";
@@ -17,8 +19,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const result = await OrdersBackendService.getOrders(vendorId, {
+    const result = await OrdersBackendService.getOrders(vendorId || "all", {
       storeId,
+      customerId,
+      customerEmail,
       searchQuery,
       orderStatus,
       deliveryStatus,
@@ -57,7 +61,9 @@ export async function POST(request: NextRequest) {
 
     const subtotal = Number(body.subtotal) || body.items.reduce((s: number, i: any) => s + (Number(i.price || i.unit_price) * Number(i.quantity || 1)), 0);
     const discountTotal = Number(body.discountTotal || body.discount_total) || 0;
-    const shippingTotal = Number(body.shippingTotal || body.shipping_total) || (body.deliveryMethod === "express" ? 250 : 150);
+    const shippingTotal = body.shippingTotal !== undefined || body.shipping_total !== undefined
+      ? Number(body.shippingTotal ?? body.shipping_total)
+      : (subtotal >= 100 || subtotal === 0 ? 0 : 15);
     const taxTotal = Number(body.taxTotal || body.tax_total) || 0;
     const grandTotal = Number(body.grandTotal || body.totalAmount || body.total) || Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal);
 
@@ -84,34 +90,6 @@ export async function POST(request: NextRequest) {
       taxTotal,
       grandTotal,
     });
-
-    // Multi-Channel Notifications
-    try {
-      NotificationService.dispatch({
-        eventType: "ORDER_CREATED",
-        storeId: newOrder.store_id,
-        recipientUserId: newOrder.customer_id || newOrder.id,
-        recipientType: "customer",
-        recipientEmail: newOrder.customerEmail,
-        recipientPhone: newOrder.customerPhone,
-        title: `Order #${newOrder.orderNumber} Confirmed`,
-        message: `Thank you ${newOrder.customerName}! Your order of ₨ ${newOrder.totalAmount?.toLocaleString()} has been received.`,
-        order: newOrder,
-      }).catch((e) => console.warn("[Orders POST] Customer notification notice:", e));
-
-      NotificationService.dispatch({
-        eventType: "ORDER_CREATED",
-        storeId: newOrder.store_id,
-        recipientUserId: newOrder.vendor_id || "vendor_dev_123",
-        recipientType: "vendor",
-        recipientEmail: "vendor@digishop.pk",
-        title: `New Order #${newOrder.orderNumber}`,
-        message: `${newOrder.customerName} placed an order for ₨ ${newOrder.totalAmount?.toLocaleString()} via ${newOrder.paymentMethod?.toUpperCase()}.`,
-        order: newOrder,
-      }).catch((e) => console.warn("[Orders POST] Vendor notification notice:", e));
-    } catch (notifErr) {
-      console.warn("[Orders POST] Notification dispatch warning:", notifErr);
-    }
 
     return NextResponse.json({ success: true, order: newOrder }, { status: 201 });
   } catch (err: any) {

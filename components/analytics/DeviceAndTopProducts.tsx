@@ -10,6 +10,9 @@ interface DeviceAndTopProductsProps {
 }
 
 export function DeviceAndTopProducts({ deviceSplit, topProducts }: DeviceAndTopProductsProps) {
+  // Compute mobile % dynamically from data
+  const mobileItem = deviceSplit.find((d) => d.device.toLowerCase().includes("mobile"));
+  const mobilePct = mobileItem ? mobileItem.percentage : 78.4;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       {/* Device Split Pie / Donut (5 cols) */}
@@ -30,7 +33,7 @@ export function DeviceAndTopProducts({ deviceSplit, topProducts }: DeviceAndTopP
           </div>
 
           <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-accent-100 text-accent-900 border border-accent-300">
-            78.4% Mobile
+            {mobilePct}% Mobile
           </span>
         </div>
 
@@ -68,7 +71,7 @@ export function DeviceAndTopProducts({ deviceSplit, topProducts }: DeviceAndTopP
         </div>
 
         <div className="p-3 rounded-xl bg-accent-50/50 border border-accent-200 text-xs text-accent-900 font-medium">
-          💡 <strong>Mobile Optimization Alert:</strong> Over 78% of your customers browse on Mobile devices. Ensure instant checkout speed.
+          💡 <strong>Mobile Optimization Alert:</strong> Over {mobilePct}% of your customers browse on Mobile devices. Ensure instant checkout speed.
         </div>
       </div>
 

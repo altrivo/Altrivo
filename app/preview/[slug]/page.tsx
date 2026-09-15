@@ -10,11 +10,11 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 interface PreviewPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; tab?: string }>;
 }
 
 export default async function StorePreviewPage({ params }: PreviewPageProps) {
-  const { slug } = await params;
+  const { slug, tab } = await params;
   const config = await getStoreConfigBySlug(slug);
 
   if (!config) {
@@ -46,6 +46,9 @@ export default async function StorePreviewPage({ params }: PreviewPageProps) {
   }
 
   const dynamicSchema = convertConfigToDynamicSchema(config);
+  const activeTab = (tab || "home").toLowerCase();
+  const validTabs = ["home", "about", "shop", "contact"];
+  const resolvedTab = validTabs.includes(activeTab) ? (activeTab as "home" | "about" | "shop" | "contact") : "home";
 
   return (
     <div className="relative min-h-screen">
@@ -53,6 +56,7 @@ export default async function StorePreviewPage({ params }: PreviewPageProps) {
       <div>
         <StorefrontRenderer
           config={dynamicSchema}
+          activePage={resolvedTab}
           products={
             (config.featuredProducts && config.featuredProducts.length > 0)
               ? config.featuredProducts

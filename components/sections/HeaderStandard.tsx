@@ -41,15 +41,10 @@ export interface HeaderStandardProps {
   cartItemCount?: number;
   deviceMode?: "desktop" | "tablet" | "mobile";
   activePage?: string;
+  storeSlug?: string;
+  isEditorMode?: boolean;
   onNavigatePage?: (page: string) => void;
 }
-
-const CORE_PAGE_LINKS: NavLink[] = [
-  { name: "Home", href: "#home", pageKey: "home" },
-  { name: "About", href: "#about", pageKey: "about" },
-  { name: "Shop", href: "#shop", pageKey: "shop" },
-  { name: "Contact", href: "#contact", pageKey: "contact" },
-];
 
 export default function HeaderStandard({
   logoText = "Artisanal Store",
@@ -59,6 +54,8 @@ export default function HeaderStandard({
   products = [],
   deviceMode = "desktop",
   activePage = "home",
+  storeSlug = "",
+  isEditorMode = false,
   onNavigatePage,
 }: HeaderStandardProps) {
   const { 
@@ -75,8 +72,36 @@ export default function HeaderStandard({
   const isMobileMode = deviceMode === "mobile";
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  // Combine core pages (Home, About, Shop, Contact) with custom category links if any
-  const primaryLinks = CORE_PAGE_LINKS;
+  // Dynamic base route resolution (e.g. /store/[slug] or /preview/[slug] or "")
+  const [baseRoute, setBaseRoute] = useState<string>(() => {
+    if (storeSlug) return `/store/${storeSlug}`;
+    return "";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = window.location.pathname;
+      if (p.startsWith("/preview/")) {
+        const slug = p.split("/")[2] || storeSlug;
+        setBaseRoute(slug ? `/preview/${slug}` : "/preview");
+      } else if (p.startsWith("/store/")) {
+        const slug = p.split("/")[2] || storeSlug;
+        setBaseRoute(slug ? `/store/${slug}` : "/store");
+      } else if (storeSlug) {
+        setBaseRoute(`/store/${storeSlug}`);
+      } else {
+        setBaseRoute("");
+      }
+    }
+  }, [storeSlug]);
+
+  const primaryLinks: NavLink[] = [
+    { name: "Home", href: baseRoute || "/", pageKey: "home" },
+    { name: "About", href: `${baseRoute}/about`, pageKey: "about" },
+    { name: "Shop", href: `${baseRoute}/shop`, pageKey: "shop" },
+    { name: "Contact", href: `${baseRoute}/contact`, pageKey: "contact" },
+  ];
+
   const categoryLinks = (navigation || []).filter(
     (l) => !["home", "about", "shop", "contact"].includes(l.name.toLowerCase())
   );
@@ -560,33 +585,54 @@ export default function HeaderStandard({
           {/* Strictly 4 Core Store Navigation Pages in Center */}
           {primaryLinks.map((link) => {
             const isPageActive = activePage === link.pageKey;
+            const linkClasses = `relative py-1 px-1 text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 cursor-pointer group flex flex-col items-center ${
+              isPageActive
+                ? "text-emerald-400 font-extrabold"
+                : "text-slate-300 hover:text-white font-semibold"
+            }`;
+
+            const activeIndicator = (
+              <span
+                className={`block h-[2.5px] rounded-full transition-all duration-200 mt-1 ${
+                  isPageActive
+                    ? "w-full bg-emerald-400 shadow-xs shadow-emerald-400/50"
+                    : "w-0 group-hover:w-full bg-slate-400/70"
+                }`}
+              />
+            );
+
+            if (isEditorMode) {
+              return (
+                <button
+                  key={link.name}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (link.pageKey && onNavigatePage) {
+                      onNavigatePage(link.pageKey);
+                    }
+                  }}
+                  className={linkClasses}
+                >
+                  <span>{link.name}</span>
+                  {activeIndicator}
+                </button>
+              );
+            }
+
             return (
-              <button
+              <Link
                 key={link.name}
-                onClick={(e) => {
-                  e.preventDefault();
+                href={link.href}
+                onClick={() => {
                   if (link.pageKey && onNavigatePage) {
                     onNavigatePage(link.pageKey);
-                  } else if (link.href) {
-                    window.location.hash = link.href;
                   }
                 }}
-                className={`relative py-1 px-1 text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 cursor-pointer group flex flex-col items-center ${
-                  isPageActive
-                    ? "text-emerald-400 font-extrabold"
-                    : "text-slate-300 hover:text-white font-semibold"
-                }`}
+                className={linkClasses}
               >
                 <span>{link.name}</span>
-                {/* Underline hover effect & active line indicator */}
-                <span
-                  className={`block h-[2.5px] rounded-full transition-all duration-200 mt-1 ${
-                    isPageActive
-                      ? "w-full bg-emerald-400 shadow-xs shadow-emerald-400/50"
-                      : "w-0 group-hover:w-full bg-slate-400/70"
-                  }`}
-                />
-              </button>
+                {activeIndicator}
+              </Link>
             );
           })}
         </div>
@@ -614,29 +660,53 @@ export default function HeaderStandard({
                   {primaryLinks.map((link) => {
                     const isPageActive = activePage === link.pageKey;
                     const PageIcon = link.pageKey === "home" ? Home : link.pageKey === "about" ? Info : link.pageKey === "shop" ? ShoppingBag : Phone;
-                    return (
-                      <button
-                        key={link.name}
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          if (link.pageKey && onNavigatePage) {
-                            onNavigatePage(link.pageKey);
-                          } else if (link.href) {
-                            window.location.hash = link.href;
-                          }
-                        }}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                          isPageActive
-                            ? "bg-emerald-50 text-emerald-800 border-l-4 border-emerald-500 font-extrabold"
-                            : "text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
+                    const itemClasses = `w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                      isPageActive
+                        ? "bg-emerald-50 text-emerald-800 border-l-4 border-emerald-500 font-extrabold"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`;
+
+                    const itemContent = (
+                      <>
                         <div className="flex items-center gap-2.5">
                           <PageIcon className={`w-4 h-4 ${isPageActive ? "text-emerald-600" : "text-slate-500"}`} />
                           <span>{link.name}</span>
                         </div>
                         {isPageActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                      </button>
+                      </>
+                    );
+
+                    if (isEditorMode) {
+                      return (
+                        <button
+                          key={link.name}
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            if (link.pageKey && onNavigatePage) {
+                              onNavigatePage(link.pageKey);
+                            }
+                          }}
+                          className={itemClasses}
+                        >
+                          {itemContent}
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={link.name}
+                        href={link.href}
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          if (link.pageKey && onNavigatePage) {
+                            onNavigatePage(link.pageKey);
+                          }
+                        }}
+                        className={itemClasses}
+                      >
+                        {itemContent}
+                      </Link>
                     );
                   })}
                 </nav>

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 interface StorefrontBeaconProps {
   vendorId?: string;
+  storeId?: string;
   productContext?: {
     productId: string;
     productName: string;
@@ -15,6 +16,7 @@ interface StorefrontBeaconProps {
 
 export function StorefrontBeacon({
   vendorId = "v-default",
+  storeId,
   productContext,
 }: StorefrontBeaconProps) {
   const pathname = usePathname();
@@ -29,16 +31,15 @@ export function StorefrontBeacon({
       (navigator as unknown as { msDoNotTrack?: string }).msDoNotTrack;
 
     if (dnt === "1" || dnt === "yes") {
-      // DNT enabled: Respect user privacy preference and bypass tracking
       return;
     }
 
     // 2. Session ID Management via sessionStorage
-    let sessionId = sessionStorage.getItem("artrivo_session_id");
+    let sessionId = sessionStorage.getItem("altrivo_session_id");
     if (!sessionId) {
       sessionId =
         "sess_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now();
-      sessionStorage.setItem("artrivo_session_id", sessionId);
+      sessionStorage.setItem("altrivo_session_id", sessionId);
     }
 
     // 3. Device Classification
@@ -53,6 +54,7 @@ export function StorefrontBeacon({
     const timer = setTimeout(() => {
       const payload = {
         vendorId,
+        storeId: storeId || null,
         sessionId,
         page: pathname,
         referrer: document.referrer || "direct",
@@ -68,7 +70,6 @@ export function StorefrontBeacon({
         const blob = new Blob([jsonPayload], { type: "application/json" });
         navigator.sendBeacon("/api/track", blob);
       } else {
-        // Fallback to fetch with keepalive flag
         fetch("/api/track", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -81,7 +82,7 @@ export function StorefrontBeacon({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [pathname, vendorId, productContext]);
+  }, [pathname, vendorId, storeId, productContext]);
 
   return null;
 }

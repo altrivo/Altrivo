@@ -18,6 +18,7 @@ import {
   ExternalLink,
   LayoutDashboard,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { useVendorStore } from "@/context/VendorStoreContext";
 
@@ -37,12 +38,17 @@ interface StoreItem {
 }
 
 export default function MyStoresPage() {
-  const { activeStore, activeStoreId, setActiveStoreId } = useVendorStore();
+  const { activeStore, activeStoreId, setActiveStoreId, refreshStores } = useVendorStore();
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showAllStores, setShowAllStores] = useState(false);
+
+  // Delete modal states
+  const [storeToDelete, setStoreToDelete] = useState<StoreItem | null>(null);
+  const [deleteAcknowledged, setDeleteAcknowledged] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Fetch stores on mount
   useEffect(() => {
@@ -87,18 +93,42 @@ export default function MyStoresPage() {
     }
   }
 
-  async function handleDelete(storeId: string) {
-    if (!confirm("Are you sure you want to delete this store? This action cannot be undone.")) return;
-    setDeletingId(storeId);
+  async function handleConfirmDelete() {
+    if (!storeToDelete || !deleteAcknowledged) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+
     try {
-      const res = await fetch(`/api/stores/${storeId}`, { method: "DELETE" });
-      if (res.ok) {
-        setStores((prev) => prev.filter((s) => s.id !== storeId));
+      const res = await fetch(`/api/stores/${storeToDelete.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete store. Please try again.");
       }
-    } catch (err) {
+
+      const remaining = stores.filter((s) => s.id !== storeToDelete.id);
+      setStores(remaining);
+
+      // If active store was deleted, switch to next remaining store
+      const nextStore = remaining.length > 0 ? remaining[0] : null;
+      if (storeToDelete.id === (activeStoreId || activeStore?.id)) {
+        if (nextStore) {
+          setActiveStoreId(nextStore.id);
+        }
+      }
+
+      // Sync context across tabs / components
+      if (refreshStores) {
+        await refreshStores(nextStore?.id);
+      }
+
+      setStoreToDelete(null);
+      setDeleteAcknowledged(false);
+    } catch (err: any) {
       console.error("Failed to delete store:", err);
+      setDeleteError(err.message || "An error occurred while deleting the store.");
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   }
 
@@ -149,34 +179,12 @@ export default function MyStoresPage() {
             </div>
             <div>
               <h1 className="text-xl font-black text-heading font-display tracking-tight">
-                {showAllStores ? "All Managed Stores" : "My Active Store"}
+                My Active Store
               </h1>
               <p className="text-xs text-subtle font-medium">
-                {showAllStores
-                  ? `${stores.length} store${stores.length !== 1 ? "s" : ""} created & managed`
-                  : `Currently viewing open store: ${activeStore?.name || stores[0]?.name || "Active Store"}`}
+                {`Currently viewing open store: ${activeStore?.name || stores[0]?.name || "Active Store"}`}
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {stores.length > 1 && (
-              <button
-                onClick={() => setShowAllStores(!showAllStores)}
-                className="px-3.5 py-2 rounded-xl border border-default bg-card hover:bg-neutral-100 text-xs font-bold text-heading transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-              >
-                <Store className="w-3.5 h-3.5 text-primary-600" />
-                <span>{showAllStores ? `Show Active Only` : `View All Stores (${stores.length})`}</span>
-              </button>
-            )}
-
-            <Link
-              href="/store-builder"
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-400 to-accent-500 text-primary-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-primary-950" />
-              <span>Create New Store</span>
-            </Link>
           </div>
         </div>
       </div>
@@ -309,11 +317,16 @@ export default function MyStoresPage() {
                                   </a>
                                 )}
                                 <button
-                                  onClick={() => { handleDelete(store.id); setActiveMenu(null); }}
+                                  onClick={() => {
+                                    setStoreToDelete(store);
+                                    setDeleteAcknowledged(false);
+                                    setDeleteError(null);
+                                    setActiveMenu(null);
+                                  }}
                                   className="w-full px-4 py-2.5 text-left text-xs font-bold text-error-600 hover:bg-error-50 flex items-center gap-2.5 transition-colors cursor-pointer"
                                 >
                                   <Trash2 className="w-4 h-4" />
-                                  {deletingId === store.id ? "Deleting..." : "Delete Store"}
+                                  <span>Delete Store</span>
                                 </button>
                               </div>
                             </>
@@ -385,6 +398,122 @@ export default function MyStoresPage() {
           </div>
         )}
       </div>
+
+      {/* Store Delete Confirmation Modal */}
+      {storeToDelete && (
+        <div 
+          className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => {
+            if (!isDeleting) {
+              setStoreToDelete(null);
+              setDeleteAcknowledged(false);
+            }
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white border border-red-100 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-200 text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 flex-shrink-0 shadow-xs">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                  Permanently Delete Store?
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Yeh action permanent aur irreversible hai. Store delete hone k baad wapis restore nahi kiya ja sakay ga.
+                </p>
+              </div>
+            </div>
+
+            {/* Target Store Badge */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate">
+                  {storeToDelete.name}
+                </p>
+                <p className="text-[11px] font-mono text-slate-500 truncate">
+                  /{storeToDelete.slug}
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-red-100/70 text-red-700 text-[10px] font-black uppercase tracking-wider flex-shrink-0">
+                To Be Erased
+              </span>
+            </div>
+
+            {/* Warning Breakdown */}
+            <div className="p-4 rounded-2xl bg-red-50/60 border border-red-200/80 text-xs text-red-900 space-y-2">
+              <h4 className="font-extrabold flex items-center gap-1.5 text-red-800">
+                <span>⚠️ Important Consequences:</span>
+              </h4>
+              <ul className="space-y-1.5 text-[11px] text-red-700/90 list-disc list-inside leading-relaxed font-medium">
+                <li>Storefront website (<span className="font-mono font-bold">/{storeToDelete.slug}</span>) foran offline ho jaye gi.</li>
+                <li>Is store k tamam layout sections, custom designs aur banners database sy permanently delete ho jayenge.</li>
+                <li>Is specific store k customers aur orders ka record mukammal wipe out ho jaye ga.</li>
+                <li><span className="font-bold">Aapka vendor account aur baki tamam stores bilkul mehfooz rahenge.</span></li>
+              </ul>
+            </div>
+
+            {/* Confirmation Checkbox */}
+            <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50/80 transition-colors cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={deleteAcknowledged}
+                onChange={(e) => setDeleteAcknowledged(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500 cursor-pointer"
+              />
+              <span className="text-xs font-semibold text-slate-700 leading-snug">
+                I understand that deleting this store will permanently wipe all associated data, layouts, and orders from the database, and cannot be undone.
+              </span>
+            </label>
+
+            {deleteError && (
+              <p className="text-xs font-bold text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200">
+                {deleteError}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isDeleting) {
+                    setStoreToDelete(null);
+                    setDeleteAcknowledged(false);
+                  }
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={!deleteAcknowledged || isDeleting}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-md shadow-red-600/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting Store...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Store Permanently</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

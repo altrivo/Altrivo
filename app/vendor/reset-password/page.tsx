@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, FormEvent, Suspense } from "react";
+import React, { useState, useEffect, FormEvent, Suspense } from "react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -14,6 +14,29 @@ function VendorResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          console.warn("[VendorResetPassword] Client exchangeCodeForSession notice:", error.message);
+        }
+      });
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        console.log("[VendorResetPassword] PASSWORD_RECOVERY session active");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

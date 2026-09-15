@@ -76,7 +76,9 @@ const SYSTEM_HOSTS = [
   "127.0.0.1",
   "0.0.0.0",
   "altrivo-admin.vercel.app",
+  "altrivo.vercel.app",
   "altrivo.com",
+  "www.altrivo.com",
 ];
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -161,9 +163,47 @@ export async function middleware(req: NextRequest) {
   }
 
   // 6. Multi-Tenant Domain Resolution
+  const hostWithoutPort = hostLower.split(":")[0];
   const isSystemHost = SYSTEM_HOSTS.some(
-    (h) => hostLower === h || hostLower.startsWith(h + ":") || hostLower.includes("run.app") || hostLower.includes("google")
+    (h) => hostWithoutPort === h || hostLower === h || hostLower.startsWith(h + ":") || hostLower.includes("run.app") || hostLower.includes("google")
   );
+
+  // Check for tenant subdomain (e.g. codex-watch.altrivo.vercel.app or codex-watch.altrivo.com or codex-watch.localhost)
+  let tenantSubdomain: string | null = null;
+  if (!isSystemHost) {
+    if (hostWithoutPort.endsWith(".altrivo.vercel.app")) {
+      tenantSubdomain = hostWithoutPort.replace(".altrivo.vercel.app", "");
+    } else if (hostWithoutPort.endsWith(".altrivo.com")) {
+      tenantSubdomain = hostWithoutPort.replace(".altrivo.com", "");
+    } else if (hostWithoutPort.endsWith(".localhost")) {
+      tenantSubdomain = hostWithoutPort.replace(".localhost", "");
+    }
+
+    if (tenantSubdomain && ["www", "admin", "api", "app"].includes(tenantSubdomain)) {
+      tenantSubdomain = null;
+    }
+  }
+
+  // Handle subdomain rewriting to /store/[subdomain]
+  if (tenantSubdomain && !pathname.startsWith("/api") && !pathname.startsWith("/_next")) {
+    if (pathname === "/" || pathname === "") {
+      const url = req.nextUrl.clone();
+      url.pathname = `/store/${tenantSubdomain}`;
+      return NextResponse.rewrite(url, { headers: response.headers });
+    }
+    if (["/about", "/shop", "/contact"].includes(pathname)) {
+      const tab = pathname.replace("/", "");
+      const url = req.nextUrl.clone();
+      url.pathname = `/store/${tenantSubdomain}/${tab}`;
+      return NextResponse.rewrite(url, { headers: response.headers });
+    }
+    if (pathname.startsWith("/product/")) {
+      const prodId = pathname.replace("/product/", "");
+      const url = req.nextUrl.clone();
+      url.pathname = `/store/${tenantSubdomain}/product/${prodId}`;
+      return NextResponse.rewrite(url, { headers: response.headers });
+    }
+  }
 
   const isSystemPath =
     pathname === "/" ||

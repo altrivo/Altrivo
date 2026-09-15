@@ -63,7 +63,7 @@ export function OrderFilters({
             placeholder="Search by order #, customer name, email..."
             className="w-full rounded-xl border border-default bg-input py-2.5 pl-10 pr-10 text-sm font-semibold text-heading placeholder:text-body/70 placeholder:font-normal focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus/20 transition-all shadow-xs"
           />
-          {filters.searchQuery ? (
+          {filters.searchQuery && (
             <button
               onClick={() => onFilterChange({ searchQuery: "" })}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-heading hover:text-primary-600 transition-colors"
@@ -72,22 +72,12 @@ export function OrderFilters({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          ) : (
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-              <span className="hidden sm:inline-block rounded border border-strong bg-muted px-1.5 py-0.5 text-[11px] font-mono font-bold text-heading">
-                /
-              </span>
-            </div>
           )}
         </div>
 
-        {/* Results Counter & Clear Action */}
-        <div className="flex items-center gap-3 justify-between sm:justify-end">
-          <span className="text-xs font-bold text-body">
-            Matching <strong className="text-heading font-extrabold text-sm">{totalFilteredCount}</strong> orders
-          </span>
-
-          {activePills.length > 0 && (
+        {/* Clear Action if active pills exist */}
+        {activePills.length > 0 && (
+          <div className="flex items-center gap-3 justify-end">
             <Button
               variant="ghost"
               size="sm"
@@ -96,8 +86,8 @@ export function OrderFilters({
             >
               Reset All Filters
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Select Dropdown Filters */}
