@@ -351,12 +351,7 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
 
               {/* Multi-Store Switcher Section */}
               <div className="p-2.5 border-b border-default bg-muted/20">
-                <div className="px-2 py-1 text-[10px] font-bold text-subtle uppercase tracking-wider flex items-center justify-between">
-                  <span>Switch Store</span>
-                  <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-[10px] font-bold">{stores.length}</span>
-                </div>
-
-                <div className="max-h-40 overflow-y-auto space-y-0.5 py-1.5 scrollbar-thin">
+                <div className="max-h-40 overflow-y-auto space-y-0.5 py-1 scrollbar-thin">
                   {stores.length === 0 ? (
                     <p className="px-2 py-3 text-xs text-subtle text-center italic">No stores yet</p>
                   ) : (
@@ -409,27 +404,6 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                     <Plus className="w-3.5 h-3.5 text-primary-600" />
                   </div>
                   <span>Create New Store</span>
-                </Link>
-              </div>
-
-              {/* Menu items */}
-              <div className="p-1.5 space-y-0.5">
-                <Link
-                  href="/my-stores"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-heading hover:bg-sidebar-hover transition-colors"
-                >
-                  <Store className="w-4 h-4 text-subtle" />
-                  <span>Manage All Stores</span>
-                </Link>
-
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-heading hover:bg-sidebar-hover transition-colors"
-                >
-                  <Settings className="w-4 h-4 text-subtle" />
-                  <span>Store Settings</span>
                 </Link>
               </div>
 
