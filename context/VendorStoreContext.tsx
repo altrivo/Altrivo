@@ -85,6 +85,13 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
             if (!match && vendorStores.length > 0) {
               // Persisted store not found for this vendor — default to first and save it
               setActiveStoreId(vendorStores[0].id);
+            } else if (vendorStores.length === 0) {
+              // Vendor has no stores yet — clear any stale activeStoreId
+              setActiveStoreIdState(null);
+              try {
+                localStorage.removeItem("active_store_id");
+                document.cookie = "active_store_id=; path=/; max-age=0";
+              } catch {}
             }
             // If match found, keep the existing state — no update needed (avoids flicker)
           }
@@ -92,6 +99,10 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
           setVendor(null);
           setStores([]);
           setActiveStoreIdState(null);
+          try {
+            localStorage.removeItem("active_store_id");
+            document.cookie = "active_store_id=; path=/; max-age=0";
+          } catch {}
         }
       }
     } catch (err) {

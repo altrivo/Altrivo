@@ -103,12 +103,12 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
                   <span
                     className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-extrabold border ${
                       isUp
-                        ? "bg-success-50 text-success-700 border-success-200"
+                        ? "bg-primary-50 text-primary-800 border-primary-300"
                         : "bg-error-50 text-error-700 border-error-200"
                     }`}
                   >
                     {isUp ? (
-                      <ArrowUpRight className="w-3.5 h-3.5 text-success-600" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-primary-600" />
                     ) : (
                       <ArrowDownRight className="w-3.5 h-3.5 text-error-600" />
                     )}

@@ -449,6 +449,7 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
                       localStorage.removeItem("active_vendor_name");
                       localStorage.removeItem("active_vendor_email");
                       localStorage.removeItem("active_store_id");
+                      localStorage.removeItem("digishop_stores");
                       document.cookie = "active_vendor_id=; path=/; max-age=0";
                       document.cookie = "active_store_id=; path=/; max-age=0";
                     } catch {}

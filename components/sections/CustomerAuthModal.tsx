@@ -348,7 +348,7 @@ export default function CustomerAuthModal({
 
           {/* Footer note */}
           <div className="p-3.5 bg-gray-50 border-t border-[#5c3d5c]/10 text-center text-[11px] text-[#5c3d5c] font-medium">
-            100% Escrow Protection • Cash on Delivery Available Nationwide
+            Cash on Delivery Available Nationwide
           </div>
         </div>
       </div>

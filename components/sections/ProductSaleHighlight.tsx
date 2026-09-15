@@ -168,7 +168,7 @@ export default function ProductSaleHighlight({
                   ))}
                   <span className="text-xs font-black text-white ml-1">4.9 / 5.0</span>
                 </div>
-                <p className="text-xs text-slate-300 font-medium">100% Escrow Protected â€¢ 7-Day Easy Returns</p>
+                <p className="text-xs text-slate-300 font-medium">Cash on Delivery • 7-Day Easy Returns</p>
               </div>
             </div>
           </div>

@@ -1502,9 +1502,9 @@ export default function StoreBuilderPage() {
               layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
               items: [
                 { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
-                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
+                { icon: "shield-check", title: "Buyer Protection", description: "Safe and verified delivery" },
                 { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
-                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
+                { icon: "award", title: "Premium Quality", description: "Handcrafted authentic materials & finish" },
               ],
             },
           });
@@ -1687,9 +1687,9 @@ export default function StoreBuilderPage() {
               layout: selectedSections.features === "FeatureGridCards3D" ? "cards3d" : selectedSections.features === "FeatureGridMinimalBar" ? "minimal" : "grid",
               items: [
                 { icon: "truck", title: "Cash on Delivery", description: "Nationwide express COD across Pakistan" },
-                { icon: "shield-check", title: "100% Escrow Safe", description: "Buyer money-back protection" },
+                { icon: "shield-check", title: "Buyer Protection", description: "Safe and verified delivery" },
                 { icon: "rotate-ccw", title: "7-Day Easy Exchange", description: "Hassle-free replacement" },
-                { icon: "award", title: "100% Genuine Quality", description: "Verified authentic materials & craft" },
+                { icon: "award", title: "Premium Quality", description: "Handcrafted authentic materials & finish" },
               ],
             },
           });

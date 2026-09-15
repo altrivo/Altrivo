@@ -144,10 +144,10 @@ export default function CartDrawer() {
                 <span className="text-base font-black text-slate-900">{cartTotal}</span>
               </div>
               
-              <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-[10px] text-emerald-800 flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-[#F5EFF7] border border-[#D1B2DB]/60 text-[10px] text-[#4A3252] flex items-center gap-2">
                 <span className="font-bold">🚚 Free Express Delivery</span>
                 <span>•</span>
-                <span>100% Escrow &amp; Cash on Delivery Protected</span>
+                <span>Cash on Delivery Protected</span>
               </div>
 
               <div className="space-y-2">

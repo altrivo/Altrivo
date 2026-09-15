@@ -490,11 +490,11 @@ export const SECTION_BLUEPRINT_CATALOG: SectionCategoryBlueprint[] = [
         category: "features",
         tag: "Pakistani E-Commerce Essential",
         badge: "Recommended",
-        description: "Cash on Delivery (COD), 2-4 Days Express TCS, 100% Escrow Protection, and Easy 7-Day Exchange.",
+        description: "Cash on Delivery (COD), 2-4 Days Express TCS, Buyer Protection, and Easy 7-Day Exchange.",
         recommendedFor: ["all", "shoes", "fashion", "electronics"],
         previewSnippet: {
           layoutType: "4-Column Icon Grid",
-          highlights: ["COD Badge", "Escrow Verified", "TCS / Courier Logo"],
+          highlights: ["COD Badge", "Buyer Protection", "TCS / Courier Logo"],
         },
       },
       {

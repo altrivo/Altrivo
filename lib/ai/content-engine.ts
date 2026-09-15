@@ -185,7 +185,7 @@ function generateFallbackContent(plan: StoreBlueprintPlan): GeneratedStoreConten
       heroSecondaryCta: 'Explore Heritage',
       featureItems: [
         { icon: 'truck', title: 'Cash on Delivery', description: 'Nationwide COD express delivery across Pakistan' },
-        { icon: 'shield-check', title: '100% Escrow Protection', description: 'Complete buyer safety on every order' },
+        { icon: 'shield-check', title: 'Buyer Protection', description: 'Complete customer safety on every order' },
         { icon: 'rotate-ccw', title: '7-Day Easy Exchange', description: 'Hassle-free size replacement' },
         { icon: 'award', title: 'Pure Full-Grain Leather', description: 'Hand-inspected natural leather' }
       ],
@@ -224,7 +224,7 @@ function generateFallbackContent(plan: StoreBlueprintPlan): GeneratedStoreConten
       heroSecondaryCta: 'View Lookbook',
       featureItems: [
         { icon: 'truck', title: 'Cash on Delivery', description: 'Nationwide COD delivery across Pakistan' },
-        { icon: 'shield-check', title: '100% Escrow Protection', description: 'Guaranteed buyer satisfaction' },
+        { icon: 'shield-check', title: 'Buyer Protection', description: 'Guaranteed customer satisfaction' },
         { icon: 'rotate-ccw', title: '7-Day Easy Exchange', description: 'Zero hassle size exchange' },
         { icon: 'award', title: 'Egyptian Giza Cotton', description: 'Breathable, wrinkle-resistant luxury' }
       ],

@@ -52,6 +52,10 @@ export default function MyStoresPage() {
 
   // Fetch stores on mount
   useEffect(() => {
+    // Clear legacy un-isolated local storage to prevent cross-account leakage
+    try {
+      localStorage.removeItem("digishop_stores");
+    } catch {}
     fetchStores();
   }, []);
 
@@ -61,33 +65,13 @@ export default function MyStoresPage() {
       const res = await fetch("/api/stores");
       if (res.ok) {
         const data = await res.json();
-        if (data.stores && data.stores.length > 0) {
-          setStores(data.stores);
-          try {
-            localStorage.setItem("digishop_stores", JSON.stringify(data.stores));
-          } catch {}
-          return;
-        }
+        setStores(Array.isArray(data.stores) ? data.stores : []);
+        return;
       }
-
-      // Check localStorage fallback
-      const local = localStorage.getItem("digishop_stores");
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setStores(parsed);
-          return;
-        }
-      }
+      setStores([]);
     } catch (err) {
       console.error("Failed to fetch stores:", err);
-      const local = localStorage.getItem("digishop_stores");
-      if (local) {
-        try {
-          const parsed = JSON.parse(local);
-          if (Array.isArray(parsed)) setStores(parsed);
-        } catch {}
-      }
+      setStores([]);
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +166,9 @@ export default function MyStoresPage() {
                 My Active Store
               </h1>
               <p className="text-xs text-subtle font-medium">
-                {`Currently viewing open store: ${activeStore?.name || stores[0]?.name || "Active Store"}`}
+                {stores.length > 0
+                  ? `Currently viewing open store: ${activeStore?.name || stores[0]?.name || "Active Store"}`
+                  : "No active storefront created yet"}
               </p>
             </div>
           </div>

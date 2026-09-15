@@ -299,7 +299,7 @@ export default function CheckoutModal({
                       Express Checkout ({storeName})
                     </h3>
                     <p className="text-[11px] text-slate-500">
-                      100% Escrow &amp; Cash on Delivery Protected
+                      Cash on Delivery Protected
                     </p>
                   </div>
                 </div>

@@ -361,18 +361,18 @@ export default function ProductDetailModal({
 
                 <button
                   onClick={handleBuyNow}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  className="w-full py-3.5 rounded-2xl bg-[#694873] hover:bg-[#5A3D63] text-white font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
-                  <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-                  <span>Instant Buy with Escrow</span>
+                  <Zap className="w-4 h-4 fill-white text-white" />
+                  <span>Instant Buy Now</span>
                 </button>
               </div>
 
               {/* Trust Badges */}
               <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-semibold">
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span>100% Escrow</span>
+                  <ShieldCheck className="w-4 h-4 text-[#694873] flex-shrink-0" />
+                  <span>Cash on Delivery</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
                   <Truck className="w-4 h-4 text-sky-600 flex-shrink-0" />

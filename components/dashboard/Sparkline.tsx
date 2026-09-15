@@ -34,7 +34,7 @@ export function Sparkline({ data, trend, height = 48, width = 120 }: SparklinePr
   // Closed area path for gradient fill
   const areaD = `${pathD} L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`;
 
-  const strokeColor = trend === "up" ? "#10B981" : "#EF4444";
+  const strokeColor = trend === "up" ? "#694873" : "#EF4444";
   const gradientId = `sparkline-grad-${trend}-${Math.random().toString(36).substring(2, 7)}`;
 
   return (

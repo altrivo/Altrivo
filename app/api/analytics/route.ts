@@ -215,19 +215,16 @@ function classifyReferrer(referrer: string): string {
 function buildTrafficSources(events: any[], fallbackMult: number): AnalyticsData["trafficSources"] {
   const COLORS: Record<string, string> = {
     "Meta Ads (IG/FB)": "#C47A8E",
-    "WhatsApp Store":   "#10B981",
+    "WhatsApp Store":   "#874759",
     "Organic Search":   "#694873",
     "Direct Link":      "#3B82F6",
     "Social Media":     "#F59E0B",
   };
 
-  if (events.length < 5) {
-    // Fallback scaled
+  if (events.length === 0) {
     return [
-      { source: "Meta Ads (IG/FB)", percentage: 42.5, count: Math.round(78285 * fallbackMult).toLocaleString(), color: "#C47A8E" },
-      { source: "WhatsApp Store",   percentage: 28.2, count: Math.round(51944 * fallbackMult).toLocaleString(), color: "#10B981" },
-      { source: "Organic Search",   percentage: 17.8, count: Math.round(32787 * fallbackMult).toLocaleString(), color: "#694873" },
-      { source: "Direct Link",      percentage: 11.5, count: Math.round(21183 * fallbackMult).toLocaleString(), color: "#3B82F6" },
+      { source: "Organic Search", percentage: 0, count: "0", color: "#694873" },
+      { source: "Direct Link",    percentage: 0, count: "0", color: "#C47A8E" },
     ];
   }
 
@@ -252,11 +249,11 @@ function buildTrafficSources(events: any[], fallbackMult: number): AnalyticsData
 // Helper: Build device split from real events
 // ---------------------------------------------------------------------------
 function buildDeviceSplit(events: any[], fallbackMult: number): AnalyticsData["deviceSplit"] {
-  if (events.length < 5) {
+  if (events.length === 0) {
     return [
-      { device: "Mobile (iOS & Android)", percentage: 78.4, count: Math.round(144412 * fallbackMult).toLocaleString(), color: "#C47A8E" },
-      { device: "Desktop & Laptop",       percentage: 17.6, count: Math.round(32419 * fallbackMult).toLocaleString(), color: "#694873" },
-      { device: "Tablet",                 percentage: 4.0,  count: Math.round(7368 * fallbackMult).toLocaleString(),  color: "#F59E0B" },
+      { device: "Mobile (iOS & Android)", percentage: 0, count: "0", color: "#C47A8E" },
+      { device: "Desktop & Laptop",       percentage: 0, count: "0", color: "#694873" },
+      { device: "Tablet",                 percentage: 0, count: "0", color: "#F59E0B" },
     ];
   }
 
@@ -296,27 +293,31 @@ function buildCityData(
   fallbackMult: number
 ): AnalyticsData["pakistanCities"] {
   const totalVisits = events.length;
+  if (totalVisits === 0) {
+    return CITY_DEF.map((c) => ({
+      city: c.city,
+      province: c.province,
+      visitors: "0",
+      rawVisitors: 0,
+      sharePercent: 0,
+      revenue: "$ 0.00",
+      coordinates: c.coordinates,
+    }));
+  }
 
   return CITY_DEF.map((c) => {
-    let rawVisitors: number;
-    if (totalVisits >= 5) {
-      // Count events matching this city (case-insensitive partial match)
-      const cityKey = c.city.toLowerCase().split(" ")[0]; // "karachi", "lahore", etc.
-      const cityCount = events.filter((e) =>
-        (e.city || "").toLowerCase().includes(cityKey)
-      ).length;
+    const cityKey = c.city.toLowerCase().split(" ")[0];
+    const cityCount = events.filter((e) =>
+      (e.city || "").toLowerCase().includes(cityKey)
+    ).length;
 
-      // If no direct city match, fallback to share-based estimate
-      rawVisitors = cityCount > 0
-        ? cityCount
-        : Math.round(totalVisits * c.sharePercent / 100);
-    } else {
-      rawVisitors = Math.round(10800 * fallbackMult * c.sharePercent / 38.5);
-    }
+    const rawVisitors = cityCount > 0
+      ? cityCount
+      : Math.round(totalVisits * c.sharePercent / 100);
 
     const cityRevUSD = realRevenue > 0
       ? (realRevenue * c.sharePercent) / 100
-      : (c.baseRevenue / 100) * fallbackMult;
+      : 0;
 
     return {
       city: c.city,
@@ -468,22 +469,24 @@ export async function GET(request: Request) {
 
   // Filter by storeId if provided (events include storeId from beacon)
   if (storeId) {
-    const storeEvents = windowEvents.filter((e) => !e.storeId || e.storeId === storeId);
-    windowEvents = storeEvents.length > 0 ? storeEvents : windowEvents;
+    windowEvents = windowEvents.filter((e) => e.storeId === storeId);
+  } else {
+    windowEvents = [];
   }
 
-  const isLive = windowEvents.length >= 3; // At least 3 real events = live mode
+  const isLive = windowEvents.length > 0;
 
   // ── 4. Load real orders ─────────────────────────────────────────────────
   const ordersMetadata = loadOrdersMetadata();
   let allOrders = Object.values(ordersMetadata) as any[];
 
   if (storeId) {
-    const storeOrders = allOrders.filter((o: any) => {
+    allOrders = allOrders.filter((o: any) => {
       const sid = o.store_id || o.storeId;
-      return !sid || sid === storeId;
+      return sid === storeId;
     });
-    allOrders = storeOrders.length > 0 ? storeOrders : allOrders;
+  } else {
+    allOrders = [];
   }
 
   const recentOrders = allOrders.filter((o: any) => {
@@ -493,13 +496,13 @@ export async function GET(request: Request) {
   });
 
   // ── 5. Financial metrics from orders ────────────────────────────────────
-  const totalOrderCount = recentOrders.length > 0 ? recentOrders.length : 9;
+  const totalOrderCount = recentOrders.length;
   const grossRevenue    = recentOrders.reduce((sum: number, o: any) => {
     const amt = parseFloat(o.grand_total || o.totalAmount || o.total || 0);
     return sum + (isNaN(amt) ? 0 : amt);
   }, 0);
-  const realRevenue = grossRevenue > 0 ? grossRevenue : 2309.95;
-  const realAOV     = realRevenue / Math.max(totalOrderCount, 1);
+  const realRevenue = grossRevenue;
+  const realAOV     = totalOrderCount > 0 ? realRevenue / totalOrderCount : 0;
 
   // ── 6. Per-store stable seed (for fallback scaling uniqueness) ──────────
   let storeSeed = 1.0;
@@ -521,76 +524,71 @@ export async function GET(request: Request) {
   const dayBuckets = buildDayBuckets(windowEvents, now, Math.min(days, 7));
 
   // ── 8. Core traffic metrics ─────────────────────────────────────────────
-  // LIVE: use real event counts when we have enough data
-  const rawVisits  = isLive ? windowEvents.length : Math.round(184200 * fallbackMult);
-  const uniqueSessions = isLive
-    ? new Set(windowEvents.map((e) => e.sessionId)).size
-    : Math.round(124500 * fallbackMult);
+  const rawVisits  = windowEvents.length;
+  const uniqueSessions = new Set(windowEvents.map((e) => e.sessionId || e.id)).size;
 
   // Compute previous period for % change
-  const prevWindowEvents = allEvents.filter((e) => {
-    const t = new Date(e.timestamp || e.receivedAt || 0).getTime();
-    return t >= now - 2 * windowMs && t < now - windowMs;
-  });
-  const prevVisits  = prevWindowEvents.length > 0 ? prevWindowEvents.length : Math.round(rawVisits * 0.83);
-  const prevUnique  = prevWindowEvents.length > 0
-    ? new Set(prevWindowEvents.map((e) => e.sessionId)).size
-    : Math.round(uniqueSessions * 0.87);
+  const prevWindowEvents = storeId
+    ? allEvents.filter((e) => {
+        const t = new Date(e.timestamp || e.receivedAt || 0).getTime();
+        return e.storeId === storeId && t >= now - 2 * windowMs && t < now - windowMs;
+      })
+    : [];
+  const prevVisits  = prevWindowEvents.length;
+  const prevUnique  = new Set(prevWindowEvents.map((e) => e.sessionId)).size;
 
-  const visitsChange  = prevVisits  > 0 ? Math.round(((rawVisits - prevVisits)   / prevVisits)   * 1000) / 10 : 18.4;
-  const uniqueChange  = prevUnique  > 0 ? Math.round(((uniqueSessions - prevUnique) / prevUnique) * 1000) / 10 : 14.2;
+  const visitsChange  = prevVisits  > 0 ? Math.round(((rawVisits - prevVisits)   / prevVisits)   * 1000) / 10 : 0;
+  const uniqueChange  = prevUnique  > 0 ? Math.round(((uniqueSessions - prevUnique) / prevUnique) * 1000) / 10 : 0;
 
   // Sparkline: visits and unique per day bucket
   const sparklineVisits  = dayBuckets.map((b) => b.events.length);
   const sparklineUnique  = dayBuckets.map((b) => new Set(b.events.map((e) => e.sessionId)).size);
 
   // Avg session duration
-  const avgSessionDuration = isLive
+  const avgSessionDuration = rawVisits > 0
     ? computeAvgSessionDuration(windowEvents)
-    : "3m 42s";
-  const prevDuration = isLive
+    : "0m 00s";
+  const prevDuration = prevVisits > 0
     ? computeAvgSessionDuration(prevWindowEvents)
-    : "3m 31s";
+    : "0m 00s";
 
   const parseSeconds = (s: string) => {
     const m = s.match(/(\d+)m\s*(\d+)s/);
-    return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 222;
+    return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : 0;
   };
   const durSeconds     = parseSeconds(avgSessionDuration);
   const prevDurSeconds = parseSeconds(prevDuration);
   const durationChange = prevDurSeconds > 0
     ? Math.round(((durSeconds - prevDurSeconds) / prevDurSeconds) * 1000) / 10
-    : 5.8;
+    : 0;
 
   // Bounce rate
-  const bounceRate = isLive ? computeBounceRate(windowEvents) : 32.4;
-  const prevBounce = isLive ? computeBounceRate(prevWindowEvents) : 33.4;
+  const bounceRate = rawVisits > 0 ? computeBounceRate(windowEvents) : 0;
+  const prevBounce = prevVisits > 0 ? computeBounceRate(prevWindowEvents) : 0;
   const bounceChange = Math.round((bounceRate - prevBounce) * 10) / 10;
 
   // ── 9. Conversion funnel ─────────────────────────────────────────────────
   const totalVisited   = rawVisits;
-  const viewedProduct  = Math.round(totalVisited * 0.45);
-  const addedCart      = Math.round(totalVisited * 0.12);
-  const purchased      = recentOrders.length > 0
-    ? recentOrders.length
-    : Math.round(totalVisited * 0.0384);
+  const viewedProduct  = rawVisits > 0 ? Math.round(totalVisited * 0.45) : 0;
+  const addedCart      = rawVisits > 0 ? Math.round(totalVisited * 0.12) : 0;
+  const purchased      = recentOrders.length;
 
-  const rawConvRate = totalVisited > 0 ? (purchased / totalVisited) * 100 : 3.84;
+  const rawConvRate = totalVisited > 0 ? (purchased / totalVisited) * 100 : 0;
   const conversionRate = rawConvRate < 0.01
     ? rawConvRate.toFixed(4)
     : rawConvRate >= 1 ? rawConvRate.toFixed(2)
     : rawConvRate.toFixed(3);
 
   const conversionFunnel: AnalyticsData["conversionFunnel"] = [
-    { stage: "Storefront Visited",    count: totalVisited.toLocaleString(),  rawCount: totalVisited,  percentageOfTotal: 100, dropoffPercent: null },
-    { stage: "Viewed Product Page",   count: viewedProduct.toLocaleString(), rawCount: viewedProduct, percentageOfTotal: 45,  dropoffPercent: 55   },
-    { stage: "Added to Cart",         count: addedCart.toLocaleString(),     rawCount: addedCart,     percentageOfTotal: 12,  dropoffPercent: 73   },
+    { stage: "Storefront Visited",    count: totalVisited.toLocaleString(),  rawCount: totalVisited,  percentageOfTotal: totalVisited > 0 ? 100 : 0, dropoffPercent: null },
+    { stage: "Viewed Product Page",   count: viewedProduct.toLocaleString(), rawCount: viewedProduct, percentageOfTotal: totalVisited > 0 ? 45 : 0,  dropoffPercent: totalVisited > 0 ? 55 : 0 },
+    { stage: "Added to Cart",         count: addedCart.toLocaleString(),     rawCount: addedCart,     percentageOfTotal: totalVisited > 0 ? 12 : 0,  dropoffPercent: totalVisited > 0 ? 73 : 0 },
     {
       stage: "Purchased (Converted)",
       count: purchased.toLocaleString(),
       rawCount: purchased,
       percentageOfTotal: parseFloat(conversionRate),
-      dropoffPercent: Math.round(((addedCart - purchased) / Math.max(addedCart, 1)) * 100),
+      dropoffPercent: addedCart > 0 ? Math.round(((addedCart - purchased) / addedCart) * 100) : 0,
     },
   ];
 
