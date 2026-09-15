@@ -187,8 +187,8 @@ export default function MyStoresPage() {
         {/* Empty State */}
         {!isLoading && stores.length === 0 && (
           <div className="flex flex-col items-center justify-center py-32 gap-6 bg-card rounded-3xl border border-default p-8 shadow-card">
-            <div className="p-6 rounded-2xl bg-accent-50 border border-accent-200">
-              <Sparkles className="w-12 h-12 text-accent-600" />
+            <div className="p-6 rounded-2xl bg-primary-50 border border-primary-200">
+              <Store className="w-12 h-12 text-primary-600" />
             </div>
             <div className="text-center space-y-2 max-w-md">
               <h2 className="text-xl font-black text-heading font-display">No stores created yet</h2>
@@ -198,9 +198,9 @@ export default function MyStoresPage() {
             </div>
             <Link
               href="/store-builder"
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-accent-400 to-accent-500 text-primary-950 font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-[#694873] hover:bg-[#5A3D63] text-white font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
+              <Plus className="w-4 h-4" />
               <span>Create Your First Store</span>
             </Link>
           </div>

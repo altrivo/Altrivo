@@ -12,7 +12,7 @@ import { DeviceAndTopProducts } from "@/components/analytics/DeviceAndTopProduct
 import { AnalyticsData } from "@/app/api/analytics/route";
 import { useVendorStore } from "@/context/VendorStoreContext";
 import Link from "next/link";
-import { ShoppingCart, DollarSign, TrendingUp, Package, Sparkles } from "lucide-react";
+import { ShoppingCart, DollarSign, TrendingUp, Package, Plus } from "lucide-react";
 
 export default function AnalyticsPage() {
   const { activeStoreId, stores, isLoading: isStoreLoading } = useVendorStore();
@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
             href="/store-builder"
             className="px-6 py-3 rounded-xl bg-[#694873] hover:bg-[#5A3D63] text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
             <span>Generate Your First Store</span>
           </Link>
         </div>

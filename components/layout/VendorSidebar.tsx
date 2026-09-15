@@ -85,7 +85,7 @@ export function VendorSidebar({ collapsed, onToggleCollapse }: VendorSidebarProp
                   {activeStore.name.charAt(0).toUpperCase()}
                 </span>
               ) : (
-                <Sparkles className="w-5 h-5 text-accent-200 animate-pulse" />
+                <Store className="w-5 h-5 text-accent-200" />
               )}
             </div>
           </div>
