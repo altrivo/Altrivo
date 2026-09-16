@@ -87,7 +87,7 @@ export function AiImageGeneratorModal({
   const [generatedImages, setGeneratedImages] = useState<GeneratedPhotoItem[]>([]);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
   const [generationProgress, setGenerationProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState<string>("Analyzing product prompt with Gemini AI...");
+  const [statusMessage, setStatusMessage] = useState<string>("Analyzing product prompt with AI...");
 
   useEffect(() => {
     if (initialPrompt && !prompt) {
@@ -106,7 +106,7 @@ export function AiImageGeneratorModal({
 
     setIsGenerating(true);
     setGenerationProgress(15);
-    setStatusMessage("Gemini AI is analyzing product & crafting 4 studio perspectives...");
+    setStatusMessage("AI is analyzing product & crafting 4 studio perspectives...");
     setGeneratedImages([]);
     setSelectedIndices(new Set());
 

@@ -1518,7 +1518,7 @@ export default function VisualLayoutEditor() {
   };
 
   // -------------------------------------------------------------------------
-  // Handle AI Chat Commands (Urdu / English) via Gemini API
+  // Handle AI Chat Commands (Urdu / English) via AI API
   // -------------------------------------------------------------------------
   const handleAiCommand = async (customPrompt?: string) => {
     const userMsg = (customPrompt || aiInput).trim();
@@ -3153,11 +3153,11 @@ export default function VisualLayoutEditor() {
                 ))}
 
                 {isAiLoading && (
-                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-violet-50 border border-violet-200 text-violet-700 text-xs shadow-xs animate-pulse">
-                    <Loader2 className="w-4 h-4 animate-spin text-violet-600 flex-shrink-0" />
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary-50 border border-primary-200 text-primary-700 text-xs shadow-xs animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary-600 flex-shrink-0" />
                     <div>
-                      <p className="font-bold text-[11px]">Gemini 3.6 is designing...</p>
-                      <p className="text-[10px] text-violet-600/80">Updating live storefront layout & content</p>
+                      <p className="font-bold text-[11px]">AI is designing...</p>
+                      <p className="text-[10px] text-primary-600/80">Updating live storefront layout & content</p>
                     </div>
                   </div>
                 )}

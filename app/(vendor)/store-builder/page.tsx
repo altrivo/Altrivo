@@ -331,8 +331,8 @@ function detectStoreNiche(name?: string, promptText?: string, category?: string)
 }
 
 const PROGRESS_STEPS = [
-  "Gemini AI analyzing business vision & brand aesthetic...",
-  "Gemini AI generating tailored copywriting & brand story...",
+  "AI analyzing business vision & brand aesthetic...",
+  "AI generating tailored copywriting & brand story...",
   "Matching high-resolution catalog media & collection assets...",
   "Assembling section component blueprints & theme tokens...",
   "Connecting nationwide Cash on Delivery & buyer escrow...",
@@ -1125,7 +1125,7 @@ export default function StoreBuilderPage() {
   };
 
   // -------------------------------------------------------------------------
-  // Handle 1-Click Gemini AI Prompt Enhancement
+  // Handle 1-Click AI Prompt Enhancement
   // -------------------------------------------------------------------------
   const handleEnhancePromptWithAi = async () => {
     setIsEnhancingPrompt(true);
@@ -1153,7 +1153,7 @@ export default function StoreBuilderPage() {
   };
 
   // -------------------------------------------------------------------------
-  // STEP 1 -> STEP 3: Instant 1-Click Store Generation with Gemini AI
+  // STEP 1 -> STEP 3: Instant 1-Click Store Generation with AI
   // -------------------------------------------------------------------------
   const handleInstantStoreBuild = async () => {
     if (!customStoreName.trim()) {
@@ -1882,16 +1882,16 @@ export default function StoreBuilderPage() {
                 </div>
               </div>
 
-              {/* 2. GEMINI AI STORE VISION & PROMPT (HIGHLIGHTED AI BOX) */}
+              {/* 2. AI STORE VISION & PROMPT (HIGHLIGHTED AI BOX) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-1.5 text-xs font-bold text-[#3e2845] uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
-                    <span>Store Vision &amp; Gemini AI Prompt</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-heading uppercase tracking-wider">
+                    <Store className="w-3.5 h-3.5 text-primary-600" />
+                    <span>Store Vision &amp; AI Prompt</span>
                   </label>
-                  <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-100 to-fuchsia-100 border border-purple-300 text-[10px] font-extrabold text-purple-800 flex items-center gap-1 shadow-2xs">
-                    <Sparkles className="w-2.5 h-2.5 text-purple-600" />
-                    <span>Powered by Gemini AI</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-primary-50 border border-primary-200 text-[10px] font-bold text-primary-700 flex items-center gap-1 shadow-2xs">
+                    <Sparkles className="w-2.5 h-2.5 text-primary-600" />
+                    <span>Powered by AI</span>
                   </span>
                 </div>
                 <div className="relative">
@@ -1900,24 +1900,24 @@ export default function StoreBuilderPage() {
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={4}
                     placeholder="e.g. Luxury chronograph watch brand, midnight black and gold aesthetic, sapphire crystal glass, precision Japanese automatic movements, nationwide Cash on Delivery across Pakistan..."
-                    className="w-full p-4 pb-11 rounded-xl bg-[#faf7fa] border border-purple-200/80 focus:border-purple-600 text-sm text-black placeholder:text-[#5c3d5c]/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:bg-white resize-none leading-relaxed transition-all shadow-2xs"
+                    className="w-full p-4 pb-11 rounded-xl bg-card border border-primary-200 focus:border-primary-600 text-sm text-heading placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white resize-none leading-relaxed transition-all shadow-2xs"
                   />
-                  {/* Enhance with Gemini AI Button */}
+                  {/* Enhance with AI Button */}
                   <div className="absolute right-2.5 bottom-2.5 flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleEnhancePromptWithAi}
                       disabled={isEnhancingPrompt}
-                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-purple-50 border border-purple-200 text-[11px] font-bold text-purple-700 shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-primary-50 border border-primary-200 text-[11px] font-bold text-primary-700 shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
                     >
                       {isEnhancingPrompt ? (
                         <>
-                          <Loader2 className="w-3 h-3 animate-spin text-purple-600" />
-                          <span>Gemini Thinking...</span>
+                          <Loader2 className="w-3 h-3 animate-spin text-primary-600" />
+                          <span>AI Thinking...</span>
                         </>
                       ) : (
                         <>
-                          <Wand2 className="w-3 h-3 text-purple-600" />
+                          <Wand2 className="w-3 h-3 text-primary-600" />
                           <span>Enhance with AI</span>
                         </>
                       )}
@@ -1928,7 +1928,7 @@ export default function StoreBuilderPage() {
 
               {/* Quick Suggestions with Lucide Icons */}
               <div className="space-y-2.5">
-                <span className="text-[11px] font-bold text-[#4b3254] uppercase tracking-wider block">
+                <span className="text-[11px] font-bold text-heading uppercase tracking-wider block">
                   Popular Categories:
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1944,9 +1944,9 @@ export default function StoreBuilderPage() {
                             setCustomStoreName(item.suggestedName);
                           }
                         }}
-                        className="px-3 py-2.5 rounded-xl bg-white hover:bg-[#faf7fa] border border-[#5c3d5c]/30 hover:border-[#4b3254] text-xs font-semibold text-[#3e2845] hover:text-black transition-all flex items-center gap-2 text-left active:scale-98 shadow-2xs cursor-pointer group"
+                        className="px-3 py-2.5 rounded-xl bg-white hover:bg-primary-50/50 border border-default hover:border-primary-300 text-xs font-semibold text-heading hover:text-primary-950 transition-all flex items-center gap-2 text-left active:scale-98 shadow-2xs cursor-pointer group"
                       >
-                        <Icon className="w-4 h-4 text-[#5c3d5c] group-hover:text-[#4b3254] flex-shrink-0 transition-colors" />
+                        <Icon className="w-4 h-4 text-subtle group-hover:text-primary-600 flex-shrink-0 transition-colors" />
                         <span className="truncate">{item.label}</span>
                       </button>
                     );
@@ -1961,17 +1961,17 @@ export default function StoreBuilderPage() {
                   onClick={() => setBuilderMode("custom_blueprints")}
                   className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                     builderMode === "custom_blueprints"
-                      ? "bg-[#f6f0f7] border-2 border-[#4b3254] text-[#3e2845] shadow-sm ring-2 ring-[#4b3254]/15"
-                      : "bg-white border border-[#5c3d5c]/25 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
+                      ? "bg-primary-50 border-2 border-primary-600 text-heading shadow-sm ring-2 ring-primary-500/15"
+                      : "bg-white border border-default text-heading hover:border-primary-300 hover:bg-primary-50/30"
                   }`}
                 >
-                  <Layers className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "custom_blueprints" ? "text-[#4b3254]" : "text-[#5c3d5c]"}`} />
+                  <Layers className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "custom_blueprints" ? "text-primary-700" : "text-subtle"}`} />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-bold text-[#3e2845]">Component Blueprints</p>
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-100 text-purple-700">Custom</span>
+                      <p className="text-xs font-bold text-heading">Component Blueprints</p>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-primary-100 text-primary-800">Custom</span>
                     </div>
-                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Customize specific section layouts (Hero, Products, Story). AI generates tailored text &amp; media.</p>
+                    <p className="text-[11px] text-body mt-0.5 font-medium">Customize specific section layouts (Hero, Products, Story). AI generates tailored text &amp; media.</p>
                   </div>
                 </button>
 
@@ -1980,17 +1980,17 @@ export default function StoreBuilderPage() {
                   onClick={() => setBuilderMode("quick_templates")}
                   className={`p-3.5 rounded-xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                     builderMode === "quick_templates"
-                      ? "bg-[#f6f0f7] border-2 border-[#4b3254] text-[#3e2845] shadow-sm ring-2 ring-[#4b3254]/15"
-                      : "bg-white border border-[#5c3d5c]/25 text-[#4b3254] hover:border-[#5c3d5c] hover:bg-[#faf7fa]"
+                      ? "bg-primary-50 border-2 border-primary-600 text-heading shadow-sm ring-2 ring-primary-500/15"
+                      : "bg-white border border-default text-heading hover:border-primary-300 hover:bg-primary-50/30"
                   }`}
                 >
-                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-amber-500 fill-amber-500" : "text-[#5c3d5c]"}`} />
+                  <Zap className={`w-4 h-4 mt-0.5 flex-shrink-0 ${builderMode === "quick_templates" ? "text-primary-600 fill-primary-600" : "text-subtle"}`} />
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs font-bold text-[#3e2845]">Instant Store Preset</p>
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800">1-Click AI</span>
+                      <p className="text-xs font-bold text-heading">Instant Store Preset</p>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-primary-100 text-primary-800">1-Click AI</span>
                     </div>
-                    <p className="text-[11px] text-[#5c3d5c] mt-0.5 font-medium">Generate a complete pre-built theme with Gemini AI in 1 click.</p>
+                    <p className="text-[11px] text-body mt-0.5 font-medium">Generate a complete pre-built theme with AI in 1 click.</p>
                   </div>
                 </button>
               </div>
@@ -1999,23 +1999,23 @@ export default function StoreBuilderPage() {
               <button
                 onClick={builderMode === "quick_templates" ? handleInstantStoreBuild : handleStartPlanning}
                 disabled={!customStoreName.trim() || isLoading}
-                className="w-full py-3.5 rounded-xl bg-[#3e2845] hover:bg-[#4b3254] text-white font-bold text-xs shadow-lg shadow-[#3e2845]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-lg shadow-primary-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] cursor-pointer"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
                     <span>
                       {builderMode === "quick_templates"
-                        ? "Generating Instant Store with Gemini AI..."
+                        ? "Generating Instant Store with AI..."
                         : "Planning Storefront Layout..."}
                     </span>
                   </>
                 ) : builderMode === "quick_templates" ? (
                   <>
-                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <Zap className="w-4 h-4 text-primary-200 fill-primary-200" />
                     <span>
                       {customStoreName.trim()
-                        ? `⚡ Generate Instant Store with Gemini AI (${customStoreName})`
+                        ? `Generate Instant Store (${customStoreName})`
                         : "Enter Store Name to Continue"}
                     </span>
                     <ArrowRight className="w-4 h-4 text-white" />
@@ -2529,21 +2529,21 @@ export default function StoreBuilderPage() {
           <div className="max-w-xl mx-auto w-full text-center space-y-6 animate-in fade-in duration-300 py-6">
             {!generatedStore ? (
               /* Loading Progress State */
-              <div className="p-8 rounded-2xl bg-white border border-[#5c3d5c]/20 space-y-6 shadow-xl">
+              <div className="p-8 rounded-2xl bg-white border border-primary-200 space-y-6 shadow-xl">
                 <div className="relative w-16 h-16 mx-auto">
-                  <div className="absolute inset-0 rounded-full border-4 border-[#5c3d5c]/20" />
-                  <div className="absolute inset-0 rounded-full border-4 border-[#4b3254] border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-4 border-primary-100" />
+                  <div className="absolute inset-0 rounded-full border-4 border-primary-600 border-t-transparent animate-spin" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Store className="w-6 h-6 text-[#4b3254]" />
+                    <Store className="w-6 h-6 text-primary-600" />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-[#3e2845]">Assembling Your Storefront</h2>
-                  <p className="text-xs text-[#5c3d5c]">Wiring up components and initializing catalog...</p>
+                  <h2 className="text-xl font-bold text-heading">Assembling Your Storefront</h2>
+                  <p className="text-xs text-subtle">Wiring up components and initializing catalog...</p>
                 </div>
 
-                <div className="max-w-sm mx-auto space-y-2 text-left bg-[#faf7fa] p-4 rounded-xl border border-[#5c3d5c]/20">
+                <div className="max-w-sm mx-auto space-y-2 text-left bg-primary-50/50 p-4 rounded-xl border border-primary-200">
                   {PROGRESS_STEPS.map((step, idx) => {
                     const isDone = idx < progressStepIndex;
                     const isCurrent = idx === progressStepIndex;
@@ -2551,13 +2551,13 @@ export default function StoreBuilderPage() {
                     return (
                       <div key={idx} className="flex items-center gap-2.5 text-xs">
                         {isDone ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary-600 flex-shrink-0" />
                         ) : isCurrent ? (
-                          <Loader2 className="w-3.5 h-3.5 text-[#4b3254] animate-spin flex-shrink-0" />
+                          <Loader2 className="w-3.5 h-3.5 text-primary-600 animate-spin flex-shrink-0" />
                         ) : (
-                          <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex-shrink-0" />
+                          <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 flex-shrink-0" />
                         )}
-                        <span className={isCurrent ? "font-semibold text-[#3e2845]" : isDone ? "text-purple-700" : "text-slate-400"}>
+                        <span className={isCurrent ? "font-semibold text-heading" : isDone ? "text-primary-700" : "text-muted"}>
                           {step}
                         </span>
                       </div>
@@ -2567,45 +2567,45 @@ export default function StoreBuilderPage() {
               </div>
             ) : (
               /* Clean Success Screen */
-              <div className="p-8 rounded-2xl bg-white border border-purple-500/30 shadow-xl space-y-6">
-                <div className="w-16 h-16 bg-purple-50 border border-purple-200 rounded-full flex items-center justify-center mx-auto text-purple-600">
+              <div className="p-8 rounded-2xl bg-white border border-primary-200 shadow-xl space-y-6">
+                <div className="w-16 h-16 bg-primary-50 border border-primary-200 rounded-full flex items-center justify-center mx-auto text-primary-600">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
 
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-extrabold text-[#3e2845]">Your Storefront is Ready!</h2>
-                  <p className="text-xs text-[#5c3d5c]">
+                  <h2 className="text-2xl font-extrabold text-heading">Your Storefront is Ready!</h2>
+                  <p className="text-xs text-subtle">
                     Saved to your account and ready for visual editing and live orders.
                   </p>
                 </div>
 
                 {/* Store Meta Card */}
-                <div className="p-4 rounded-xl bg-[#faf7fa] border border-[#5c3d5c]/20 text-left space-y-3">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-[#5c3d5c]/20">
+                <div className="p-4 rounded-xl bg-primary-50/40 border border-primary-200 text-left space-y-3">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-primary-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700">
+                      <div className="w-9 h-9 rounded-lg bg-primary-100 border border-primary-200 flex items-center justify-center text-primary-700">
                         <Store className="w-4 h-4" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-[#3e2845]">{generatedStore.name}</h3>
-                        <p className="text-xs text-purple-700 font-mono">/{generatedStore.slug}</p>
+                        <h3 className="text-sm font-bold text-heading">{generatedStore.name}</h3>
+                        <p className="text-xs text-primary-700 font-mono">/{generatedStore.slug}</p>
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-primary-100 text-primary-800 text-[10px] font-bold">
                       Published
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <p className="text-slate-500 text-[11px]">Sections Configured</p>
-                      <p className="text-[#3e2845] font-semibold mt-0.5">
+                      <p className="text-subtle text-[11px]">Sections Configured</p>
+                      <p className="text-heading font-semibold mt-0.5">
                         {7 + customComponents.length} Component Blocks
                       </p>
                     </div>
                     <div>
-                      <p className="text-slate-500 text-[11px]">Checkout &amp; Cart</p>
-                      <p className="text-[#3e2845] font-semibold mt-0.5">COD, Escrow Active</p>
+                      <p className="text-subtle text-[11px]">Checkout &amp; Cart</p>
+                      <p className="text-heading font-semibold mt-0.5">COD, Escrow Active</p>
                     </div>
                   </div>
                 </div>
@@ -2614,9 +2614,9 @@ export default function StoreBuilderPage() {
                 <div className="flex flex-col sm:flex-row gap-2.5 justify-center pt-1">
                   <Link
                     href={`/dashboard/editor/${generatedStore.slug}`}
-                    className="px-6 py-3 bg-[#3e2845] hover:bg-[#4b3254] text-white font-extrabold rounded-xl text-xs shadow-lg shadow-[#3e2845]/25 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                    className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-extrabold rounded-xl text-xs shadow-lg shadow-primary-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
                   >
-                    <Edit3 className="w-4 h-4 text-purple-300" />
+                    <Edit3 className="w-4 h-4 text-primary-200" />
                     <span>Open in Visual Editor</span>
                     <ArrowRight className="w-3.5 h-3.5 text-white" />
                   </Link>
@@ -2625,16 +2625,16 @@ export default function StoreBuilderPage() {
                     href={`/store/${generatedStore.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-2.5 bg-white hover:bg-[#faf7fa] text-[#3e2845] font-bold rounded-xl text-xs border border-[#5c3d5c]/25 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-2xs cursor-pointer"
+                    className="px-5 py-2.5 bg-white hover:bg-primary-50 text-heading font-bold rounded-xl text-xs border border-primary-200 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-2xs cursor-pointer"
                   >
-                    <Eye className="w-4 h-4 text-[#5c3d5c]" />
+                    <Eye className="w-4 h-4 text-subtle" />
                     <span>View Live Store</span>
-                    <ExternalLink className="w-3 h-3 text-[#5c3d5c]" />
+                    <ExternalLink className="w-3 h-3 text-subtle" />
                   </a>
 
                   <Link
                     href="/my-stores"
-                    className="px-4 py-2.5 bg-[#faf7fa] hover:bg-[#f6f0f7] text-[#5c3d5c] hover:text-[#3e2845] font-semibold rounded-xl text-xs border border-[#5c3d5c]/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                    className="px-4 py-2.5 bg-primary-50 hover:bg-primary-100 text-primary-700 hover:text-primary-900 font-semibold rounded-xl text-xs border border-primary-200 transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                   >
                     <span>My Stores</span>
                   </Link>
