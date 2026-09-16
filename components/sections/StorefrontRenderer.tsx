@@ -457,8 +457,16 @@ export default function StorefrontRenderer({
 
         {/* Global Footer */}
         <FooterDetailed 
-          copyrightText={`© 2026 ${config["storeName"] || "Artisanal Store"}. All rights reserved.`}
-          socialLinks={config["socialLinks"] || []}
+          storeName={(config as any).storeName || "Artisanal Store"}
+          tagline={(config as any).tagline || (config as any).hero?.subtitle}
+          description={(config as any).description}
+          copyrightText={`© ${new Date().getFullYear()} ${(config as any).storeName || "Store"}. All rights reserved.`}
+          socialLinks={(config as any).socialLinks || []}
+          categories={categories && categories.length > 0 ? categories : ((config as any).categories || [])}
+          sections={(config as any).footerSections}
+          supportPhone={(config as any).supportPhone}
+          supportEmail={(config as any).supportEmail}
+          policies={(config as any).policies}
         />
 
         {/* Global Cart Drawer, Checkout, Auth & Tracking Modals */}

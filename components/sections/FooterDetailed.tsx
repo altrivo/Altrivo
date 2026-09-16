@@ -1,8 +1,28 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
-import { MessageSquare, ShieldCheck, Globe, Share2, ChevronUp, ChevronDown, Check, AlertCircle, Loader2 } from "lucide-react";
+import {
+  MessageSquare,
+  ShieldCheck,
+  Globe,
+  Share2,
+  ChevronUp,
+  ChevronDown,
+  Check,
+  AlertCircle,
+  Loader2,
+  Truck,
+  RotateCcw,
+  Lock,
+  Headphones,
+  Store,
+  ArrowRight,
+  ExternalLink,
+  CreditCard,
+  PackageCheck,
+} from "lucide-react";
 
 export interface FooterLink {
   name: string;
@@ -15,48 +35,29 @@ export interface FooterSection {
 }
 
 export interface FooterDetailedProps {
+  storeName?: string;
+  tagline?: string;
+  description?: string;
   copyrightText?: string;
   sections?: FooterSection[];
   socialLinks?: { name: string; href: string; icon: string }[];
+  categories?: { name?: string; title?: string; href?: string }[];
+  supportPhone?: string;
+  supportEmail?: string;
+  policies?: { title: string; href: string }[];
 }
 
-const DEFAULT_SECTIONS: FooterSection[] = [
-  {
-    title: "Catalog",
-    links: [
-      { name: "New Arrivals", href: "#catalog" },
-      { name: "Best Sellers", href: "#catalog" },
-      { name: "Special Offers", href: "#promotions" },
-    ],
-  },
-  {
-    title: "Support",
-    links: [
-      { name: "Contact Us", href: "#support" },
-      { name: "Shipping Rates", href: "#shipping" },
-      { name: "Quality Policy", href: "#quality" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { name: "Our Story", href: "#story" },
-      { name: "Artisans Network", href: "#artisans" },
-      { name: "Careers", href: "#careers" },
-    ],
-  },
-];
-
-const DEFAULT_SOCIALS = [
-  { name: "Instagram", href: "https://instagram.com", icon: "instagram" },
-  { name: "WhatsApp", href: "https://whatsapp.com", icon: "whatsapp" },
-  { name: "Facebook", href: "https://facebook.com", icon: "facebook" },
-];
-
 export default function FooterDetailed({
-  copyrightText = "© 2026 Altrivo Storefront. All rights reserved.",
-  sections = DEFAULT_SECTIONS,
-  socialLinks = DEFAULT_SOCIALS,
+  storeName = "Artisanal Store",
+  tagline,
+  description,
+  copyrightText,
+  sections,
+  socialLinks,
+  categories,
+  supportPhone = "+92 300 1234567",
+  supportEmail = "support@altrivo.com",
+  policies,
 }: FooterDetailedProps) {
   const shouldReduceMotion = useReducedMotion();
   const [openColumns, setOpenColumns] = useState<Record<string, boolean>>({});
@@ -64,19 +65,84 @@ export default function FooterDetailed({
 
   // States for Language/Currency Upward Dropdown selectors
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeLanguage, setActiveLanguage] = useState("English (US)");
+  const [activeLanguage, setActiveLanguage] = useState("English (PKR)");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Compact Newsletter Form states
+  // Newsletter Form states
   const [email, setEmail] = useState("");
   const [newsError, setNewsError] = useState("");
   const [newsStatus, setNewsStatus] = useState<"idle" | "submitting" | "success">("idle");
 
-  // 1. Monitor vertical scroll depth to trigger Back-to-Top button (1.5 viewports threshold)
+  // Format effective display tagline/description
+  const effectiveTagline =
+    tagline ||
+    description ||
+    `Curating premium authentic collections across Pakistan with verified escrow protection and instant Cash on Delivery.`;
+
+  // Dynamic quick categories
+  const dynamicCategories: FooterLink[] =
+    categories && categories.length > 0
+      ? categories.slice(0, 5).map((c) => ({
+          name: c.name || c.title || "Category",
+          href: c.href || "#catalog",
+        }))
+      : [
+          { name: "New Arrivals", href: "#catalog" },
+          { name: "Featured Catalog", href: "#catalog" },
+          { name: "Best Sellers", href: "#catalog" },
+          { name: "Special Offers", href: "#promotions" },
+        ];
+
+  // Dynamic customer service policies
+  const dynamicPolicies: FooterLink[] =
+    policies && policies.length > 0
+      ? policies.map((p) => ({ name: p.title, href: p.href }))
+      : [
+          { name: "Track My Order", href: "#track-order" },
+          { name: "Shipping & Delivery Times", href: "#shipping" },
+          { name: "7-Day Return Policy", href: "#returns" },
+          { name: "Cash on Delivery FAQs", href: "#cod-policy" },
+        ];
+
+  // Default directory sections if none passed
+  const effectiveSections: FooterSection[] =
+    sections && sections.length > 0
+      ? sections
+      : [
+          {
+            title: "Explore Store",
+            links: dynamicCategories,
+          },
+          {
+            title: "Customer Care",
+            links: dynamicPolicies,
+          },
+          {
+            title: "Trust & Policies",
+            links: [
+              { name: "Escrow Buyer Protection", href: "#escrow" },
+              { name: "Authenticity Guarantee", href: "#guarantee" },
+              { name: "Privacy Policy", href: "#privacy" },
+              { name: "Terms of Service", href: "#terms" },
+            ],
+          },
+        ];
+
+  // Default social links
+  const effectiveSocials =
+    socialLinks && socialLinks.length > 0
+      ? socialLinks
+      : [
+          { name: "WhatsApp Direct", href: `https://wa.me/${supportPhone.replace(/[^0-9]/g, "")}`, icon: "whatsapp" },
+          { name: "Instagram", href: "https://instagram.com", icon: "instagram" },
+          { name: "Facebook", href: "https://facebook.com", icon: "facebook" },
+        ];
+
+  // Monitor vertical scroll depth to trigger Back-to-Top button
   useEffect(() => {
     const handleScroll = () => {
-      const threshold = window.innerHeight * 1.5;
+      const threshold = window.innerHeight * 1.2;
       setShowBackToTop(window.scrollY > threshold);
     };
 
@@ -84,7 +150,7 @@ export default function FooterDetailed({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 2. Custom eased smooth scroll to top (capped max duration 650ms for long pages)
+  // Custom eased smooth scroll to top
   const scrollToTop = () => {
     if (shouldReduceMotion) {
       window.scrollTo({ top: 0 });
@@ -93,13 +159,11 @@ export default function FooterDetailed({
 
     const start = window.scrollY;
     const startTime = performance.now();
-    const duration = 650; // max duration in ms
+    const duration = 500;
 
     const step = (timestamp: number) => {
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
-      // Cubic decel formula: 1 - (1 - x)^3
       const easeOut = 1 - Math.pow(1 - progress, 3);
       window.scrollTo(0, start * (1 - easeOut));
 
@@ -111,7 +175,6 @@ export default function FooterDetailed({
     requestAnimationFrame(step);
   };
 
-  // 3. Dropdown mouse-leave delays (same mega menu close protection)
   const handleDropdownEnter = () => {
     if (closeTimeout.current) clearTimeout(closeTimeout.current);
     setIsDropdownOpen(true);
@@ -123,33 +186,32 @@ export default function FooterDetailed({
     }, 150);
   };
 
-  // Compact newsletter submit handler
+  // Newsletter submit handler
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     setNewsError("");
 
     if (!email) {
-      setNewsError("Email required.");
+      setNewsError("Email is required.");
       return;
     }
 
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regex.test(email)) {
-      setNewsError("Invalid format.");
+      setNewsError("Please enter a valid email.");
       return;
     }
 
     setNewsStatus("submitting");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await new Promise((resolve) => setTimeout(resolve, 800));
       setNewsStatus("success");
     } catch {
-      setNewsError("Failed to register.");
+      setNewsError("Failed to register. Try again.");
       setNewsStatus("idle");
     }
   };
 
-  // Mobile column accordion click toggler (multiple sections allowed open)
   const toggleColumn = (title: string) => {
     setOpenColumns((prev) => ({
       ...prev,
@@ -157,67 +219,135 @@ export default function FooterDetailed({
     }));
   };
 
-  // Social icon mapping
   const renderSocialIcon = (iconName: string) => {
     switch (iconName.toLowerCase()) {
       case "instagram":
-        return <Globe className="h-4.5 w-4.5" />;
+        return <Globe className="h-4 w-4" />;
       case "facebook":
-        return <Share2 className="h-4.5 w-4.5" />;
+        return <Share2 className="h-4 w-4" />;
       case "whatsapp":
-        return <MessageSquare className="h-4.5 w-4.5" />;
+        return <MessageSquare className="h-4 w-4" />;
       default:
-        return <ShieldCheck className="h-4.5 w-4.5" />;
+        return <Globe className="h-4 w-4" />;
     }
   };
 
   return (
-    <footer 
-      className="select-none bg-slate-950 text-slate-400 border-t border-slate-900 relative"
-      style={{ backgroundColor: "var(--color-primary, #0f172a)" }}
-    >
-      
-      {/* Link hover animation class utilities */}
+    <footer className="select-none bg-[#1D1221] text-neutral-300 border-t border-white/10 relative overflow-hidden">
+      {/* Dynamic Link Underline CSS */}
       <style>{`
-        .footer-link-underline {
-          background-image: linear-gradient(currentColor, currentColor);
-          background-size: 0% 1px;
-          background-repeat: no-repeat;
-          background-position: left bottom;
-          transition: background-size 150ms ease-out;
+        .altrivo-footer-link {
+          position: relative;
+          transition: color 150ms ease;
         }
-        .footer-link-underline:hover {
-          background-size: 100% 1px;
+        .altrivo-footer-link::after {
+          content: '';
+          position: absolute;
+          width: 0%;
+          height: 1.5px;
+          bottom: -2px;
+          left: 0;
+          background-color: #D1B2DB;
+          transition: width 200ms ease;
+        }
+        .altrivo-footer-link:hover::after {
+          width: 100%;
         }
       `}</style>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 space-y-12">
-        
-        {/* Top Grid Area (Staggered entrance layouts) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-          
-          {/* Brand Info & Social details */}
+      {/* 1. Value Proposition Features & Trust Strip */}
+      <div className="border-b border-white/10 bg-[#2C1C31]/90 backdrop-blur-xs py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#694873]/50 border border-[#D1B2DB]/30 flex items-center justify-center text-[#D1B2DB] flex-shrink-0">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-xs sm:text-sm">Express Nationwide Delivery</h4>
+              <p className="text-[11px] text-neutral-400">Safe delivery across Pakistan</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#694873]/50 border border-[#D1B2DB]/30 flex items-center justify-center text-[#D1B2DB] flex-shrink-0">
+              <RotateCcw className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-xs sm:text-sm">7-Day Easy Returns</h4>
+              <p className="text-[11px] text-neutral-400">Hassle-free replacement policy</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#694873]/50 border border-[#D1B2DB]/30 flex items-center justify-center text-[#D1B2DB] flex-shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-xs sm:text-sm">100% Authentic Quality</h4>
+              <p className="text-[11px] text-neutral-400">Hand-inspected genuine items</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#694873]/50 border border-[#D1B2DB]/30 flex items-center justify-center text-[#D1B2DB] flex-shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-white text-xs sm:text-sm">Cash on Delivery &amp; Escrow</h4>
+              <p className="text-[11px] text-neutral-400">Pay safely upon home receipt</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Main Footer Directory & Newsletter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
+          {/* Brand Identity Column (4 cols) */}
           <div className="md:col-span-4 space-y-4">
-            <span 
-              className="text-lg font-black tracking-tight text-white block"
-              style={{ fontFamily: "var(--font-heading, inherit)" }}
-            >
-              Altrivo Studio
-            </span>
-            <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-              Connecting collectors directly to master Pakistani craft workshops. Fair wages, sustainable kiln sourcing, and heritage preservation.
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#694873] border border-[#D1B2DB]/40 text-white flex items-center justify-center font-black text-sm shadow-md">
+                <Store className="w-5 h-5 text-[#D1B2DB]" />
+              </div>
+              <div>
+                <span className="text-lg font-black tracking-tight text-white block">
+                  {storeName}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-[#D1B2DB]">
+                  <ShieldCheck className="w-3 h-3 text-[#D1B2DB]" />
+                  Verified Storefront
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-400 max-w-sm leading-relaxed">
+              {effectiveTagline}
             </p>
-            
-            {/* Social Icons (Scale + Brand color transitions) */}
-            <div className="flex gap-2.5 pt-2">
-              {socialLinks.map((soc) => (
+
+            {/* Direct WhatsApp Order / Contact Button */}
+            {supportPhone && (
+              <a
+                href={`https://wa.me/${supportPhone.replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(storeName)},%20I%20have%20an%20inquiry.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#694873]/40 hover:bg-[#694873]/70 border border-[#D1B2DB]/30 text-white text-xs font-bold transition-all active:scale-95 shadow-2xs"
+              >
+                <MessageSquare className="w-4 h-4 text-emerald-400" />
+                <span>WhatsApp Order Support</span>
+              </a>
+            )}
+
+            {/* Social Icons */}
+            <div className="flex items-center gap-2 pt-1">
+              {effectiveSocials.map((soc) => (
                 <a
                   key={soc.name}
                   href={soc.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-8.5 w-8.5 rounded-xl border border-white/5 bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:border-white/10 hover:scale-110 transition-all duration-150"
                   aria-label={soc.name}
+                  className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 hover:bg-[#694873]/50 text-neutral-300 hover:text-white flex items-center justify-center transition-all hover:scale-105 shadow-2xs cursor-pointer"
+                  title={soc.name}
                 >
                   {renderSocialIcon(soc.icon)}
                 </a>
@@ -225,45 +355,39 @@ export default function FooterDetailed({
             </div>
           </div>
 
-          {/* Links Directory Columns (Accordion collapses on mobile, side-by-side on desktop) */}
+          {/* Links Directory Columns (5 cols) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 md:col-span-5 gap-6 sm:gap-4">
-            {sections.map((sect, idx) => {
+            {effectiveSections.map((sect, idx) => {
               const isColOpen = !!openColumns[sect.title];
               const panelId = `footer-column-${idx}`;
 
               return (
-                <div key={sect.title} className="border-b border-white/5 sm:border-b-0 pb-3 sm:pb-0">
-                  {/* Column Header (tap target for mobile accordion) */}
+                <div key={sect.title} className="border-b border-white/10 sm:border-b-0 pb-3 sm:pb-0">
                   <button
                     onClick={() => toggleColumn(sect.title)}
-                    className="w-full flex items-center justify-between sm:pointer-events-none text-left focus:outline-hidden cursor-pointer sm:cursor-default"
+                    className="w-full flex items-center justify-between sm:pointer-events-none text-left focus:outline-none cursor-pointer sm:cursor-default"
                     aria-expanded={isColOpen}
                     aria-controls={panelId}
                   >
-                    <h4 
-                      className="text-xs font-black uppercase tracking-widest text-slate-200 py-1.5 sm:py-0"
-                      style={{ fontFamily: "var(--font-heading, inherit)" }}
-                    >
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-white py-1 sm:py-0">
                       {sect.title}
                     </h4>
-                    {/* Mobile Chevron toggle indicator */}
                     <ChevronDown
                       style={{
                         transform: isColOpen ? "rotate(180deg)" : "rotate(0deg)",
                         transition: shouldReduceMotion ? "none" : "transform 200ms ease",
                       }}
-                      className="h-4 w-4 text-slate-400 sm:hidden"
+                      className="h-4 w-4 text-neutral-400 sm:hidden"
                     />
                   </button>
 
-                  {/* Accordin collapsing layout list wrapper */}
                   <div
                     id={panelId}
                     style={{
-                      maxHeight: isColOpen ? "180px" : "0px",
+                      maxHeight: isColOpen ? "220px" : "0px",
                       opacity: isColOpen ? 1 : 0,
-                      transition: shouldReduceMotion 
-                        ? "none" 
+                      transition: shouldReduceMotion
+                        ? "none"
                         : "max-height 250ms ease-in-out, opacity 250ms ease",
                     }}
                     className="overflow-hidden sm:max-h-none sm:opacity-100 mt-2 sm:mt-3 space-y-2 text-xs"
@@ -273,7 +397,7 @@ export default function FooterDetailed({
                         <li key={link.name}>
                           <a
                             href={link.href}
-                            className="inline-block py-0.5 text-slate-450 hover:text-white footer-link-underline"
+                            className="inline-block text-neutral-400 hover:text-white altrivo-footer-link"
                           >
                             {link.name}
                           </a>
@@ -286,119 +410,99 @@ export default function FooterDetailed({
             })}
           </div>
 
-          {/* Compact Newsletter embed */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 
-              className="text-xs font-black uppercase tracking-widest text-slate-200"
-              style={{ fontFamily: "var(--font-heading, inherit)" }}
-            >
-              Artisan Drops
-            </h4>
-            
-            <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-3">
+          {/* VIP Newsletter Subscription (3 cols) */}
+          <div className="md:col-span-3 space-y-3.5">
+            <div>
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">
+                Exclusive Deals &amp; Drops
+              </h4>
+              <p className="text-[11px] text-neutral-400 mt-1 leading-relaxed">
+                Receive secret discounts, priority catalog restocks, and private sale codes.
+              </p>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-3">
               {newsStatus !== "success" ? (
                 <form onSubmit={handleSubscribe} className="space-y-2">
                   <div className="relative">
                     <input
-                      type="text"
+                      type="email"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
                         if (newsError) setNewsError("");
                       }}
-                      placeholder="Your email address"
+                      placeholder="Enter your email address..."
                       disabled={newsStatus === "submitting"}
-                      className="w-full px-3 py-2 text-[10px] font-bold bg-white/5 border border-white/10 rounded-xl text-white outline-hidden focus:bg-white/10 transition-colors"
+                      className="w-full px-3.5 py-2.5 text-xs bg-white/10 border border-white/10 focus:border-[#D1B2DB] rounded-xl text-white placeholder:text-neutral-500 outline-none transition-colors"
                     />
                     {newsError && (
-                      <span className="absolute -top-5 left-0 text-[8px] text-red-400 font-black uppercase tracking-wider flex items-center gap-0.5 bg-slate-950 px-1">
-                        <AlertCircle className="h-2.5 w-2.5" />
+                      <span className="text-[10px] text-red-400 font-semibold mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
                         <span>{newsError}</span>
                       </span>
                     )}
                   </div>
-                  
+
                   <button
                     type="submit"
                     disabled={newsStatus === "submitting"}
-                    className="w-full py-2.5 rounded-xl bg-white text-slate-950 hover:bg-slate-100 active:scale-95 text-[9px] font-black uppercase tracking-widest transition-all duration-150 flex items-center justify-center gap-1"
+                    className="w-full py-2.5 rounded-xl bg-[#694873] hover:bg-[#5A3D63] active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
                   >
                     {newsStatus === "submitting" ? (
-                      <Loader2 className="h-3 w-3 animate-spin text-slate-950" />
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                        <span>Subscribing...</span>
+                      </>
                     ) : (
-                      <span>Join List</span>
+                      <>
+                        <span>Get 10% Discount</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </>
                     )}
                   </button>
                 </form>
               ) : (
-                <div className="text-center py-2 space-y-1 text-emerald-400">
-                  <Check className="h-5 w-5 mx-auto animate-bounce" />
-                  <span className="block text-[9px] font-black uppercase tracking-widest">
-                    Code Dispatched
-                  </span>
+                <div className="text-center py-3 space-y-1.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-3 text-emerald-300">
+                  <Check className="h-5 w-5 mx-auto text-emerald-400" />
+                  <p className="text-xs font-bold text-white">You're on the VIP list!</p>
+                  <p className="text-[10px] text-emerald-200">
+                    Use code <strong className="font-mono text-white">SAVE10</strong> at checkout for 10% off.
+                  </p>
                 </div>
               )}
             </div>
           </div>
-
         </div>
 
-        {/* Bottom Line Area (Copyright, Language Dropdown & Back-to-Top Button) */}
-        <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-slate-500">
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <span>{copyrightText}</span>
-            <div className="flex gap-4">
-              <a href="#privacy" className="hover:text-slate-350 footer-link-underline">Privacy Policy</a>
-              <a href="#terms" className="hover:text-slate-350 footer-link-underline">Terms of Service</a>
-            </div>
+        {/* 3. Bottom Legal & Payment Badges Strip */}
+        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-6 text-[11px] text-neutral-400">
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+            <span>
+              {copyrightText || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`}
+            </span>
+            <span className="hidden sm:inline opacity-40">|</span>
+            <span className="text-neutral-500">
+              Powered by <strong className="text-neutral-300">Altrivo Infrastructure</strong>
+            </span>
           </div>
 
-          {/* Selector & Scroll trigger elements */}
-          <div className="flex items-center gap-4">
-            
-            {/* 1. Language selector upward opening dropdown (getBoundingClientRect boundary tracking) */}
-            <div 
-              ref={dropdownRef}
-              onMouseEnter={handleDropdownEnter}
-              onMouseLeave={handleDropdownLeave}
-              className="relative"
-            >
-              <button
-                className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 active:scale-95 transition-all text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                aria-label="Language Selector Menu"
-              >
-                <Globe className="h-3.5 w-3.5" />
-                <span>{activeLanguage}</span>
-                <ChevronUp className="h-3 w-3 text-slate-400" />
-              </button>
+          {/* Payment & Security Assurance Icons */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300 text-[10px] font-semibold">
+              <PackageCheck className="w-3.5 h-3.5 text-emerald-400" />
+              Cash on Delivery (COD)
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300 text-[10px] font-semibold">
+              <Lock className="w-3.5 h-3.5 text-[#D1B2DB]" />
+              256-Bit SSL Encrypted
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-neutral-300 text-[10px] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              Buyer Escrow Protected
+            </span>
 
-              {/* Upward expanding menu list */}
-              <div
-                style={{
-                  opacity: isDropdownOpen ? 1 : 0,
-                  transform: isDropdownOpen ? "translateY(0px)" : "translateY(8px)",
-                  pointerEvents: isDropdownOpen ? "auto" : "none",
-                  transition: shouldReduceMotion ? "none" : "opacity 180ms ease, transform 180ms ease",
-                }}
-                className="absolute bottom-[calc(100%+8px)] right-0 w-36 bg-slate-900 border border-white/10 rounded-2xl shadow-xl p-1.5 z-50 overflow-hidden"
-              >
-                {["English (US)", "اردو (PK)", "Deutsch (DE)"].map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => {
-                      setActiveLanguage(lang);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {lang}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 2. Custom Back-to-Top Button (Fades & Scales on scroll threshold limits) */}
+            {/* Back to Top Smooth Scroll Button */}
             <button
               onClick={scrollToTop}
               style={{
@@ -407,23 +511,15 @@ export default function FooterDetailed({
                 pointerEvents: showBackToTop ? "auto" : "none",
                 transition: shouldReduceMotion ? "none" : "opacity 200ms ease, transform 200ms ease",
               }}
-              className="p-2 rounded-xl bg-white text-slate-950 hover:bg-slate-50 border border-white active:scale-90 cursor-pointer shadow-md"
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white active:scale-90 cursor-pointer shadow-md ml-2"
               aria-label="Scroll to top"
+              title="Back to Top"
             >
-              <ChevronUp className="h-4.5 w-4.5" />
+              <ChevronUp className="h-4 w-4" />
             </button>
-
           </div>
-
         </div>
-
       </div>
-
-      {/* Mobile-only condensed sticky footer legal bar */}
-      <div className="sm:hidden sticky bottom-0 z-40 w-full bg-slate-950/90 backdrop-blur-md border-t border-white/5 px-4 py-2 text-[9px] text-slate-500 text-center shadow-lg">
-        <span>Protected Escrow Checkout | Secure Shopping</span>
-      </div>
-
     </footer>
   );
 }

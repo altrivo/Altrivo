@@ -197,8 +197,14 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         {/* Global Footer */}
         <FooterDetailed
-          copyrightText={`© 2026 ${config.storeName || "Artisanal Store"}. All rights reserved.`}
+          storeName={config.storeName || "Store"}
+          tagline={config.tagline || config.description}
+          description={config.description}
+          copyrightText={`© ${new Date().getFullYear()} ${config.storeName || "Store"}. All rights reserved.`}
           socialLinks={dynamicSchema.socialLinks || []}
+          categories={config.categoryTiles || []}
+          supportPhone={config.supportPhone}
+          policies={config.policies}
         />
 
         {/* Global Cart Drawer, Checkout, Auth & Tracking Modals */}

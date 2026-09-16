@@ -620,7 +620,11 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
       storeId: config._dbLayoutConfig.storeId || config.subdomain || config.storeName,
       vendorId: config.vendorId || config._dbLayoutConfig.vendorId,
       slug: config.subdomain || config._dbLayoutConfig.slug,
-      storeName: config.storeName,
+      storeName: config.storeName || config._dbLayoutConfig.storeName,
+      tagline: config.tagline || config._dbLayoutConfig.tagline,
+      description: config.description || config._dbLayoutConfig.description,
+      supportPhone: config.supportPhone || config._dbLayoutConfig.supportPhone,
+      policies: config.policies || config._dbLayoutConfig.policies,
       products: (config.featuredProducts && config.featuredProducts.length > 0)
         ? config.featuredProducts
         : config._dbLayoutConfig.products,
@@ -632,6 +636,10 @@ export function convertConfigToDynamicSchema(config: VendorStoreConfig & { _dbLa
     vendorId: config.vendorId,
     slug: config.subdomain,
     storeName: config.storeName,
+    tagline: config.tagline,
+    description: config.description,
+    supportPhone: config.supportPhone,
+    policies: config.policies,
     categories: config.categories,
     socialLinks: config.socialLinks,
     pages: (config as any)._dbLayoutConfig?.pages,
