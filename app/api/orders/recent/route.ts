@@ -75,6 +75,42 @@ export async function GET(request: Request) {
       }
     }
 
+    // Filter strictly by storeId if provided
+    if (storeId && supabaseAdmin && vendorOrders.length > 0) {
+      let targetStoreId = storeId;
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
+      if (!isUUID) {
+        try {
+          const { data: sRow } = await supabaseAdmin
+            .from("stores")
+            .select("id")
+            .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
+            .limit(1)
+            .maybeSingle();
+          if (sRow?.id) targetStoreId = sRow.id;
+        } catch {}
+      }
+
+      try {
+        const [custRes, eventRes] = await Promise.all([
+          supabaseAdmin.from("store_customers").select("id").eq("store_id", targetStoreId),
+          supabaseAdmin.from("order_events").select("order_id").eq("store_id", targetStoreId),
+        ]);
+
+        const validCustIds = new Set((custRes.data || []).map((c: any) => c.id));
+        const validOrderIds = new Set((eventRes.data || []).map((e: any) => e.order_id));
+
+        vendorOrders = vendorOrders.filter((o: any) => {
+          if (o.store_id && (o.store_id === targetStoreId || o.store_id === storeId)) return true;
+          if (o.customer_id && validCustIds.has(o.customer_id)) return true;
+          if (validOrderIds.has(o.id)) return true;
+          return false;
+        });
+      } catch (fErr) {
+        console.warn("[RecentOrders] Store filter error:", fErr);
+      }
+    }
+
     // New vendor with 0 orders gets empty array
     if (vendorOrders.length === 0) {
       return NextResponse.json({

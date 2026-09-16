@@ -47,100 +47,133 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
         }
       } catch (e) {}
 
-      // 2. Read local customer placed orders strictly for real-time responsiveness
+      // 2. Read local customer placed orders strictly for real-time responsiveness of THIS store
       let localOrders: OrderItem[] = [];
       try {
-        const storeKeys = [
-          storeId ? `storefront_customer_orders_${storeId}` : "",
-          "storefront_customer_orders_Watch-Brand",
-        ].filter(Boolean);
+        if (storeId) {
+          const storeKeys = [`storefront_customer_orders_${storeId}`];
 
-        const allLsKeys: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i) || "";
-          if (k.startsWith("storefront_customer_orders_")) {
-            allLsKeys.push(k);
+          // Also match customer suffixed keys for this specific store
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i) || "";
+            if (k.startsWith(`storefront_customer_orders_${storeId}_`)) {
+              storeKeys.push(k);
+            }
           }
-        }
 
-        const rawList: any[] = [];
-        for (const key of Array.from(new Set([...storeKeys, ...allLsKeys]))) {
-          const raw = localStorage.getItem(key);
-          if (raw) {
-            try {
-              const parsed = JSON.parse(raw);
-              if (Array.isArray(parsed)) {
-                rawList.push(...parsed);
-              }
-            } catch {}
+          const rawList: any[] = [];
+          for (const key of Array.from(new Set(storeKeys))) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  rawList.push(...parsed);
+                }
+              } catch {}
+            }
           }
+
+          localOrders = rawList.map((lo: any) => {
+            const orderDate = new Date(lo.createdAt || lo.created_at || Date.now());
+            const isToday = orderDate.toDateString() === new Date().toDateString();
+            const isYesterday =
+              orderDate.toDateString() ===
+              new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+
+            let dateLabel = orderDate.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
+            if (isToday) dateLabel = "Today";
+            else if (isYesterday) dateLabel = "Yesterday";
+
+            const timeLabel = orderDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
+
+            const amtNumber = Number(lo.totalAmount || lo.total || lo.grand_total) || 0;
+
+            let st: OrderItem["status"] = "Pending";
+            const rawSt = (lo.deliveryStatus || lo.status || "pending").toLowerCase();
+            if (rawSt === "processing" || rawSt === "confirmed") st = "Processing";
+            else if (rawSt === "shipped") st = "Shipped";
+            else if (rawSt === "delivered" || rawSt === "completed") st = "Delivered";
+            else if (rawSt === "cancelled" || rawSt === "refunded") st = "Cancelled";
+
+            return {
+              id: String(lo.id || lo.orderNumber || ""),
+              orderNumber: lo.orderNumber || lo.order_number || `#ORD-${String(lo.id).substring(0, 4).toUpperCase()}`,
+              customerName: lo.customerName || lo.customer_name || "Customer",
+              customerEmail: lo.customerEmail || lo.customer_email || "customer@example.com",
+              amount: `$${amtNumber.toLocaleString()}`,
+              rawAmount: amtNumber,
+              currency: "$",
+              status: st,
+              itemsCount: lo.items?.length || 1,
+              date: dateLabel,
+              time: timeLabel,
+            };
+          });
         }
-
-        localOrders = rawList.map((lo: any) => {
-          const orderDate = new Date(lo.createdAt || lo.created_at || Date.now());
-          const isToday = orderDate.toDateString() === new Date().toDateString();
-          const isYesterday =
-            orderDate.toDateString() ===
-            new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
-
-          let dateLabel = orderDate.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-          if (isToday) dateLabel = "Today";
-          else if (isYesterday) dateLabel = "Yesterday";
-
-          const timeLabel = orderDate.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
-
-          const amtNumber = Number(lo.totalAmount || lo.total || lo.grand_total) || 0;
-
-          let st: OrderItem["status"] = "Pending";
-          const rawSt = (lo.deliveryStatus || lo.status || "pending").toLowerCase();
-          if (rawSt === "processing" || rawSt === "confirmed") st = "Processing";
-          else if (rawSt === "shipped") st = "Shipped";
-          else if (rawSt === "delivered" || rawSt === "completed") st = "Delivered";
-          else if (rawSt === "cancelled" || rawSt === "refunded") st = "Cancelled";
-
-          return {
-            id: lo.id || lo.orderNumber,
-            orderNumber: lo.orderNumber || lo.order_number || `#ORD-${String(lo.id).substring(0, 4)}`,
-            customerName: lo.customerName || lo.customer_name || "Customer",
-            customerEmail: lo.customerEmail || lo.customer_email || "customer@example.com",
-            amount: `$${amtNumber.toLocaleString()}`,
-            rawAmount: amtNumber,
-            currency: "$",
-            status: st,
-            itemsCount: lo.items?.length || 1,
-            date: dateLabel,
-            time: timeLabel,
-          };
-        });
       } catch (e) {}
 
       // 3. Merge backend and local orders without duplicates (latest first)
-      const mergedMap = new Map<string, OrderItem>();
+      const mergedList: OrderItem[] = [...backendOrders];
+
       localOrders.forEach((lo) => {
-        const key = lo.orderNumber?.toLowerCase() || lo.id;
-        mergedMap.set(key, lo);
-      });
-      backendOrders.forEach((bo) => {
-        const key = bo.orderNumber?.toLowerCase() || bo.id;
-        if (mergedMap.has(key)) {
-          const existing = mergedMap.get(key)!;
-          mergedMap.set(key, { ...existing, status: bo.status || existing.status });
+        const loId = lo.id ? String(lo.id).toLowerCase() : "";
+        const loNum = lo.orderNumber ? lo.orderNumber.toLowerCase() : "";
+
+        // Check if this order is already in mergedList
+        const existingIdx = mergedList.findIndex((m) => {
+          const mId = m.id ? String(m.id).toLowerCase() : "";
+          const mNum = m.orderNumber ? m.orderNumber.toLowerCase() : "";
+
+          if (loId && mId && loId === mId) return true;
+          if (loNum && mNum && loNum === mNum) return true;
+          if (loId && mNum && (mNum.includes(loId.slice(0, 6)) || loId.includes(mNum.replace(/[^a-z0-9]/g, "")))) return true;
+          if (mId && loNum && (loNum.includes(mId.slice(0, 6)) || mId.includes(loNum.replace(/[^a-z0-9]/g, "")))) return true;
+          return false;
+        });
+
+        if (existingIdx !== -1) {
+          const existing = mergedList[existingIdx];
+          const bestOrderNumber =
+            existing.orderNumber && !existing.orderNumber.startsWith("#ORD-")
+              ? existing.orderNumber
+              : lo.orderNumber || existing.orderNumber;
+          mergedList[existingIdx] = {
+            ...existing,
+            orderNumber: bestOrderNumber,
+            customerName: lo.customerName || existing.customerName,
+            status: existing.status || lo.status,
+          };
         } else {
-          mergedMap.set(key, bo);
+          mergedList.push(lo);
         }
       });
 
-      const allMerged = Array.from(mergedMap.values());
-      const totalMerged = allMerged.length;
+      // 4. Strict deduplication pass by unique ID to guarantee NO two items share the same ID
+      const finalUniqueOrders: OrderItem[] = [];
+      const seenOrderIds = new Set<string>();
+
+      for (const ord of mergedList) {
+        const cleanId = ord.id ? String(ord.id) : (ord.orderNumber || `order-${finalUniqueOrders.length}`);
+        if (!seenOrderIds.has(cleanId)) {
+          seenOrderIds.add(cleanId);
+          finalUniqueOrders.push({
+            ...ord,
+            id: cleanId,
+          });
+        }
+      }
+
+      const totalMerged = finalUniqueOrders.length;
       const startIndex = (pageNum - 1) * 5;
-      const paginated = allMerged.slice(startIndex, startIndex + 5);
+      const paginated = finalUniqueOrders.slice(startIndex, startIndex + 5);
 
       setOrders(paginated);
       setTotalOrders(totalMerged);
@@ -281,9 +314,9 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
                 </td>
               </tr>
             ) : (
-              orders.map((order) => (
+              orders.map((order, idx) => (
                 <tr
-                  key={order.id}
+                  key={`${order.id}-${idx}`}
                   onClick={() => router.push(`/orders?id=${order.orderNumber}`)}
                   className="hover:bg-accent-50/40 transition-colors cursor-pointer group"
                 >

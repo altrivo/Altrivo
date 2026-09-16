@@ -147,11 +147,11 @@ export class OrdersBackendService {
     }
   ): Promise<{ orders: Order[]; totalCount: number; analytics: any }> {
     let combinedOrders: Order[] = [];
+    let realStoreId = filters?.storeId;
 
     // Query Supabase for real orders
     if (supabaseAdmin) {
       try {
-        let realStoreId = filters?.storeId;
         if (realStoreId) {
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(realStoreId);
           if (!isUUID) {
@@ -353,6 +353,17 @@ export class OrdersBackendService {
         }
         return true;
       });
+    }
+
+    // Filter strictly by storeId if provided
+    if (realStoreId || filters?.storeId) {
+      const targetStoreId = realStoreId || filters?.storeId;
+      filtered = filtered.filter(
+        (o) =>
+          o.store_id === targetStoreId ||
+          (o as any).storeId === targetStoreId ||
+          (filters?.storeId && (o.store_id === filters.storeId || (o as any).storeId === filters.storeId))
+      );
     }
 
     // Compute comprehensive analytics for this store/vendor
