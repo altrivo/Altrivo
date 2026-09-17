@@ -72,6 +72,19 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
           const vendorStores: VendorStore[] = data.stores || [];
           setStores(vendorStores);
 
+          if (typeof window !== "undefined" && vendorStores.length > 0) {
+            try {
+              const currentMap = JSON.parse(localStorage.getItem("artrivo_store_aliases") || "{}");
+              vendorStores.forEach((s) => {
+                if (s.id && s.slug) {
+                  currentMap[s.id] = s.slug;
+                  currentMap[s.slug] = s.id;
+                }
+              });
+              localStorage.setItem("artrivo_store_aliases", JSON.stringify(currentMap));
+            } catch {}
+          }
+
           if (newStoreIdToActivate) {
             // Explicit activation request (e.g. after creating a store)
             setActiveStoreId(newStoreIdToActivate);
@@ -116,12 +129,8 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
     refreshStores();
   }, [refreshStores]);
 
-  // Derive activeStore strictly from activeStoreId — never auto-switch to stores[0]
-  const activeStore = activeStoreId
-    ? (stores.find((s) => s.id === activeStoreId) ?? null)
-    : stores.length > 0
-    ? stores[0]  // Only use stores[0] as fallback if NO preference was ever saved
-    : null;
+  const activeStore = stores.find((s) => s.id === activeStoreId) || null;
+  const hasStore = stores.length > 0;
 
   return (
     <VendorStoreContext.Provider
@@ -131,7 +140,7 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
         activeStoreId,
         setActiveStoreId,
         vendor,
-        hasStore: stores.length > 0,
+        hasStore,
         isLoading,
         refreshStores,
       }}
@@ -144,7 +153,16 @@ export function VendorStoreProvider({ children }: { children: React.ReactNode })
 export function useVendorStore() {
   const context = useContext(VendorStoreContext);
   if (!context) {
-    throw new Error("useVendorStore must be used within a VendorStoreProvider");
+    return {
+      stores: [] as VendorStore[],
+      activeStore: null as VendorStore | null,
+      activeStoreId: null as string | null,
+      setActiveStoreId: () => {},
+      vendor: null as VendorProfile | null,
+      hasStore: false,
+      isLoading: false,
+      refreshStores: async () => {},
+    };
   }
   return context;
 }

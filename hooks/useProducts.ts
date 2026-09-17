@@ -9,6 +9,7 @@ import {
   safeLocalStorageSet,
   getStorageKey,
   resolveStoreId,
+  isMatchingStore,
   getCategoryDefaultImage,
   generateUniqueSku,
   isValidImageUrl,
@@ -45,13 +46,13 @@ export function useProducts(explicitStoreId?: string) {
   useEffect(() => {
     // 1. Initial immediate load from localStorage strictly scoped to this store
     const initialLocal = getStoredProducts(effectiveStoreId);
-    setProducts(initialLocal.filter((p) => !p.storeId || !effectiveStoreId || p.storeId === effectiveStoreId));
+    setProducts(initialLocal.filter((p) => isMatchingStore(p.storeId, effectiveStoreId)));
     setSelectedIds(new Set());
     setCurrentPage(1);
 
     // 2. Fetch from backend store API to sync real-time database state
     const targetLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
-    if (targetLookup) {
+    if (targetLookup && typeof fetch === "function") {
       fetch(`/api/stores/${targetLookup}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
@@ -142,13 +143,35 @@ export function useProducts(explicitStoreId?: string) {
                 };
               });
 
-              // Authoritative source of truth: the store's database products
-              setProducts(converted);
+              const currentLocal = getStoredProducts(effectiveStoreId);
 
-              // Sync localStorage to match the authoritative database state for this store
+              // Guard: If DB has 0 products, NEVER wipe out local products
+              if (converted.length === 0) {
+                if (currentLocal.length > 0) {
+                  setProducts(currentLocal);
+                  saveStoredProducts(currentLocal, effectiveStoreId);
+                  return;
+                }
+                setProducts([]);
+                return;
+              }
+
+              // Merge DB products with any local products not yet in the DB
+              const mergedMap = new Map<string, Product>();
+              converted.forEach((p) => mergedMap.set(p.id, p));
+              currentLocal.forEach((p) => {
+                if (!mergedMap.has(p.id)) {
+                  mergedMap.set(p.id, p);
+                }
+              });
+              const finalList = Array.from(mergedMap.values());
+
+              setProducts(finalList);
+
+              // Sync localStorage to match the authoritative merged state for this store
               if (typeof window !== "undefined" && effectiveStoreId) {
                 const key = getStorageKey(effectiveStoreId);
-                safeLocalStorageSet(key, JSON.stringify(converted));
+                safeLocalStorageSet(key, JSON.stringify(finalList));
               }
             }
           }
@@ -158,7 +181,7 @@ export function useProducts(explicitStoreId?: string) {
 
     const syncProducts = () => {
       const prods = getStoredProducts(effectiveStoreId);
-      setProducts(effectiveStoreId ? prods.filter((p) => !p.storeId || p.storeId === effectiveStoreId) : prods);
+      setProducts(prods.filter((p) => isMatchingStore(p.storeId, effectiveStoreId)));
     };
 
     window.addEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);
@@ -352,9 +375,8 @@ export function useProducts(explicitStoreId?: string) {
   const bulkChangeStatus = useCallback(
     (status: ProductStatus) => {
       const nowISO = new Date().toISOString();
-      let nextProducts: Product[] = [];
       setProducts((prev) => {
-        nextProducts = prev.map((p) =>
+        const nextProducts = prev.map((p) =>
           selectedIds.has(p.id)
             ? {
                 ...p,
@@ -365,70 +387,67 @@ export function useProducts(explicitStoreId?: string) {
               }
             : p,
         );
+
+        saveStoredProducts(nextProducts, effectiveStoreId);
+
+        const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+        if (storeLookup && typeof fetch === "function") {
+          const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
+          const publishedStorefront = nextProducts
+            .filter((p) => p.status === "published")
+            .map((p) => toStorefrontProduct(p));
+
+          fetch(`/api/stores/${storeLookup}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              commerce_config: { products: storefrontAll },
+              layout_config: { products: publishedStorefront },
+            }),
+          }).catch((err) => console.warn("[useProducts] DB sync error:", err));
+        }
+
         return nextProducts;
       });
       setSelectedIds(new Set());
-
-      saveStoredProducts(nextProducts, effectiveStoreId);
-
-      const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
-      if (storeLookup) {
-        const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
-        const publishedStorefront = nextProducts
-          .filter((p) => p.status === "published")
-          .map((p) => toStorefrontProduct(p));
-
-        fetch(`/api/stores/${storeLookup}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            commerce_config: { products: storefrontAll },
-            layout_config: { products: publishedStorefront },
-          }),
-        }).catch((err) => console.warn("[useProducts] DB sync error:", err));
-      }
     },
     [selectedIds, effectiveStoreId, activeStore?.slug, activeStore?.id],
   );
 
   const toggleProductStatus = useCallback(
     (id: string) => {
-      let targetProduct: Product | undefined;
       const nowISO = new Date().toISOString();
-      let nextProducts: Product[] = [];
-
       setProducts((prev) => {
-        nextProducts = prev.map((p) => {
-          if (p.id === id) {
-            const nextStatus: ProductStatus = p.status === "published" ? "draft" : "published";
-            targetProduct = { ...p, status: nextStatus, updatedAt: nowISO };
-            return targetProduct;
-          }
-          return p;
-        });
+        const target = prev.find((p) => p.id === id);
+        if (!target) return prev;
+
+        const nextStatus: ProductStatus = target.status === "published" ? "draft" : "published";
+        const updatedTarget: Product = { ...target, status: nextStatus, updatedAt: nowISO };
+        const nextProducts = prev.map((p) => (p.id === id ? updatedTarget : p));
+
+        // Persist to local storage immediately
+        saveStoredProducts(nextProducts, effectiveStoreId);
+
+        // Authoritative real-time sync with backend store
+        const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+        if (storeLookup && typeof fetch === "function") {
+          const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
+          const publishedStorefront = nextProducts
+            .filter((p) => p.status === "published")
+            .map((p) => toStorefrontProduct(p));
+
+          fetch(`/api/stores/${storeLookup}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              commerce_config: { products: storefrontAll },
+              layout_config: { products: publishedStorefront },
+            }),
+          }).catch((err) => console.warn("[useProducts] DB sync error:", err));
+        }
+
         return nextProducts;
       });
-
-      // Persist to local storage immediately
-      saveStoredProducts(nextProducts, effectiveStoreId);
-
-      // Authoritative real-time sync with backend store
-      const storeLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
-      if (storeLookup && targetProduct) {
-        const storefrontAll = nextProducts.map((p) => toStorefrontProduct(p));
-        const publishedStorefront = nextProducts
-          .filter((p) => p.status === "published")
-          .map((p) => toStorefrontProduct(p));
-
-        fetch(`/api/stores/${storeLookup}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            commerce_config: { products: storefrontAll },
-            layout_config: { products: publishedStorefront },
-          }),
-        }).catch((err) => console.warn("[useProducts] DB sync error:", err));
-      }
     },
     [effectiveStoreId, activeStore?.slug, activeStore?.id],
   );

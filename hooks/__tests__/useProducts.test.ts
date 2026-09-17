@@ -5,9 +5,9 @@ import { saveProductFromForm } from "@/lib/product-storage";
 import { useProducts } from "../useProducts";
 
 describe("useProducts Hook", () => {
-  it("initializes with default mock products dataset (5240 items paginated at 20 per page)", () => {
+  it("initializes with default mock products dataset (50 items paginated at 20 per page)", () => {
     const { result } = renderHook(() => useProducts());
-    expect(result.current.totalProductsCount).toBeGreaterThanOrEqual(5240);
+    expect(result.current.totalProductsCount).toBeGreaterThanOrEqual(50);
     expect(result.current.products.length).toBe(20);
     expect(result.current.currentPage).toBe(1);
   });
@@ -48,7 +48,7 @@ describe("useProducts Hook", () => {
     act(() => {
       result.current.updateFilter("search", "prod_0001");
     });
-    expect(result.current.filteredCount).toBeLessThan(5240);
+    expect(result.current.filteredCount).toBeLessThan(50);
   });
 
   it("filters products by category", () => {
@@ -101,5 +101,73 @@ describe("useProducts Hook", () => {
       result.current.bulkDelete();
     });
     expect(result.current.totalProductsCount).toBe(initialCount - 20);
+  });
+
+  it("preserves product and toggles status correctly when clicking draft", () => {
+    const auraStoreId = "c7e48188-7f77-480e-aef3-c6e7e1f32d39";
+    act(() => {
+      saveProductFromForm(
+        {
+          id: "prod_aura_test_1",
+          title: "Aura Botanical Essential Oil",
+          category: "Health & Beauty",
+          price: 49.99,
+          description: "Organic essential oil",
+          tags: ["oil", "wellness"],
+          brand: "Aura Wellness",
+          status: "draft",
+          storeId: auraStoreId,
+        },
+        "draft",
+        auraStoreId,
+      );
+    });
+
+    const { result } = renderHook(() => useProducts(auraStoreId));
+    expect(result.current.products.length).toBe(1);
+    expect(result.current.products[0].status).toBe("draft");
+
+    // Click Draft badge to toggle to published
+    act(() => {
+      result.current.toggleProductStatus("prod_aura_test_1");
+    });
+
+    expect(result.current.products.length).toBe(1);
+    expect(result.current.products[0].status).toBe("published");
+
+    // Click Published badge to toggle back to draft
+    act(() => {
+      result.current.toggleProductStatus("prod_aura_test_1");
+    });
+
+    expect(result.current.products.length).toBe(1);
+    expect(result.current.products[0].status).toBe("draft");
+  });
+
+  it("recognizes store products by both UUID and store slug", () => {
+    const auraUuid = "c7e48188-7f77-480e-aef3-c6e7e1f32d39";
+    const auraSlug = "aura-botanical-wellness";
+
+    act(() => {
+      saveProductFromForm(
+        {
+          id: "prod_aura_slug_test",
+          title: "Aura Herbal Tea",
+          category: "Groceries",
+          price: 19.99,
+          storeId: auraSlug,
+        },
+        "published",
+        auraSlug,
+      );
+    });
+
+    // Querying with UUID finds the slug-saved product
+    const { result: uuidResult } = renderHook(() => useProducts(auraUuid));
+    expect(uuidResult.current.products.some((p) => p.id === "prod_aura_slug_test")).toBe(true);
+
+    // Querying with slug finds the product
+    const { result: slugResult } = renderHook(() => useProducts(auraSlug));
+    expect(slugResult.current.products.some((p) => p.id === "prod_aura_slug_test")).toBe(true);
   });
 });

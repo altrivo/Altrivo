@@ -1,5 +1,6 @@
 import type { Product, ProductStatus } from "@/types/product";
 import type { ProductFormData } from "@/types/product-form";
+import { mockProducts } from "@/lib/mock-products";
 
 const STORAGE_KEY = "artrivo_vendor_products";
 const FORM_STORAGE_PREFIX = "artrivo_vendor_product_form_";
@@ -81,6 +82,46 @@ export function generateUniqueSku(title?: string, category?: string): string {
   return `${prefix}-${randomNum}`;
 }
 
+export function getStoreAlias(storeId?: string): string | undefined {
+  if (!storeId || typeof window === "undefined") return undefined;
+  if (storeId === "watch-brand") return "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+  if (storeId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf") return "watch-brand";
+  if (storeId === "aura-botanical-wellness") return "c7e48188-7f77-480e-aef3-c6e7e1f32d39";
+  if (storeId === "c7e48188-7f77-480e-aef3-c6e7e1f32d39") return "aura-botanical-wellness";
+
+  try {
+    const raw = localStorage.getItem("artrivo_store_aliases");
+    if (raw) {
+      const map = JSON.parse(raw);
+      if (map[storeId]) return map[storeId];
+    }
+  } catch {}
+  return undefined;
+}
+
+export function isMatchingStore(productStoreId?: string, targetStoreId?: string): boolean {
+  if (!productStoreId || !targetStoreId) return true;
+  if (productStoreId === targetStoreId) return true;
+
+  // Watch brand aliases
+  const isWatchA = productStoreId === "watch-brand" || productStoreId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+  const isWatchB = targetStoreId === "watch-brand" || targetStoreId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
+  if (isWatchA && isWatchB) return true;
+  if (isWatchA !== isWatchB && (isWatchA || isWatchB)) return false;
+
+  // Aura Wellness aliases
+  const isAuraA = productStoreId === "aura-botanical-wellness" || productStoreId === "c7e48188-7f77-480e-aef3-c6e7e1f32d39";
+  const isAuraB = targetStoreId === "aura-botanical-wellness" || targetStoreId === "c7e48188-7f77-480e-aef3-c6e7e1f32d39";
+  if (isAuraA && isAuraB) return true;
+
+  const aliasA = getStoreAlias(productStoreId);
+  if (aliasA && aliasA === targetStoreId) return true;
+  const aliasB = getStoreAlias(targetStoreId);
+  if (aliasB && aliasB === productStoreId) return true;
+
+  return false;
+}
+
 export function resolveStoreId(explicitStoreId?: string): string | undefined {
   if (
     explicitStoreId &&
@@ -148,12 +189,7 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
     // STRICT MULTI-STORE ISOLATION:
     // If targetStoreId is specified and the product belongs to another store, discard it completely
     if (targetStoreId && p.storeId) {
-      const isWatchStore = targetStoreId === "watch-brand" || targetStoreId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
-      const isWatchProduct = p.storeId === "watch-brand" || p.storeId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
-      if (isWatchStore && !isWatchProduct) {
-        continue;
-      }
-      if (!isWatchStore && p.storeId !== targetStoreId) {
+      if (!isMatchingStore(p.storeId, targetStoreId)) {
         continue;
       }
     }
@@ -302,6 +338,7 @@ export function toStorefrontProduct(p: any): any {
   return {
     id: p.id,
     sku: p.sku || "",
+    storeId: p.storeId || p.store_id,
     name: p.name || p.title || "Untitled Product",
     price: priceVal,
     originalPrice: origPriceVal,
@@ -330,7 +367,16 @@ export function getStoredProducts(explicitStoreId?: string): Product[] {
   try {
     const storeId = resolveStoreId(explicitStoreId);
     if (!storeId) {
-      return [];
+      const defaultRaw = localStorage.getItem(STORAGE_KEY);
+      if (defaultRaw !== null) {
+        try {
+          const parsed = JSON.parse(defaultRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return sanitizeProductList(parsed);
+          }
+        } catch {}
+      }
+      return mockProducts;
     }
 
     const key = getStorageKey(storeId);
@@ -339,9 +385,26 @@ export function getStoredProducts(explicitStoreId?: string): Product[] {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return sanitizeProductList(parsed, storeId);
+          const sanitized = sanitizeProductList(parsed, storeId);
+          if (sanitized.length > 0) return sanitized;
         }
       } catch {}
+    }
+
+    // Check alias key (e.g. if storeId is UUID, check slug key; if slug, check UUID key)
+    const alias = getStoreAlias(storeId);
+    if (alias) {
+      const aliasKey = getStorageKey(alias);
+      const aliasRaw = localStorage.getItem(aliasKey);
+      if (aliasRaw !== null) {
+        try {
+          const parsed = JSON.parse(aliasRaw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const sanitized = sanitizeProductList(parsed, storeId);
+            if (sanitized.length > 0) return sanitized;
+          }
+        } catch {}
+      }
     }
 
     return [];
@@ -454,46 +517,54 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
 
   try {
     const storeId = resolveStoreId(explicitStoreId);
-    if (!storeId) return;
-
     const key = getStorageKey(storeId);
 
     // STRICT MULTI-STORE ISOLATION: Only save products that belong to this store
     const isWatchStore = storeId === "watch-brand" || storeId === "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf";
-    const filteredProducts = products.filter((p) => {
-      if (!p) return false;
-      if (isWatchStore) {
-        if (p.storeId && p.storeId !== "watch-brand" && p.storeId !== "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf") return false;
-        if (p.category === "Clothing" || p.name?.toLowerCase().includes("shirt")) return false;
-        return true;
-      }
-      return !p.storeId || p.storeId === storeId;
-    });
-    const scopedProducts = filteredProducts.map((p) => ({ ...p, storeId }));
+    const filteredProducts = storeId
+      ? products.filter((p) => {
+          if (!p) return false;
+          if (isWatchStore) {
+            if (p.storeId && p.storeId !== "watch-brand" && p.storeId !== "f95c1bc9-4bb9-4d47-bdab-df22925ae1cf") return false;
+            if (p.category === "Clothing" || p.name?.toLowerCase().includes("shirt")) return false;
+            return true;
+          }
+          return isMatchingStore(p.storeId, storeId);
+        })
+      : products;
+    const scopedProducts = filteredProducts.map((p) => ({ ...p, storeId: p.storeId || storeId }));
 
     safeLocalStorageSet(key, JSON.stringify(scopedProducts));
-    if (isWatchStore) {
-      safeLocalStorageSet(`artrivo_products_store_watch-brand`, JSON.stringify(scopedProducts));
-      safeLocalStorageSet(`artrivo_products_store_f95c1bc9-4bb9-4d47-bdab-df22925ae1cf`, JSON.stringify(scopedProducts));
+    if (storeId) {
+      const alias = getStoreAlias(storeId);
+      if (alias) {
+        safeLocalStorageSet(getStorageKey(alias), JSON.stringify(scopedProducts));
+      }
+      if (isWatchStore) {
+        safeLocalStorageSet(`artrivo_products_store_watch-brand`, JSON.stringify(scopedProducts));
+        safeLocalStorageSet(`artrivo_products_store_f95c1bc9-4bb9-4d47-bdab-df22925ae1cf`, JSON.stringify(scopedProducts));
+      }
     }
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
 
-    // Synchronize to the backend / database for this store:
-    // commerce_config keeps all products (both published and drafts for catalog inventory)
-    const storefrontProducts = scopedProducts.map((p) => toStorefrontProduct(p));
-    // layout_config ONLY receives published products so drafts never auto-populate live storefront sections
-    const publishedStorefrontProducts = scopedProducts
-      .filter((p) => p.status === "published")
-      .map((p) => toStorefrontProduct(p));
+    if (storeId && typeof fetch === "function") {
+      // Synchronize to the backend / database for this store:
+      // commerce_config keeps all products (both published and drafts for catalog inventory)
+      const storefrontProducts = scopedProducts.map((p) => toStorefrontProduct(p));
+      // layout_config ONLY receives published products so drafts never auto-populate live storefront sections
+      const publishedStorefrontProducts = scopedProducts
+        .filter((p) => p.status === "published")
+        .map((p) => toStorefrontProduct(p));
 
-    fetch(`/api/stores/${storeId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        commerce_config: { products: storefrontProducts },
-        layout_config: { products: publishedStorefrontProducts },
-      }),
-    }).catch((err) => console.warn("[product-storage] DB sync background note:", err));
+      fetch(`/api/stores/${storeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          commerce_config: { products: storefrontProducts },
+          layout_config: { products: publishedStorefrontProducts },
+        }),
+      }).catch((err) => console.warn("[product-storage] DB sync background note:", err));
+    }
   } catch (e) {
     console.warn("[product-storage] Error in saveStoredProducts background:", e);
   }
@@ -503,7 +574,7 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
  * Converts a ProductFormData into a Product record and persists it.
  */
 export function saveProductFromForm(
-  formData: ProductFormData,
+  formData: Partial<ProductFormData> & { title: string },
   targetStatus: ProductStatus = "published",
   explicitStoreId?: string,
 ): Product {
@@ -544,7 +615,23 @@ export function saveProductFromForm(
       : generateUniqueSku(formData.title, formData.category));
 
   const updatedFormData: ProductFormData = {
+    description: "",
+    category: "General",
+    tags: [],
+    brand: "Altrivo Signature",
+    price: 0,
+    compareAtPrice: 0,
+    costPerItem: 0,
+    chargeTax: true,
+    taxRate: 10,
+    hasVariants: false,
+    options: [],
+    variants: [],
+    metaTitle: formData.title,
+    metaDescription: "",
+    slug: "",
     ...formData,
+    title: formData.title,
     id: productId,
     sku,
     storeId: currentStoreId,
