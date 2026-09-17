@@ -218,7 +218,7 @@ export default function CheckoutModal({
                   Thank You, {confirmedOrder.customerName || customerName}!
                 </h2>
                 <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                  Your order has been recorded successfully. Our team will verify and dispatch your package via TCS Express Courier.
+                  Your order has been recorded successfully. Our team will verify and dispatch your package via tracked express courier.
                 </p>
               </div>
 
@@ -438,7 +438,7 @@ export default function CheckoutModal({
                         />
                         <div>
                           <p className="font-bold text-slate-900">Cash on Delivery (COD)</p>
-                          <p className="text-[10px] text-slate-500">Pay at doorstep to TCS rider</p>
+                          <p className="text-[10px] text-slate-500">Pay at doorstep to courier rider</p>
                         </div>
                       </div>
                       <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">

@@ -196,65 +196,61 @@ export default function CustomerOrdersTrackingModal({
 
 
           // Prioritize server status over local storage
-
           const mergedLocal = filteredLocal.map((co: any) => {
-
             const match = filteredBackend.find(
-
               (bo: any) => bo.id === co.id || bo.orderNumber === co.orderNumber
-
             );
-
             return match
-
               ? {
-
                   ...co,
-
                   deliveryStatus: match.deliveryStatus || co.deliveryStatus,
-
                   paymentStatus: match.paymentStatus || co.paymentStatus,
-
                   escrowStatus: match.escrowStatus || co.escrowStatus,
-
                   timeline: match.timeline || co.timeline,
-
+                  carrier: match.carrier || match.courier_name || co.carrier,
+                  courier_name: match.courier_name || match.carrier || co.courier_name,
+                  trackingNumber: match.trackingNumber || match.tracking_number || match.waybill_number || co.trackingNumber,
+                  tracking_number: match.tracking_number || match.trackingNumber || co.tracking_number,
+                  waybill_number: match.waybill_number || match.trackingNumber || co.waybill_number,
                 }
-
               : co;
-
           });
 
-
-
           combined = [...mergedLocal];
-
           filteredBackend.forEach((bo: any) => {
-
             if (!combined.some((co: any) => co.id === bo.id || co.orderNumber === bo.orderNumber)) {
-
               combined.push(bo);
-
             }
-
           });
 
         } else {
-
-          // If guest, show orders placed in this browser session
-
-          combined = [...customerPlacedOrders];
-
-          backendOrders.forEach((bo: any) => {
-
-            if (!combined.some((co: any) => co.id === bo.id || co.orderNumber === bo.orderNumber)) {
-
-              combined.push(bo);
-
-            }
-
+          // If guest, show orders placed in this browser session, merged with backend updates
+          const mergedGuest = customerPlacedOrders.map((co: any) => {
+            const match = backendOrders.find(
+              (bo: any) => bo.id === co.id || bo.orderNumber === co.orderNumber
+            );
+            return match
+              ? {
+                  ...co,
+                  deliveryStatus: match.deliveryStatus || co.deliveryStatus,
+                  paymentStatus: match.paymentStatus || co.paymentStatus,
+                  escrowStatus: match.escrowStatus || co.escrowStatus,
+                  timeline: match.timeline || co.timeline,
+                  carrier: match.carrier || match.courier_name || co.carrier,
+                  courier_name: match.courier_name || match.carrier || co.courier_name,
+                  trackingNumber: match.trackingNumber || match.tracking_number || match.waybill_number || co.trackingNumber,
+                  tracking_number: match.tracking_number || match.trackingNumber || co.tracking_number,
+                  waybill_number: match.waybill_number || match.trackingNumber || co.waybill_number,
+                }
+              : co;
           });
 
+          combined = [...mergedGuest];
+          backendOrders.forEach((bo: any) => {
+            if (!combined.some((co: any) => co.id === bo.id || co.orderNumber === bo.orderNumber)) {
+              combined.push(bo);
+            }
+          });
         }
 
 
@@ -344,37 +340,57 @@ export default function CustomerOrdersTrackingModal({
       bc = new BroadcastChannel("vendor_orders_channel");
 
       bc.onmessage = (event) => {
-
         if (event.data?.type === "ORDER_STATUS_UPDATED") {
-
-          const { orderId, newStatus } = event.data;
+          const { orderId, orderNumber, newStatus } = event.data;
+          const matchOrder = (o: any) =>
+            o.id === orderId || o.orderNumber === orderId ||
+            (orderNumber && (o.id === orderNumber || o.orderNumber === orderNumber));
 
           setOrdersList((prev) =>
-
             prev.map((o) =>
-
-              o.id === orderId || o.orderNumber === orderId
-
+              matchOrder(o)
                 ? { ...o, deliveryStatus: newStatus }
-
                 : o
-
             )
-
           );
-
           setSelectedOrder((prev: any) =>
-
-            prev && (prev.id === orderId || prev.orderNumber === orderId)
-
+            prev && matchOrder(prev)
               ? { ...prev, deliveryStatus: newStatus }
-
               : prev
-
           );
+        } else if (event.data?.type === "ORDER_TRACKING_UPDATED") {
+          const { orderId, orderNumber, carrier, trackingNumber } = event.data;
+          const matchOrder = (o: any) =>
+            o.id === orderId || o.orderNumber === orderId ||
+            (orderNumber && (o.id === orderNumber || o.orderNumber === orderNumber));
 
+          setOrdersList((prev) =>
+            prev.map((o) =>
+              matchOrder(o)
+                ? {
+                    ...o,
+                    carrier,
+                    courier_name: carrier,
+                    trackingNumber,
+                    tracking_number: trackingNumber,
+                    waybill_number: trackingNumber,
+                  }
+                : o
+            )
+          );
+          setSelectedOrder((prev: any) =>
+            prev && matchOrder(prev)
+              ? {
+                  ...prev,
+                  carrier,
+                  courier_name: carrier,
+                  trackingNumber,
+                  tracking_number: trackingNumber,
+                  waybill_number: trackingNumber,
+                }
+              : prev
+          );
         }
-
       };
 
     } catch (e) {}
@@ -467,34 +483,25 @@ export default function CustomerOrdersTrackingModal({
 
 
 
-  const getStatusBadge = (status: string) => {
-
+  const getStatusBadge = (status: string, carrierName?: string) => {
     switch (status) {
-
       case "pending":
         return null;
 
       case "processing":
-
       case "confirmed":
-
         return (
-
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200 flex items-center gap-1">
-
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-
             <span>Confirmed &amp; Packing</span>
-
           </span>
-
         );
 
       case "shipped":
         return (
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F5EFF7] text-[#5A3D63] border border-[#D1B2DB] flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#694873] animate-pulse" />
-            <span>In Transit (TCS Courier)</span>
+            <span>In Transit ({carrierName || "Courier"})</span>
           </span>
         );
 
@@ -549,7 +556,7 @@ export default function CustomerOrdersTrackingModal({
                   {selectedOrder ? "Live Order Tracking & Invoice" : "My Orders & Live Tracking"}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Track your delivery status with TCS Express Courier ({storeName})
+                  Track your delivery status with {selectedOrder?.carrier || selectedOrder?.courier_name || "Express Courier"} ({storeName})
                 </p>
               </div>
             </div>
@@ -718,159 +725,82 @@ export default function CustomerOrdersTrackingModal({
 
 
                     <div>
-
                       <span className="text-slate-400 block text-[10px]">Courier Partner</span>
-
                       <span className="font-bold text-slate-200 flex items-center gap-1">
-
                         <Truck className="w-3.5 h-3.5 text-[#D1B2DB]" />
-
-                        <span>TCS Express (Air)</span>
-
+                        <span>{selectedOrder.carrier || selectedOrder.courier_name || "Express Courier"}</span>
                       </span>
-
                     </div>
-
                   </div>
-
                 </div>
 
-
-
                 {/* Live Step Tracker Timeline */}
-
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
-
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
-
                     <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
-
                       <Truck className="w-4 h-4 text-[#694873]" />
-
                       <span>Live Delivery Timeline</span>
-
                     </h4>
-
                     <span className="text-[11px] font-bold text-[#694873]">
-
                       Estimated Arrival: 2-4 Days
-
                     </span>
-
                   </div>
 
-
-
                   {/* Vertical / Horizontal Timeline */}
-
                   <div className="space-y-4 pt-2">
-
                     {/* Step 1: Order Placed */}
-
                     <div className="flex items-start gap-3">
-
                       <div className="w-7 h-7 rounded-full bg-[#694873] text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
-
                         <Check className="w-3.5 h-3.5" />
-
                       </div>
-
                       <div>
-
                         <p className="font-bold text-xs text-slate-900">Order Placed &amp; Verified</p>
-
                         <p className="text-[11px] text-slate-500">
-
                           {new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System recorded order
-
                         </p>
-
                       </div>
-
                     </div>
-
-
 
                     {/* Step 2: Confirmed */}
-
                     <div className="flex items-start gap-3">
-
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
-
                         selectedOrder.deliveryStatus !== "pending"
-
                           ? "bg-[#694873] text-white"
-
                           : "bg-slate-200 text-slate-500"
-
                       }`}>
-
                         {selectedOrder.deliveryStatus !== "pending" ? <Check className="w-3.5 h-3.5" /> : "2"}
-
                       </div>
-
                       <div>
-
                         <p className={`font-bold text-xs ${selectedOrder.deliveryStatus !== "pending" ? "text-slate-900" : "text-slate-400"}`}>
-
                           Order Confirmed by Vendor
-
                         </p>
-
                         <p className="text-[11px] text-slate-500">
-
                           Stock reserved and packaging initiated in warehouse
-
                         </p>
-
                       </div>
-
                     </div>
 
-
-
                     {/* Step 3: Shipped / In Transit */}
-
                     <div className="flex items-start gap-3">
-
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
-
                         selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
-
                           ? "bg-[#694873] text-white animate-pulse"
-
                           : "bg-slate-200 text-slate-500"
-
                       }`}>
-
                         {selectedOrder.deliveryStatus === "delivered" ? <Check className="w-3.5 h-3.5" /> : "3"}
-
                       </div>
-
                       <div>
-
                         <p className={`font-bold text-xs ${
-
                           selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
-
                             ? "text-slate-900"
-
                             : "text-slate-400"
-
                         }`}>
-
-                          Handed over to TCS Express Courier
-
+                          Handed over to {selectedOrder.carrier || selectedOrder.courier_name || "Express Courier"}
                         </p>
-
                         <p className="text-[11px] text-slate-500">
-
-                          Waybill #TCS-{Math.floor(100000 + Math.random() * 900000)} • Transit to destination hub
-
+                          Waybill #{selectedOrder.trackingNumber || selectedOrder.tracking_number || selectedOrder.waybill_number || selectedOrder.orderNumber || "Pending"} • Transit to destination hub
                         </p>
-
                       </div>
-
                     </div>
 
 
@@ -1259,7 +1189,7 @@ export default function CustomerOrdersTrackingModal({
 
                     <li>Check your SMS / WhatsApp / Email for your tracking ID (e.g. `#ORD-8942`).</li>
 
-                    <li>Orders are dispatched via TCS Express within 24 hours of placement.</li>
+                    <li>Orders are dispatched via express courier within 24 hours of placement.</li>
 
                     <li>For immediate assistance, contact our WhatsApp Support team.</li>
 

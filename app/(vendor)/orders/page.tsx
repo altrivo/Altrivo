@@ -106,7 +106,11 @@ export default function OrdersPage() {
               customerPhone: lo.customerPhone || merged[existingIdx].customerPhone,
               shippingAddress: lo.shippingAddress || merged[existingIdx].shippingAddress,
               items: (lo.items && lo.items.length > 0) ? lo.items : merged[existingIdx].items,
-              deliveryStatus: merged[existingIdx].deliveryStatus || lo.deliveryStatus,
+              deliveryStatus: lo.deliveryStatus || merged[existingIdx].deliveryStatus,
+              carrier: lo.carrier || merged[existingIdx].carrier,
+              courier_name: lo.courier_name || merged[existingIdx].courier_name,
+              trackingNumber: lo.trackingNumber || merged[existingIdx].trackingNumber,
+              tracking_number: lo.tracking_number || merged[existingIdx].tracking_number,
             };
           } else {
             merged.push(lo);
@@ -356,10 +360,19 @@ export default function OrdersPage() {
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     const nowISO = new Date().toISOString();
 
+    const targetOrder = orders.find(
+      (o) => o.id === orderId || o.orderNumber === orderId
+    );
+    const orderNum = targetOrder?.orderNumber || orderId;
+    const dbId = targetOrder?.id || orderId;
+
+    const matchOrder = (o: any) =>
+      o && (o.id === dbId || o.orderNumber === orderNum || o.id === orderNum || o.orderNumber === dbId);
+
     // 1. Optimistic UI update across all orders
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === orderId || o.orderNumber === orderId
+        matchOrder(o)
           ? { ...o, deliveryStatus: newStatus, order_status: newStatus }
           : o
       )
@@ -368,7 +381,7 @@ export default function OrdersPage() {
     // 2. Update selected modal order with live audit trail and timeline
     if (
       selectedOrderForDetails &&
-      (selectedOrderForDetails.id === orderId || selectedOrderForDetails.orderNumber === orderId)
+      matchOrder(selectedOrderForDetails)
     ) {
       setSelectedOrderForDetails((prev) => {
         if (!prev) return null;
@@ -416,7 +429,7 @@ export default function OrdersPage() {
             const list = JSON.parse(raw);
             if (Array.isArray(list)) {
               const updatedList = list.map((item: any) =>
-                item.id === orderId || item.orderNumber === orderId
+                matchOrder(item)
                   ? { ...item, deliveryStatus: newStatus, order_status: newStatus }
                   : item
               );
@@ -430,28 +443,39 @@ export default function OrdersPage() {
     // 4. Broadcast to storefront tabs
     try {
       const bc = new BroadcastChannel("vendor_orders_channel");
-      bc.postMessage({ type: "ORDER_STATUS_UPDATED", orderId, newStatus });
+      bc.postMessage({
+        type: "ORDER_STATUS_UPDATED",
+        orderId: dbId,
+        orderNumber: orderNum,
+        newStatus,
+      });
       bc.close();
     } catch (e) {}
 
     // 5. Update backend server & Supabase database
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${dbId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, actorType: "vendor" }),
       });
       if (res.ok) {
         const data = await res.json();
         if (data.order) {
           setOrders((prev) =>
-            prev.map((o) => (o.id === orderId || o.orderNumber === orderId ? { ...o, ...data.order } : o))
+            prev.map((o) =>
+              matchOrder(o)
+                ? { ...o, ...data.order, deliveryStatus: newStatus, order_status: newStatus }
+                : o
+            )
           );
           if (
             selectedOrderForDetails &&
-            (selectedOrderForDetails.id === orderId || selectedOrderForDetails.orderNumber === orderId)
+            matchOrder(selectedOrderForDetails)
           ) {
-            setSelectedOrderForDetails((prev) => (prev ? { ...prev, ...data.order } : null));
+            setSelectedOrderForDetails((prev) =>
+              prev ? { ...prev, ...data.order, deliveryStatus: newStatus, order_status: newStatus } : null
+            );
           }
         }
       }

@@ -376,7 +376,7 @@ export default function ProductDetailModal({
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
                   <Truck className="w-4 h-4 text-sky-600 flex-shrink-0" />
-                  <span>TCS Express</span>
+                  <span>Express Delivery</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-100">
                   <RotateCcw className="w-4 h-4 text-violet-600 flex-shrink-0" />
@@ -426,9 +426,9 @@ export default function ProductDetailModal({
               )}
               {activeTab === "shipping" && (
                 <div className="space-y-2 text-xs">
-                  <p>ðŸšš <strong>Nationwide Shipping:</strong> Dispatched via TCS Express Courier with estimated arrival in 2-4 business days.</p>
-                  <p>ðŸ›¡ï¸ <strong>A2 Escrow Protection:</strong> Your payment remains securely locked in DigiShop Escrow until you inspect and accept your package.</p>
-                  <p>ðŸ”„ <strong>7-Day Returns:</strong> If you are not 100% satisfied, initiate a free exchange or refund within 7 days.</p>
+                  <p>🚚 <strong>Nationwide Shipping:</strong> Dispatched via tracked express courier with estimated arrival in 2-4 business days.</p>
+                  <p>🛡️ <strong>A2 Escrow Protection:</strong> Your payment remains securely locked in Altrivo Escrow until you inspect and accept your package.</p>
+                  <p>🔄 <strong>7-Day Returns:</strong> If you are not 100% satisfied, initiate a free exchange or refund within 7 days.</p>
                 </div>
               )}
             </div>

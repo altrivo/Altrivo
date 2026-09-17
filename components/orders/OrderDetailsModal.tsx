@@ -124,8 +124,18 @@ function OrderDetailsModalContent({
             const list = JSON.parse(raw);
             if (Array.isArray(list)) {
               const updated = list.map((item: any) =>
-                item.id === order.id || item.orderNumber === order.orderNumber
-                  ? { ...item, carrier: courierName, trackingNumber: trackingNo }
+                item.id === order.id ||
+                item.orderNumber === order.orderNumber ||
+                item.id === order.orderNumber ||
+                item.orderNumber === order.id
+                  ? {
+                      ...item,
+                      carrier: courierName,
+                      courier_name: courierName,
+                      trackingNumber: trackingNo,
+                      tracking_number: trackingNo,
+                      waybill_number: trackingNo,
+                    }
                   : item
               );
               localStorage.setItem(key, JSON.stringify(updated));
@@ -141,7 +151,24 @@ function OrderDetailsModalContent({
         body: JSON.stringify({ carrier: courierName, trackingNumber: trackingNo }),
       });
       order.carrier = courierName;
+      order.courier_name = courierName;
       order.trackingNumber = trackingNo;
+      order.tracking_number = trackingNo;
+      order.waybill_number = trackingNo;
+
+      // 3. Broadcast to customer tabs and other vendor tabs
+      try {
+        const bc = new BroadcastChannel("vendor_orders_channel");
+        bc.postMessage({
+          type: "ORDER_TRACKING_UPDATED",
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          carrier: courierName,
+          trackingNumber: trackingNo,
+        });
+        bc.close();
+      } catch (bcErr) {}
+
       setTrackingMsg("✓ Courier & tracking updated successfully!");
       setTimeout(() => setTrackingMsg(null), 3000);
     } catch (e) {

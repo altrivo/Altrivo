@@ -70,15 +70,15 @@ export const A2EscrowService = {
 
 // 3. Valid State Machine Transitions (Flexible vendor execution)
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus | "refunded" | "paid", (OrderStatus | "refunded" | "paid")[]> = {
-  pending: ["confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "paid"],
-  confirmed: ["processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  processing: ["packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  packed: ["ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  ready_to_ship: ["shipped", "delivered", "completed", "cancelled", "refunded"],
-  shipped: ["delivered", "completed", "cancelled", "refunded"],
-  delivered: ["completed", "refunded"],
-  completed: ["refunded"],
-  cancelled: [],
+  pending: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "paid"],
+  confirmed: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
+  processing: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
+  packed: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
+  ready_to_ship: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
+  shipped: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
+  delivered: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "refunded"],
+  completed: ["delivered", "refunded"],
+  cancelled: ["pending", "confirmed", "processing"],
   refunded: [],
   paid: ["confirmed", "processing", "cancelled"],
 };
@@ -490,12 +490,22 @@ export class OrdersBackendService {
     if (supabaseAdmin) {
       try {
         const queryIsUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(queryId);
+        let dbo: any = null;
         if (queryIsUUID) {
-          const { data: dbo } = await supabaseAdmin
+          const { data } = await supabaseAdmin
             .from("orders")
             .select("*, order_items(*), shipments(*)")
             .eq("id", queryId)
             .maybeSingle();
+          dbo = data;
+        } else {
+          const { data } = await supabaseAdmin
+            .from("orders")
+            .select("*, order_items(*), shipments(*)")
+            .or(`order_number.ilike.${orderIdOrNumber},order_number.ilike.${queryId}`)
+            .maybeSingle();
+          dbo = data;
+        }
 
         if (dbo) {
           const meta = getCachedMetadata(dbo.id);
@@ -607,10 +617,9 @@ export class OrdersBackendService {
 
           return loadedOrder;
         }
+      } catch (e) {
+        console.warn("[OrdersBackendService] getOrderById DB lookup note:", e);
       }
-    } catch (e) {
-      console.warn("[OrdersBackendService] getOrderById DB lookup note:", e);
-    }
     }
 
     return inMem ? { ...inMem } : null;
@@ -1066,10 +1075,12 @@ export class OrdersBackendService {
     }
 
     const currentStatus = order.order_status || (order.deliveryStatus as OrderStatus) || "pending";
+    const actorType = options?.actorType || "vendor";
+    const actorId = options?.actorId || order.vendor_id || "vendor_system";
 
     // 1. Guard against invalid state machine transitions
     const allowed = VALID_ORDER_TRANSITIONS[currentStatus];
-    if (allowed && !allowed.includes(nextStatus)) {
+    if (actorType !== "vendor" && allowed && !allowed.includes(nextStatus)) {
       throw new Error(
         `Invalid status transition from '${currentStatus}' to '${nextStatus}'. Allowed next steps: ${allowed.join(", ") || "none (terminal state)"}`
       );
@@ -1077,8 +1088,6 @@ export class OrdersBackendService {
 
     const nowISO = new Date().toISOString();
     const updated = { ...order };
-    const actorType = options?.actorType || "vendor";
-    const actorId = options?.actorId || order.vendor_id || "vendor_system";
 
     // Update statuses
     updated.order_status = nextStatus;
@@ -1087,6 +1096,13 @@ export class OrdersBackendService {
     let eventMessage = `Order status updated to ${nextStatus}`;
 
     switch (nextStatus) {
+      case "pending":
+        updated.fulfillment_status = "unfulfilled";
+        updated.deliveryStatus = "pending";
+        updated.delivery_status = "pending";
+        eventMessage = "Order status set to pending.";
+        break;
+
       case "confirmed":
         updated.fulfillment_status = "processing";
         updated.deliveryStatus = "confirmed" as any;
@@ -1221,6 +1237,7 @@ export class OrdersBackendService {
         await supabaseAdmin
           .from("orders")
           .update({
+            order_status: updated.order_status,
             delivery_status: updated.delivery_status,
             payment_status: updated.payment_status,
             escrow_status: updated.escrowStatus,

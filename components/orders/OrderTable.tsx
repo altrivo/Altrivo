@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Order, OrderStatus, PaymentStatus } from "@/types/orders";
 import { Badge, StatusPill, Button, EmptyState } from "@/components/shared";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 
 interface OrderTableProps {
   orders: Order[];
@@ -71,7 +71,7 @@ export function OrderTable({
     <div className="rounded-2xl border border-default bg-card shadow-card overflow-hidden transition-all duration-normal">
 
       {/* Table Container */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto min-h-[360px] pb-36">
         <table className="w-full text-left text-sm text-body">
           <thead className="bg-neutral-100 text-xs font-extrabold uppercase tracking-wider text-heading border-b border-default font-display">
             <tr>
@@ -238,27 +238,42 @@ export function OrderTable({
                           </button>
 
                           {activeMenuOrderId === order.id && (
-                            <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-strong bg-card p-1.5 shadow-modal z-dropdown text-left animate-scale-up">
-                              <p className="px-3 py-1.5 text-[11px] font-extrabold uppercase text-heading tracking-wider border-b border-default">
-                                Set Delivery Status
-                              </p>
-                              {(["pending", "processing", "shipped", "delivered", "cancelled"] as OrderStatus[]).map((st) => (
-                                <button
-                                  key={st}
-                                  onClick={() => {
-                                    onUpdateOrderStatus(order.id, st);
-                                    setActiveMenuOrderId(null);
-                                  }}
-                                  className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors capitalize font-bold ${
-                                    order.deliveryStatus === st
-                                      ? "bg-primary-100 text-primary-900 font-extrabold"
-                                      : "text-heading hover:bg-neutral-100"
-                                  }`}
-                                >
-                                  {st}
-                                </button>
-                              ))}
-                            </div>
+                            <>
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setActiveMenuOrderId(null)}
+                              />
+                              <div className="absolute right-0 top-full mt-1.5 w-52 rounded-2xl border border-strong bg-card p-2 shadow-2xl z-50 text-left animate-scale-up">
+                                <div className="px-3 py-1.5 mb-1 border-b border-default flex items-center justify-between">
+                                  <p className="text-[11px] font-black uppercase text-heading tracking-wider">
+                                    Set Delivery Status
+                                  </p>
+                                  <span className="text-[10px] text-body capitalize font-bold">
+                                    ({order.deliveryStatus})
+                                  </span>
+                                </div>
+                                {(["pending", "processing", "shipped", "delivered", "cancelled"] as OrderStatus[]).map((st) => (
+                                  <button
+                                    key={st}
+                                    type="button"
+                                    onClick={() => {
+                                      onUpdateOrderStatus(order.id, st);
+                                      setActiveMenuOrderId(null);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-xs rounded-xl transition-all capitalize font-bold flex items-center justify-between mb-0.5 cursor-pointer ${
+                                      order.deliveryStatus === st
+                                        ? "bg-primary-100 text-primary-900 font-black shadow-xs"
+                                        : "text-heading hover:bg-neutral-100"
+                                    }`}
+                                  >
+                                    <span>{st}</span>
+                                    {order.deliveryStatus === st && (
+                                      <Check className="w-3.5 h-3.5 text-primary-700" />
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
