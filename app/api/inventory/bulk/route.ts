@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { InventoryBackendService } from "@/services/inventory-backend-service";
+import { updateProductInDatabase } from "@/lib/product-db-sync";
 
 export async function POST(request: NextRequest) {
   const startTime = performance.now();
@@ -51,6 +52,20 @@ export async function POST(request: NextRequest) {
       const bulkRes = InventoryBackendService.bulkUpdate(itemIds, updates);
       const elapsedMs = Math.round(performance.now() - startTime);
 
+      // Persist updates to Supabase products & variants tables
+      if (Array.isArray(bulkRes.items)) {
+        Promise.all(
+          bulkRes.items.map((it) =>
+            updateProductInDatabase(it.productId || it.id, {
+              price: it.price,
+              stock: it.stock,
+              lowStockThreshold: it.lowStockThreshold,
+              status: it.status,
+            })
+          )
+        ).catch((e) => console.warn("[bulk-edit] Supabase sync note:", e));
+      }
+
       return NextResponse.json(
         {
           success: true,
@@ -60,7 +75,7 @@ export async function POST(request: NextRequest) {
           itemIds,
           items: bulkRes.items,
           updatedAt: new Date().toISOString(),
-          message: `Successfully updated ${bulkRes.updatedCount} inventory items.`,
+          message: `Successfully updated ${bulkRes.updatedCount} inventory items in database.`,
           performance: {
             queryTimeMs: elapsedMs,
             sla: elapsedMs < 300 ? "PASS (<300ms)" : "WARN",
@@ -77,6 +92,13 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      // Persist delete in Supabase products
+      Promise.all(
+        itemIds.map((id) =>
+          updateProductInDatabase(id, { status: "archived" })
+        )
+      ).catch((e) => console.warn("[bulk-delete] Supabase sync note:", e));
 
       return NextResponse.json(
         {

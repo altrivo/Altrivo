@@ -5,6 +5,10 @@ import type {
   UpdateProductInput,
   BackendProductStatus,
 } from "@/types/backend-product";
+import { supabaseAdmin } from "@/lib/supabase";
+import { toValidUUID, updateProductInDatabase } from "@/lib/product-db-sync";
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 // In-memory backend store for fast, deterministic local development & testing
 let memoryProductsStore: ProductRecord[] = [
@@ -111,6 +115,100 @@ export class ProductsBackendService {
     const limit = filter.limit || 20;
     const offset = filter.offset || 0;
 
+    // Direct Supabase query for real vendors
+    if (supabaseAdmin && UUID_REGEX.test(vendorId)) {
+      try {
+        let q = supabaseAdmin
+          .from("products")
+          .select(`
+            id,
+            vendor_id,
+            title,
+            name,
+            description,
+            category,
+            price,
+            compare_price,
+            cost,
+            image_url,
+            status,
+            created_at,
+            updated_at,
+            product_variants (
+              id,
+              product_id,
+              sku,
+              price,
+              stock,
+              image_url,
+              enabled,
+              created_at,
+              updated_at
+            )
+          `)
+          .eq("vendor_id", vendorId);
+
+        if (filter.status) {
+          q = q.eq("status", filter.status);
+        }
+
+        const { data: dbData, error: dbErr } = await q;
+        if (!dbErr && dbData && dbData.length > 0) {
+          let mapped: ProductRecord[] = dbData.map((row: any) => ({
+            id: row.id,
+            vendor_id: row.vendor_id,
+            title: row.title || row.name || "Product",
+            description: row.description || "",
+            category_id: row.category || "General",
+            tags: [],
+            price: Number(row.price) || 0,
+            compare_price: Number(row.compare_price) || 0,
+            cost: Number(row.cost) || 0,
+            seo_slug: (row.title || row.name || "product").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+            seo_title: row.title || row.name || "Product",
+            seo_description: row.description || "",
+            status: row.status || "published",
+            created_at: row.created_at || new Date().toISOString(),
+            updated_at: row.updated_at || new Date().toISOString(),
+            variants: Array.isArray(row.product_variants)
+              ? row.product_variants.map((v: any) => ({
+                  id: v.id,
+                  product_id: row.id,
+                  sku: v.sku,
+                  option_values: {},
+                  price: Number(v.price) || Number(row.price) || 0,
+                  stock: Number(v.stock) || 0,
+                  image_url: v.image_url || row.image_url || "",
+                  enabled: v.enabled ?? true,
+                  created_at: v.created_at || row.created_at,
+                  updated_at: v.updated_at || row.updated_at,
+                }))
+              : [],
+          }));
+
+          if (filter.search) {
+            const sq = filter.search.toLowerCase();
+            mapped = mapped.filter(
+              (p) =>
+                p.title.toLowerCase().includes(sq) ||
+                p.seo_slug.toLowerCase().includes(sq) ||
+                p.variants?.some((v) => v.sku.toLowerCase().includes(sq))
+            );
+          }
+
+          const paginated = mapped.slice(offset, offset + limit);
+          return {
+            data: paginated,
+            total: mapped.length,
+            limit,
+            offset,
+          };
+        }
+      } catch (e) {
+        console.warn("[ProductsBackendService] Supabase getProducts note:", e);
+      }
+    }
+
     // RLS Enforcement: Filter by vendor_id
     let filtered = memoryProductsStore.filter((p) => p.vendor_id === vendorId);
 
@@ -212,6 +310,44 @@ export class ProductsBackendService {
       variants: createdVariants,
     };
 
+    // Direct Supabase insert for real vendors
+    const sb = supabaseAdmin;
+    if (sb && UUID_REGEX.test(vendor_id)) {
+      (async () => {
+        try {
+          const prodUUID = toValidUUID(newId);
+          await sb.from("products").insert({
+            id: prodUUID,
+            vendor_id,
+            name: input.title,
+            title: input.title,
+            description: input.description || "",
+            category: input.category_id || "General",
+            price: input.price,
+            compare_price: input.compare_price || 0,
+            cost: input.cost || 0,
+            status: input.status || "draft",
+          });
+
+          if (createdVariants.length > 0) {
+            await sb.from("product_variants").insert(
+              createdVariants.map((v) => ({
+                id: toValidUUID(v.id),
+                product_id: prodUUID,
+                sku: v.sku,
+                price: v.price,
+                stock: v.stock,
+                image_url: v.image_url || null,
+                enabled: v.enabled,
+              }))
+            );
+          }
+        } catch (e: any) {
+          console.warn("[ProductsBackendService] createProduct DB note:", e?.message || e);
+        }
+      })();
+    }
+
     memoryProductsStore.unshift(newProduct);
     return newProduct;
   }
@@ -256,6 +392,14 @@ export class ProductsBackendService {
       updated_at: new Date().toISOString(),
     };
 
+    // Direct Supabase update
+    if (supabaseAdmin) {
+      updateProductInDatabase(id, {
+        price: input.price,
+        status: input.status,
+      }).catch((e) => console.warn("[ProductsBackendService] updateProduct DB note:", e));
+    }
+
     memoryProductsStore[index] = updatedProduct;
     return updatedProduct;
   }
@@ -264,6 +408,19 @@ export class ProductsBackendService {
    * Deletes a product and all associated variants.
    */
   static async deleteProduct(id: string, vendor_id = "vendor_dev_123"): Promise<boolean> {
+    const sb = supabaseAdmin;
+    if (sb) {
+      const prodUUID = toValidUUID(id);
+      (async () => {
+        try {
+          await sb.from("product_variants").delete().eq("product_id", prodUUID);
+          await sb.from("products").delete().eq("id", prodUUID);
+        } catch (e: any) {
+          console.warn("[ProductsBackendService] deleteProduct DB note:", e?.message || e);
+        }
+      })();
+    }
+
     const initialLength = memoryProductsStore.length;
     memoryProductsStore = memoryProductsStore.filter((p) => !(p.id === id && p.vendor_id === vendor_id));
     return memoryProductsStore.length < initialLength;

@@ -6,8 +6,9 @@ import { BulkActionsBar } from "@/components/inventory/BulkActionsBar";
 import { BulkEditModal } from "@/components/inventory/BulkEditModal";
 import { CsvImportModal } from "@/components/inventory/CsvImportModal";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
-import { getStoredInventory, initialInventoryData } from "@/lib/mock-inventory";
+import { getStoredInventory, generateMockInventory, initialInventoryData } from "@/lib/mock-inventory";
 import { PRODUCTS_UPDATED_EVENT } from "@/lib/product-storage";
+import { useVendorStore } from "@/context/VendorStoreContext";
 import type { InventoryItem } from "@/types/inventory";
 import type { ProductStatus } from "@/types/product";
 import { exportInventoryToCSV } from "@/utils/csv-inventory";
@@ -19,27 +20,63 @@ interface NotificationBanner {
 }
 
 export default function InventoryPage() {
+  const { activeStoreId, activeStore } = useVendorStore();
+  const effectiveStoreId = activeStoreId || activeStore?.id || undefined;
+
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Sync state with stored inventory on mount and update events
+  // Sync state with stored inventory on mount and database updates
   useEffect(() => {
-    setItems(getStoredInventory());
+    setItems(getStoredInventory(effectiveStoreId));
 
     const syncInventory = () => {
-      setItems(getStoredInventory());
+      setItems(getStoredInventory(effectiveStoreId));
     };
 
     window.addEventListener(PRODUCTS_UPDATED_EVENT, syncInventory);
     window.addEventListener("storage", syncInventory);
+
+    // Fetch database products from store endpoint
+    const lookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
+    if (lookup && typeof fetch === "function") {
+      fetch(`/api/stores/${lookup}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          const store = data?.store;
+          if (store) {
+            const commerceProds = Array.isArray(store.commerce_config?.products)
+              ? store.commerce_config.products
+              : [];
+            const layoutProds = Array.isArray(store.layout_config?.products)
+              ? store.layout_config.products
+              : [];
+            const pMap = new Map<string, any>();
+            commerceProds.forEach((p: any) => {
+              if (p && (p.id || p.sku || p.name || p.title)) pMap.set(p.id || p.sku || p.name || p.title, p);
+            });
+            layoutProds.forEach((p: any) => {
+              const k = p?.id || p?.sku || p?.name || p?.title;
+              if (p && k && !pMap.has(k)) pMap.set(k, p);
+            });
+            const dbProducts = Array.from(pMap.values());
+            if (dbProducts.length > 0) {
+              const mapped = generateMockInventory(dbProducts, effectiveStoreId);
+              setItems(mapped);
+            }
+          }
+        })
+        .catch((e) => console.warn("[Inventory] Store fetch note:", e));
+    }
+
     return () => {
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, syncInventory);
       window.removeEventListener("storage", syncInventory);
     };
-  }, []);
+  }, [effectiveStoreId, activeStore?.slug, activeStore?.id]);
 
   // Modals state
   const [csvImportOpen, setCsvImportOpen] = useState(false);

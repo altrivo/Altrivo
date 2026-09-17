@@ -1,19 +1,27 @@
 import type { InventoryItem } from "@/types/inventory";
 
-import { getStoredProducts, getStoredProductFormData, getCategoryDefaultImage, isValidImageUrl, safeLocalStorageSet } from "./product-storage";
+import {
+  getStoredProducts,
+  getStoredProductFormData,
+  getCategoryDefaultImage,
+  isValidImageUrl,
+  safeLocalStorageSet,
+} from "./product-storage";
 
 const INVENTORY_STORAGE_KEY = "artrivo_vendor_inventory";
 
-export function generateMockInventory(): InventoryItem[] {
-  const products = typeof window !== "undefined" ? getStoredProducts() : [];
+export function generateMockInventory(customProducts?: any[], storeId?: string): InventoryItem[] {
+  const products = customProducts || (typeof window !== "undefined" ? getStoredProducts(storeId) : []);
   const items: InventoryItem[] = [];
 
-  products.slice(0, 200).forEach((product, idx) => {
-    const defaultThreshold = 10 + (idx % 3) * 5;
-    const storedForm = typeof window !== "undefined" ? getStoredProductFormData(product.id) : null;
-    const cleanThumb = isValidImageUrl(product.thumbnail)
-      ? product.thumbnail
-      : getCategoryDefaultImage(product.category, product.name);
+  products.slice(0, 200).forEach((product) => {
+    if (!product) return;
+
+    const defaultThreshold = 10;
+    const storedForm = typeof window !== "undefined" ? getStoredProductFormData(product.id, storeId) : null;
+    const cleanThumb = isValidImageUrl(product.thumbnail || product.image)
+      ? (product.thumbnail || product.image)
+      : getCategoryDefaultImage(product.category, product.name || product.title);
 
     if (storedForm?.variants && storedForm.variants.length > 0) {
       storedForm.variants.forEach((v) => {
@@ -26,66 +34,41 @@ export function generateMockInventory(): InventoryItem[] {
           productId: product.id,
           variantId: v.id,
           isVariant: true,
-          parentName: product.name,
+          parentName: product.name || product.title,
           variantTitle: optionLabel || v.sku,
-          name: `${product.name} (${optionLabel || v.sku})`,
+          name: `${product.name || product.title} (${optionLabel || v.sku})`,
           sku: v.sku || product.sku,
           price: Number(v.price) || product.price,
           stock: Number(v.stock) || 0,
           lowStockThreshold: defaultThreshold,
           version: 1,
           thumbnail: cleanThumb,
-          category: product.category,
-          status: v.stock === 0 ? "out-of-stock" : product.status,
-          updatedAt: product.updatedAt,
-        });
-      });
-    } else if (idx % 3 === 0 && !storedForm) {
-      const colors = ["Black", "White", "Navy", "Emerald"];
-      const sizes = ["S", "M", "L", "XL"];
-
-      colors.slice(0, 2 + (idx % 3)).forEach((color) => {
-        sizes.slice(0, 2 + (idx % 2)).forEach((size) => {
-          const vId = `var_${product.id}_${color.toLowerCase()}_${size.toLowerCase()}`;
-          const varSku = `${product.sku}-${color.slice(0, 1)}${size}`;
-          const priceModifier = size === "XL" ? 5 : 0;
-          const stockVal = (product.stock + idx * 3) % 120;
-
-          items.push({
-            id: vId,
-            productId: product.id,
-            variantId: vId,
-            isVariant: true,
-            parentName: product.name,
-            variantTitle: `${color} / ${size}`,
-            name: `${product.name} - ${color} / ${size}`,
-            sku: varSku,
-            price: Math.round((product.price + priceModifier) * 100) / 100,
-            stock: stockVal,
-            lowStockThreshold: defaultThreshold,
-            version: 1,
-            thumbnail: cleanThumb,
-            category: product.category,
-            status: stockVal === 0 ? "out-of-stock" : product.status,
-            updatedAt: product.updatedAt,
-          });
+          category: product.category || "General",
+          status: v.stock === 0 ? "out-of-stock" : product.status || "published",
+          updatedAt: product.updatedAt || product.updated_at || new Date().toISOString(),
         });
       });
     } else {
+      const priceNum =
+        typeof product.price === "number"
+          ? product.price
+          : parseFloat(String(product.price).replace(/[^0-9.]/g, "")) || 0;
+      const stockNum = typeof product.stock === "number" ? product.stock : 10;
+
       items.push({
         id: product.id,
         productId: product.id,
         isVariant: false,
-        name: product.name,
-        sku: product.sku,
-        price: product.price,
-        stock: product.stock,
+        name: product.name || product.title || "Product",
+        sku: product.sku || ("SKU-" + String(product.id).slice(0, 8)).toUpperCase(),
+        price: priceNum,
+        stock: stockNum,
         lowStockThreshold: defaultThreshold,
         version: 1,
         thumbnail: cleanThumb,
-        category: product.category,
-        status: product.status,
-        updatedAt: product.updatedAt,
+        category: product.category || "General",
+        status: stockNum === 0 ? "out-of-stock" : (product.status || "published"),
+        updatedAt: product.updatedAt || product.updated_at || new Date().toISOString(),
       });
     }
   });
@@ -93,12 +76,12 @@ export function generateMockInventory(): InventoryItem[] {
   return items;
 }
 
-export function getStoredInventory(): InventoryItem[] {
+export function getStoredInventory(storeId?: string): InventoryItem[] {
   if (typeof window === "undefined") {
-    return generateMockInventory();
+    return generateMockInventory(undefined, storeId);
   }
 
-  const generated = generateMockInventory();
+  const generated = generateMockInventory(undefined, storeId);
   safeLocalStorageSet(INVENTORY_STORAGE_KEY, JSON.stringify(generated));
   return generated;
 }

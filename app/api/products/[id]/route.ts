@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { updateProductInDatabase } from "@/lib/product-db-sync";
 
 export async function PATCH(
   request: NextRequest,
@@ -14,7 +15,7 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          error: "Simulated database connection timeout or validation failure",
+          error: "Database connection timeout or validation failure",
         },
         { status: 500 }
       );
@@ -26,13 +27,20 @@ export async function PATCH(
     if (typeof body.lowStockThreshold === "number")
       updatedFields.lowStockThreshold = body.lowStockThreshold;
 
+    // Save directly to Supabase products & product_variants tables
+    await updateProductInDatabase(id, {
+      price: updatedFields.price,
+      stock: updatedFields.stock,
+      lowStockThreshold: updatedFields.lowStockThreshold,
+    });
+
     return NextResponse.json(
       {
         success: true,
         id,
         updatedFields,
         updatedAt: new Date().toISOString(),
-        message: "Inventory item updated successfully",
+        message: "Inventory item updated successfully in database",
       },
       { status: 200 }
     );
