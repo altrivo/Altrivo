@@ -2,7 +2,7 @@
 
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { 
 
@@ -72,7 +72,9 @@ export default function CustomerOrdersTrackingModal({
 
   const { storeId, customer, setIsCustomerAuthOpen } = useCart();
 
-  const [activeTab, setActiveTab] = useState<"my_orders" | "search_tracking">("my_orders");
+  const [activeTab, setActiveTab] = useState<"my_orders" | "search_tracking">(
+    initialOrderNumber ? "search_tracking" : "my_orders"
+  );
 
   const [searchQuery, setSearchQuery] = useState(initialOrderNumber);
 
@@ -84,118 +86,92 @@ export default function CustomerOrdersTrackingModal({
 
   const [copiedTracking, setCopiedTracking] = useState(false);
 
+  const selectedOrderRef = useRef<any>(null);
+  useEffect(() => {
+    selectedOrderRef.current = selectedOrder;
+  }, [selectedOrder]);
+
+  const ordersListRef = useRef<any[]>([]);
+  useEffect(() => {
+    ordersListRef.current = ordersList;
+  }, [ordersList]);
+
 
 
   // Load customer's local and backend orders on modal open
 
   useEffect(() => {
-
     if (!isOpen) return;
 
-
+    if (initialOrderNumber) {
+      setActiveTab("search_tracking");
+      setSearchQuery(initialOrderNumber);
+    }
 
     const loadOrders = async () => {
-
-      setIsLoading(true);
-
       try {
-
         // 1. Fetch from backend API scoped to customer / store
-
         const queryParams = new URLSearchParams({ limit: "50" });
-
         if (storeId) queryParams.set("storeId", storeId);
-
         if (customer?.email) queryParams.set("customerEmail", customer.email);
-
         if (customer?.id) queryParams.set("customerId", customer.id);
 
-
-
         const res = await fetch(`/api/orders?${queryParams.toString()}`);
-
         let backendOrders: any[] = [];
-
         if (res.ok) {
-
           const data = await res.json();
-
           if (data.orders && Array.isArray(data.orders)) {
-
             backendOrders = data.orders;
-
           }
-
         }
 
-
-
-        // 2. Read local stored orders for this customer session & guest orders
-
-        const normalizedStoreId = (storeId || "default_store").trim().toLowerCase();
-        const localKey = `storefront_customer_orders_${normalizedStoreId}_${customer?.id || "guest"}`;
-        const localData = typeof window !== "undefined" ? localStorage.getItem(localKey) : null;
-        let customerPlacedOrders: any[] = localData ? JSON.parse(localData) : [];
-
-        // Also check raw storeId key if different from normalized
-        if (storeId && storeId.toLowerCase() !== normalizedStoreId && typeof window !== "undefined") {
-          const rawKey = `storefront_customer_orders_${storeId}_${customer?.id || "guest"}`;
-          const rawData = localStorage.getItem(rawKey);
-          if (rawData) {
-            try {
-              const parsed = JSON.parse(rawData);
-              parsed.forEach((o: any) => {
-                if (!customerPlacedOrders.some((co) => co.id === o.id || co.orderNumber === o.orderNumber)) {
-                  customerPlacedOrders.push(o);
+        // 2. Read local stored orders across all storefront_customer_orders_* keys
+        const customerPlacedOrders: any[] = [];
+        if (typeof window !== "undefined") {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith("storefront_customer_orders_")) {
+              try {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                  const list = JSON.parse(raw);
+                  if (Array.isArray(list)) {
+                    list.forEach((ord: any) => {
+                      if (
+                        ord &&
+                        !customerPlacedOrders.some(
+                          (co) => co.id === ord.id || (ord.orderNumber && co.orderNumber === ord.orderNumber)
+                        )
+                      ) {
+                        customerPlacedOrders.push(ord);
+                      }
+                    });
+                  }
                 }
-              });
-            } catch (e) {}
+              } catch (e) {}
+            }
           }
         }
-
-
 
         // Merge orders with latest backend status
-
         let combined: any[] = [];
 
-
-
         if (customer) {
-
-          // STRICT CUSTOMER SCOPE: Show ONLY orders belonging to this logged in customer
-
           const customerEmailClean = customer.email?.toLowerCase().trim();
-
           const customerId = customer.id;
 
-
-
           const filteredBackend = backendOrders.filter((bo) => {
-
             const matchId = bo.customer_id && bo.customer_id === customerId;
-
             const matchEmail = bo.customerEmail && bo.customerEmail.toLowerCase().trim() === customerEmailClean;
-
             return matchId || matchEmail;
-
           });
-
-
 
           const filteredLocal = customerPlacedOrders.filter((co: any) => {
-
             const matchId = co.customer_id && co.customer_id === customerId;
-
             const matchEmail = co.customerEmail && co.customerEmail.toLowerCase().trim() === customerEmailClean;
-
             return matchId || matchEmail;
-
           });
 
-
-
-          // Prioritize server status over local storage
           const mergedLocal = filteredLocal.map((co: any) => {
             const match = filteredBackend.find(
               (bo: any) => bo.id === co.id || bo.orderNumber === co.orderNumber
@@ -203,8 +179,11 @@ export default function CustomerOrdersTrackingModal({
             return match
               ? {
                   ...co,
-                  deliveryStatus: match.deliveryStatus || co.deliveryStatus,
+                  deliveryStatus: match.deliveryStatus || match.delivery_status || co.deliveryStatus,
+                  delivery_status: match.deliveryStatus || match.delivery_status || co.delivery_status,
+                  order_status: match.order_status || match.deliveryStatus || co.order_status,
                   paymentStatus: match.paymentStatus || co.paymentStatus,
+                  payment_method: match.payment_method || co.payment_method || co.paymentMethod,
                   escrowStatus: match.escrowStatus || co.escrowStatus,
                   timeline: match.timeline || co.timeline,
                   carrier: match.carrier || match.courier_name || co.carrier,
@@ -222,7 +201,6 @@ export default function CustomerOrdersTrackingModal({
               combined.push(bo);
             }
           });
-
         } else {
           // If guest, show orders placed in this browser session, merged with backend updates
           const mergedGuest = customerPlacedOrders.map((co: any) => {
@@ -232,8 +210,11 @@ export default function CustomerOrdersTrackingModal({
             return match
               ? {
                   ...co,
-                  deliveryStatus: match.deliveryStatus || co.deliveryStatus,
+                  deliveryStatus: match.deliveryStatus || match.delivery_status || co.deliveryStatus,
+                  delivery_status: match.deliveryStatus || match.delivery_status || co.delivery_status,
+                  order_status: match.order_status || match.deliveryStatus || co.order_status,
                   paymentStatus: match.paymentStatus || co.paymentStatus,
+                  payment_method: match.payment_method || co.payment_method || co.paymentMethod,
                   escrowStatus: match.escrowStatus || co.escrowStatus,
                   timeline: match.timeline || co.timeline,
                   carrier: match.carrier || match.courier_name || co.carrier,
@@ -253,92 +234,97 @@ export default function CustomerOrdersTrackingModal({
           });
         }
 
-
-
         // Strictly sort by latest date descending
-
         combined.sort(
-
           (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-
         );
-
-
 
         setOrdersList(combined);
 
-
-
         // Keep active selected order updated with latest status
-
         setSelectedOrder((prev: any) => {
-
           if (!prev) return null;
-
           const fresh = combined.find(
-
-            (o: any) => o.id === prev.id || o.orderNumber === prev.orderNumber
-
+            (o: any) =>
+              o.id === prev.id ||
+              o.orderNumber === prev.orderNumber ||
+              (prev.orderNumber && (o.id === prev.orderNumber || o.orderNumber === prev.orderNumber)) ||
+              (prev.id && (o.id === prev.id || o.orderNumber === prev.id))
           );
-
           return fresh ? { ...prev, ...fresh } : prev;
-
         });
 
-
-
-        // If initialOrderNumber passed, select that order
-
-        if (initialOrderNumber) {
-
-          const target = combined.find(
-
-            (o: any) => o.orderNumber?.toLowerCase() === initialOrderNumber.toLowerCase()
-
-          );
-
-          if (target) {
-
-            setSelectedOrder(target);
-
-            setActiveTab("search_tracking");
-
+        // Authoritative single order fetch for selected order or initialOrderNumber
+        const activeOrderToSync = selectedOrderRef.current || (initialOrderNumber ? { orderNumber: initialOrderNumber } : null);
+        if (activeOrderToSync) {
+          const lookupKey = activeOrderToSync.orderNumber || activeOrderToSync.id;
+          if (lookupKey) {
+            try {
+              const singleRes = await fetch(`/api/orders/${encodeURIComponent(lookupKey)}`);
+              if (singleRes.ok) {
+                const singleData = await singleRes.json();
+                const authoritativeOrder = singleData.order || (singleData.id ? singleData : null);
+                if (authoritativeOrder) {
+                  setSelectedOrder((prev: any) => ({ ...(prev || {}), ...authoritativeOrder }));
+                  setOrdersList((prev) => {
+                    const matchIdx = prev.findIndex(
+                      (o: any) => o.id === authoritativeOrder.id || o.orderNumber === authoritativeOrder.orderNumber
+                    );
+                    if (matchIdx !== -1) {
+                      const copy = [...prev];
+                      copy[matchIdx] = { ...copy[matchIdx], ...authoritativeOrder };
+                      return copy;
+                    }
+                    return [authoritativeOrder, ...prev];
+                  });
+                }
+              }
+            } catch (e) {}
           }
-
         }
 
+        // Sync fresh statuses back to localStorage
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith("storefront_customer_orders_")) {
+              const raw = localStorage.getItem(k);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  let changed = false;
+                  const updatedList = parsed.map((item: any) => {
+                    const match = combined.find((c: any) => c.id === item.id || c.orderNumber === item.orderNumber);
+                    if (match && (match.deliveryStatus !== item.deliveryStatus || match.order_status !== item.order_status)) {
+                      changed = true;
+                      return { ...item, ...match };
+                    }
+                    return item;
+                  });
+                  if (changed) {
+                    localStorage.setItem(k, JSON.stringify(updatedList));
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {}
       } catch (err) {
-
         console.error("Failed to load customer orders", err);
-
       } finally {
-
         setIsLoading(false);
-
       }
-
     };
-
-
 
     loadOrders();
 
-
-
     // Auto-poll for status updates every 3 seconds while modal is open
-
     const pollInterval = setInterval(loadOrders, 3000);
 
-
-
     // Listen to real-time vendor status changes
-
     let bc: BroadcastChannel | null = null;
-
     try {
-
       bc = new BroadcastChannel("vendor_orders_channel");
-
       bc.onmessage = (event) => {
         if (event.data?.type === "ORDER_STATUS_UPDATED") {
           const { orderId, orderNumber, newStatus } = event.data;
@@ -349,15 +335,36 @@ export default function CustomerOrdersTrackingModal({
           setOrdersList((prev) =>
             prev.map((o) =>
               matchOrder(o)
-                ? { ...o, deliveryStatus: newStatus }
+                ? { ...o, deliveryStatus: newStatus, delivery_status: newStatus, order_status: newStatus }
                 : o
             )
           );
           setSelectedOrder((prev: any) =>
             prev && matchOrder(prev)
-              ? { ...prev, deliveryStatus: newStatus }
+              ? { ...prev, deliveryStatus: newStatus, delivery_status: newStatus, order_status: newStatus }
               : prev
           );
+
+          // Update local storage directly
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && key.startsWith("storefront_customer_orders_")) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                  const list = JSON.parse(raw);
+                  if (Array.isArray(list)) {
+                    const updatedList = list.map((item: any) =>
+                      matchOrder(item)
+                        ? { ...item, deliveryStatus: newStatus, delivery_status: newStatus, order_status: newStatus }
+                        : item
+                    );
+                    localStorage.setItem(key, JSON.stringify(updatedList));
+                  }
+                }
+              }
+            }
+          } catch (e) {}
         } else if (event.data?.type === "ORDER_TRACKING_UPDATED") {
           const { orderId, orderNumber, carrier, trackingNumber } = event.data;
           const matchOrder = (o: any) =>
@@ -392,19 +399,12 @@ export default function CustomerOrdersTrackingModal({
           );
         }
       };
-
     } catch (e) {}
 
-
-
     return () => {
-
       clearInterval(pollInterval);
-
       if (bc) bc.close();
-
     };
-
   }, [isOpen, initialOrderNumber, storeId, customer]);
 
 
@@ -414,71 +414,69 @@ export default function CustomerOrdersTrackingModal({
 
 
   const handleSearchOrder = async (e: React.FormEvent) => {
-
     e.preventDefault();
-
     if (!searchQuery.trim()) return;
 
-
-
     const q = searchQuery.trim().toLowerCase();
-
-    const found = ordersList.find(
-
-      (o) =>
-
-        o.orderNumber?.toLowerCase().includes(q) ||
-
-        o.customerPhone?.replace(/[^0-9]/g, "").includes(q) ||
-
-        o.customerEmail?.toLowerCase().includes(q)
-
-    );
-
-
-
-    if (found) {
-
-      setSelectedOrder(found);
-
-      return;
-
-    }
-
-
-
-    // Try searching from backend database
+    const cleanSearch = searchQuery.trim();
 
     setIsLoading(true);
-
     try {
-
-      const res = await fetch(`/api/orders?searchQuery=${encodeURIComponent(searchQuery.trim())}`);
-
-      if (res.ok) {
-
-        const data = await res.json();
-
-        if (data.orders && data.orders.length > 0) {
-
-          setSelectedOrder(data.orders[0]);
-
+      // 1. Direct authoritative lookup by ID or orderNumber
+      const singleRes = await fetch(`/api/orders/${encodeURIComponent(cleanSearch)}`);
+      if (singleRes.ok) {
+        const singleData = await singleRes.json();
+        const foundOrder = singleData.order || (singleData.id ? singleData : null);
+        if (foundOrder) {
+          setSelectedOrder(foundOrder);
+          setOrdersList((prev) => {
+            const exists = prev.some((o) => o.id === foundOrder.id || o.orderNumber === foundOrder.orderNumber);
+            return exists
+              ? prev.map((o) => (o.id === foundOrder.id || o.orderNumber === foundOrder.orderNumber ? { ...o, ...foundOrder } : o))
+              : [foundOrder, ...prev];
+          });
           return;
-
         }
-
       }
 
+      // 2. Check local ordersList
+      const localFound = ordersList.find(
+        (o) =>
+          o.orderNumber?.toLowerCase().includes(q) ||
+          o.id?.toLowerCase().includes(q) ||
+          o.customerPhone?.replace(/[^0-9]/g, "").includes(q) ||
+          o.customerEmail?.toLowerCase().includes(q)
+      );
+
+      if (localFound) {
+        setSelectedOrder(localFound);
+        // Refresh with latest status from server
+        try {
+          const freshRes = await fetch(`/api/orders/${encodeURIComponent(localFound.orderNumber || localFound.id)}`);
+          if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            if (freshData.order) {
+              setSelectedOrder((prev: any) => ({ ...prev, ...freshData.order }));
+            }
+          }
+        } catch (e) {}
+        return;
+      }
+
+      // 3. Fallback search query
+      const res = await fetch(`/api/orders?searchQuery=${encodeURIComponent(cleanSearch)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.orders && data.orders.length > 0) {
+          setSelectedOrder(data.orders[0]);
+          return;
+        }
+      }
     } catch (e) {
-
       console.warn("Backend order search failed:", e);
-
     } finally {
-
       setIsLoading(false);
-
     }
-
   };
 
 
@@ -500,7 +498,7 @@ export default function CustomerOrdersTrackingModal({
       case "shipped":
         return (
           <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F5EFF7] text-[#5A3D63] border border-[#D1B2DB] flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#694873] animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#694873]" />
             <span>In Transit ({carrierName || "Courier"})</span>
           </span>
         );
@@ -674,7 +672,18 @@ export default function CustomerOrdersTrackingModal({
 
 
 
-                    <div>{getStatusBadge(selectedOrder.deliveryStatus)}</div>
+                    <div>
+                      {getStatusBadge(
+                        (
+                          selectedOrder.deliveryStatus ||
+                          selectedOrder.delivery_status ||
+                          selectedOrder.order_status ||
+                          selectedOrder.status ||
+                          "pending"
+                        ).toLowerCase(),
+                        selectedOrder.carrier || selectedOrder.courier_name
+                      )}
+                    </div>
 
                   </div>
 
@@ -716,7 +725,7 @@ export default function CustomerOrdersTrackingModal({
 
                       <span className="font-bold text-slate-200 uppercase">
 
-                        {selectedOrder.paymentMethod === "cod" ? "COD (Cash on Delivery)" : "Online Escrow"}
+                        {String(selectedOrder.paymentMethod || selectedOrder.payment_method || "cod").toLowerCase() === "cod" ? "COD (Cash on Delivery)" : "Online Escrow"}
 
                       </span>
 
@@ -735,115 +744,110 @@ export default function CustomerOrdersTrackingModal({
                 </div>
 
                 {/* Live Step Tracker Timeline */}
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
-                    <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-[#694873]" />
-                      <span>Live Delivery Timeline</span>
-                    </h4>
-                    <span className="text-[11px] font-bold text-[#694873]">
-                      Estimated Arrival: 2-4 Days
-                    </span>
-                  </div>
+                {(() => {
+                  const activeDelStatus = (
+                    selectedOrder.deliveryStatus ||
+                    selectedOrder.delivery_status ||
+                    selectedOrder.order_status ||
+                    selectedOrder.status ||
+                    "pending"
+                  ).toLowerCase();
 
-                  {/* Vertical / Horizontal Timeline */}
-                  <div className="space-y-4 pt-2">
-                    {/* Step 1: Order Placed */}
-                    <div className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-full bg-[#694873] text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
-                        <Check className="w-3.5 h-3.5" />
+                  const isConfirmedStep = ["confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed"].includes(activeDelStatus);
+                  const isShippedStep = ["shipped", "delivered", "completed"].includes(activeDelStatus);
+                  const isDeliveredStep = ["delivered", "completed"].includes(activeDelStatus);
+
+                  return (
+                    <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                        <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                          <Truck className="w-4 h-4 text-[#694873]" />
+                          <span>Live Delivery Timeline</span>
+                        </h4>
+                        <span className="text-[11px] font-bold text-[#694873]">
+                          Estimated Arrival: 2-4 Days
+                        </span>
                       </div>
-                      <div>
-                        <p className="font-bold text-xs text-slate-900">Order Placed &amp; Verified</p>
-                        <p className="text-[11px] text-slate-500">
-                          {new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System recorded order
-                        </p>
+
+                      {/* Vertical Timeline */}
+                      <div className="space-y-4 pt-2">
+                        {/* Step 1: Order Placed */}
+                        <div className="flex items-start gap-3">
+                          <div className="w-7 h-7 rounded-full bg-[#694873] text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm">
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-xs text-slate-900">Order Placed &amp; Verified</p>
+                            <p className="text-[11px] text-slate-500">
+                              {new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System recorded order
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 2: Confirmed */}
+                        <div className="flex items-start gap-3">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
+                            isConfirmedStep
+                              ? "bg-[#694873] text-white"
+                              : "bg-slate-200 text-slate-500"
+                          }`}>
+                            {isConfirmedStep ? <Check className="w-3.5 h-3.5" /> : "2"}
+                          </div>
+                          <div>
+                            <p className={`font-bold text-xs ${isConfirmedStep ? "text-slate-900" : "text-slate-400"}`}>
+                              Order Confirmed by Vendor
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              Stock reserved and packaging initiated in warehouse
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 3: Shipped / In Transit */}
+                        <div className="flex items-start gap-3">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
+                            isShippedStep
+                              ? "bg-[#694873] text-white"
+                              : "bg-slate-200 text-slate-500"
+                          }`}>
+                            {isDeliveredStep ? <Check className="w-3.5 h-3.5" /> : "3"}
+                          </div>
+                          <div>
+                            <p className={`font-bold text-xs ${
+                              isShippedStep
+                                ? "text-slate-900"
+                                : "text-slate-400"
+                            }`}>
+                              Handed over to {selectedOrder.carrier || selectedOrder.courier_name || "Express Courier"}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              Waybill #{selectedOrder.trackingNumber || selectedOrder.tracking_number || selectedOrder.waybill_number || selectedOrder.orderNumber || "Pending"} • Transit to destination hub
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 4: Delivered */}
+                        <div className="flex items-start gap-3">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
+                            isDeliveredStep
+                              ? "bg-[#694873] text-white"
+                              : "bg-slate-200 text-slate-500"
+                          }`}>
+                            {isDeliveredStep ? <Check className="w-3.5 h-3.5" /> : "4"}
+                          </div>
+                          <div>
+                            <p className={`font-bold text-xs ${isDeliveredStep ? "text-slate-900" : "text-slate-400"}`}>
+                              Delivered to Doorstep
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              Signed and cash collected via COD
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Step 2: Confirmed */}
-                    <div className="flex items-start gap-3">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
-                        selectedOrder.deliveryStatus !== "pending"
-                          ? "bg-[#694873] text-white"
-                          : "bg-slate-200 text-slate-500"
-                      }`}>
-                        {selectedOrder.deliveryStatus !== "pending" ? <Check className="w-3.5 h-3.5" /> : "2"}
-                      </div>
-                      <div>
-                        <p className={`font-bold text-xs ${selectedOrder.deliveryStatus !== "pending" ? "text-slate-900" : "text-slate-400"}`}>
-                          Order Confirmed by Vendor
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Stock reserved and packaging initiated in warehouse
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Step 3: Shipped / In Transit */}
-                    <div className="flex items-start gap-3">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
-                        selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
-                          ? "bg-[#694873] text-white animate-pulse"
-                          : "bg-slate-200 text-slate-500"
-                      }`}>
-                        {selectedOrder.deliveryStatus === "delivered" ? <Check className="w-3.5 h-3.5" /> : "3"}
-                      </div>
-                      <div>
-                        <p className={`font-bold text-xs ${
-                          selectedOrder.deliveryStatus === "shipped" || selectedOrder.deliveryStatus === "delivered"
-                            ? "text-slate-900"
-                            : "text-slate-400"
-                        }`}>
-                          Handed over to {selectedOrder.carrier || selectedOrder.courier_name || "Express Courier"}
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Waybill #{selectedOrder.trackingNumber || selectedOrder.tracking_number || selectedOrder.waybill_number || selectedOrder.orderNumber || "Pending"} • Transit to destination hub
-                        </p>
-                      </div>
-                    </div>
-
-
-
-                    {/* Step 4: Delivered */}
-
-                    <div className="flex items-start gap-3">
-
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-sm ${
-
-                        selectedOrder.deliveryStatus === "delivered"
-
-                          ? "bg-[#694873] text-white"
-
-                          : "bg-slate-200 text-slate-500"
-
-                      }`}>
-
-                        {selectedOrder.deliveryStatus === "delivered" ? <Check className="w-3.5 h-3.5" /> : "4"}
-
-                      </div>
-
-                      <div>
-
-                        <p className={`font-bold text-xs ${selectedOrder.deliveryStatus === "delivered" ? "text-slate-900" : "text-slate-400"}`}>
-
-                          Delivered to Doorstep
-
-                        </p>
-
-                        <p className="text-[11px] text-slate-500">
-
-                          Signed and cash collected via COD
-
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                </div>
+                  );
+                })()}
 
 
 
@@ -990,13 +994,29 @@ export default function CustomerOrdersTrackingModal({
                   ordersList.map((ord) => (
 
                     <div
-
                       key={ord.id || ord.orderNumber}
-
-                      onClick={() => setSelectedOrder(ord)}
-
+                      onClick={async () => {
+                        setSelectedOrder(ord);
+                        setActiveTab("search_tracking");
+                        try {
+                          const lookup = ord.orderNumber || ord.id;
+                          const res = await fetch(`/api/orders/${encodeURIComponent(lookup)}`);
+                          if (res.ok) {
+                            const data = await res.json();
+                            if (data.order) {
+                              setSelectedOrder((prev: any) => ({ ...(prev || {}), ...data.order }));
+                              setOrdersList((prevList) =>
+                                prevList.map((item) =>
+                                  item.orderNumber === data.order.orderNumber || item.id === data.order.id
+                                    ? { ...item, ...data.order }
+                                    : item
+                                )
+                              );
+                            }
+                          }
+                        } catch (e) {}
+                      }}
                       className="p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-[#694873]/50 hover:bg-slate-50/80 transition-all cursor-pointer group shadow-xs space-y-3"
-
                     >
 
                       <div className="flex items-center justify-between gap-3">
@@ -1027,7 +1047,18 @@ export default function CustomerOrdersTrackingModal({
 
                         </div>
 
-
+                        <div>
+                          {getStatusBadge(
+                            (
+                              ord.deliveryStatus ||
+                              ord.delivery_status ||
+                              ord.order_status ||
+                              ord.status ||
+                              "pending"
+                            ).toLowerCase(),
+                            ord.carrier || ord.courier_name
+                          )}
+                        </div>
 
                       </div>
 

@@ -243,33 +243,42 @@ export class OrdersBackendService {
             const activeShipment = dbo.shipments?.[0];
             const displayOrderNumber = meta.orderNumber || meta.order_number || dbo.order_number || `ALT-2026-${dbo.id.replace(/[^0-9]/g, "").slice(0, 6) || "100001"}`;
 
-            return {
-              id: dbo.id,
-              order_number: displayOrderNumber,
-              orderNumber: displayOrderNumber,
-              store_id: dbo.store_id || meta.store_id || meta.storeId || (realStoreId && (validOrderIds.has(dbo.id) || (dbo.customer_id && validCustIds.has(dbo.customer_id))) ? realStoreId : "unknown_store"),
-              vendor_id: dbo.vendor_id || vendorId,
-              customer_id: dbo.customer_id,
-              customerId: dbo.customer_id,
-              customerName: dbo.customer_name || "Valued Customer",
-              customer_name: dbo.customer_name || "Valued Customer",
-              customerEmail: dbo.customer_email || "customer@pakistan.store",
-              customer_email: dbo.customer_email || "customer@pakistan.store",
-              customerPhone: dbo.customer_phone || "0300 1234567",
-              customer_phone: dbo.customer_phone || "0300 1234567",
-              subtotal,
-              discount_total: discount,
-              shipping_total: shipping,
-              tax_total: tax,
-              grand_total: grandTotal,
-              totalAmount: grandTotal,
-              currency: "USD",
-              order_status: (meta.order_status || dbo.order_status || dbo.delivery_status || "pending") as OrderStatus,
-              paymentStatus: (meta.paymentStatus || dbo.payment_status || "pending") as PaymentStatus,
-              payment_status: (meta.payment_status || dbo.payment_status || "pending") as PaymentStatus,
-              fulfillment_status: (meta.fulfillment_status || dbo.fulfillment_status || "unfulfilled") as FulfillmentStatus,
-              deliveryStatus: (meta.deliveryStatus || dbo.delivery_status || "pending") as DeliveryStatus,
-              delivery_status: (meta.delivery_status || dbo.delivery_status || "pending") as DeliveryStatus,
+              const effectiveStatus = (
+                meta.deliveryStatus ||
+                meta.delivery_status ||
+                (dbo.delivery_status && dbo.delivery_status !== "pending" ? dbo.delivery_status : null) ||
+                activeShipment?.status ||
+                dbo.delivery_status ||
+                "pending"
+              ) as DeliveryStatus;
+
+              return {
+                id: dbo.id,
+                order_number: displayOrderNumber,
+                orderNumber: displayOrderNumber,
+                store_id: dbo.store_id || meta.store_id || meta.storeId || (realStoreId && (validOrderIds.has(dbo.id) || (dbo.customer_id && validCustIds.has(dbo.customer_id))) ? realStoreId : "unknown_store"),
+                vendor_id: dbo.vendor_id || vendorId,
+                customer_id: dbo.customer_id,
+                customerId: dbo.customer_id,
+                customerName: dbo.customer_name || "Valued Customer",
+                customer_name: dbo.customer_name || "Valued Customer",
+                customerEmail: dbo.customer_email || "customer@pakistan.store",
+                customer_email: dbo.customer_email || "customer@pakistan.store",
+                customerPhone: dbo.customer_phone || "0300 1234567",
+                customer_phone: dbo.customer_phone || "0300 1234567",
+                subtotal,
+                discount_total: discount,
+                shipping_total: shipping,
+                tax_total: tax,
+                grand_total: grandTotal,
+                totalAmount: grandTotal,
+                currency: "USD",
+                order_status: (meta.order_status || effectiveStatus) as OrderStatus,
+                paymentStatus: (meta.paymentStatus || dbo.payment_status || "pending") as PaymentStatus,
+                payment_status: (meta.payment_status || dbo.payment_status || "pending") as PaymentStatus,
+                fulfillment_status: (meta.fulfillment_status || ((effectiveStatus as any) === "delivered" || (effectiveStatus as any) === "shipped" ? "fulfilled" : dbo.fulfillment_status) || "unfulfilled") as FulfillmentStatus,
+                deliveryStatus: effectiveStatus,
+                delivery_status: effectiveStatus,
               return_status: dbo.return_status || "none",
               refund_status: dbo.refund_status || "none",
               cod_status: dbo.cod_status || "pending",
@@ -553,6 +562,15 @@ export class OrdersBackendService {
           const activeShipment = dbo.shipments?.[0];
           const displayOrderNumber = meta.orderNumber || meta.order_number || inMem?.orderNumber || dbo.order_number || `ALT-2026-${dbo.id.replace(/[^0-9]/g, "").slice(0, 6) || "100001"}`;
 
+          const effectiveStatus = (
+            meta.deliveryStatus ||
+            meta.delivery_status ||
+            (dbo.delivery_status && dbo.delivery_status !== "pending" ? dbo.delivery_status : null) ||
+            activeShipment?.status ||
+            dbo.delivery_status ||
+            "pending"
+          ) as DeliveryStatus;
+
           const loadedOrder: Order = {
             id: dbo.id,
             order_number: displayOrderNumber,
@@ -570,12 +588,12 @@ export class OrdersBackendService {
             grand_total: grandTotal,
             totalAmount: grandTotal,
             currency: "USD",
-            order_status: (meta.order_status || dbo.order_status || dbo.delivery_status || "pending") as OrderStatus,
+            order_status: (meta.order_status || effectiveStatus) as OrderStatus,
             paymentStatus: (meta.paymentStatus || dbo.payment_status || "pending") as PaymentStatus,
             payment_status: (meta.payment_status || dbo.payment_status || "pending") as PaymentStatus,
-            fulfillment_status: (meta.fulfillment_status || dbo.fulfillment_status || "unfulfilled") as FulfillmentStatus,
-            deliveryStatus: (meta.deliveryStatus || dbo.delivery_status || "pending") as DeliveryStatus,
-            delivery_status: (meta.delivery_status || dbo.delivery_status || "pending") as DeliveryStatus,
+            fulfillment_status: (meta.fulfillment_status || ((effectiveStatus as any) === "delivered" || (effectiveStatus as any) === "shipped" ? "fulfilled" : dbo.fulfillment_status) || "unfulfilled") as FulfillmentStatus,
+            deliveryStatus: effectiveStatus,
+            delivery_status: effectiveStatus,
             return_status: dbo.return_status || "none",
             refund_status: dbo.refund_status || "none",
             cod_status: dbo.cod_status || "pending",
@@ -1237,7 +1255,6 @@ export class OrdersBackendService {
         await supabaseAdmin
           .from("orders")
           .update({
-            order_status: updated.order_status,
             delivery_status: updated.delivery_status,
             payment_status: updated.payment_status,
             escrow_status: updated.escrowStatus,
