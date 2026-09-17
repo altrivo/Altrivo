@@ -472,18 +472,7 @@ export default function CustomerOrdersTrackingModal({
     switch (status) {
 
       case "pending":
-
-        return (
-
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-
-            <span>Order Placed (Pending)</span>
-
-          </span>
-
-        );
+        return null;
 
       case "processing":
 
@@ -1109,8 +1098,6 @@ export default function CustomerOrdersTrackingModal({
                         </div>
 
 
-
-                        {getStatusBadge(ord.deliveryStatus)}
 
                       </div>
 
