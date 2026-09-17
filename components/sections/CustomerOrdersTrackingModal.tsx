@@ -630,113 +630,52 @@ export default function CustomerOrdersTrackingModal({
 
 
 
-                {/* Top Status & Summary Card */}
-
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl space-y-4">
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
-
-                    <div>
-
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
-
-                        Order Tracking ID
-
+                {/* Top Status & Summary Card (Clean Light Design without dark background or badge) */}
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 text-slate-900 shadow-xs space-y-4">
+                  <div className="border-b border-slate-200 pb-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
+                      Order Tracking ID
+                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="font-mono font-black text-lg text-slate-900">
+                        {selectedOrder.orderNumber}
                       </span>
-
-                      <div className="flex items-center gap-2 mt-0.5">
-
-                        <span className="font-mono font-black text-lg text-white">
-
-                          {selectedOrder.orderNumber}
-
-                        </span>
-
-                        <button
-
-                          onClick={() => copyTrackingNumber(selectedOrder.orderNumber)}
-
-                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all"
-
-                          title="Copy Order ID"
-
-                        >
-
-                          {copiedTracking ? <Check className="w-3.5 h-3.5 text-[#D1B2DB]" /> : <Copy className="w-3.5 h-3.5" />}
-
-                        </button>
-
-                      </div>
-
+                      <button
+                        onClick={() => copyTrackingNumber(selectedOrder.orderNumber)}
+                        className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 transition-all shadow-xs"
+                        title="Copy Order ID"
+                      >
+                        {copiedTracking ? <Check className="w-3.5 h-3.5 text-[#694873]" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
                     </div>
-
-
-
-                    <div>
-                      {getStatusBadge(
-                        (
-                          selectedOrder.deliveryStatus ||
-                          selectedOrder.delivery_status ||
-                          selectedOrder.order_status ||
-                          selectedOrder.status ||
-                          "pending"
-                        ).toLowerCase(),
-                        selectedOrder.carrier || selectedOrder.courier_name
-                      )}
-                    </div>
-
                   </div>
 
-
-
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-
                     <div>
-
-                      <span className="text-slate-400 block text-[10px]">Order Date</span>
-
-                      <span className="font-bold text-slate-200" suppressHydrationWarning>
-
+                      <span className="text-slate-400 block text-[10px] font-medium">Order Date</span>
+                      <span className="font-bold text-slate-800" suppressHydrationWarning>
                         {new Date(selectedOrder.createdAt).toLocaleDateString()}
-
                       </span>
-
                     </div>
 
-
-
                     <div>
-
-                      <span className="text-slate-400 block text-[10px]">Total Amount</span>
-
-                      <span className="font-black text-[#D1B2DB] text-sm">
-
+                      <span className="text-slate-400 block text-[10px] font-medium">Total Amount</span>
+                      <span className="font-black text-[#694873] text-sm">
                         $ {selectedOrder.totalAmount?.toLocaleString()}
-
                       </span>
-
                     </div>
 
-
-
                     <div>
-
-                      <span className="text-slate-400 block text-[10px]">Payment Method</span>
-
-                      <span className="font-bold text-slate-200 uppercase">
-
+                      <span className="text-slate-400 block text-[10px] font-medium">Payment Method</span>
+                      <span className="font-bold text-slate-800 uppercase">
                         {String(selectedOrder.paymentMethod || selectedOrder.payment_method || "cod").toLowerCase() === "cod" ? "COD (Cash on Delivery)" : "Online Escrow"}
-
                       </span>
-
                     </div>
 
-
-
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Courier Partner</span>
-                      <span className="font-bold text-slate-200 flex items-center gap-1">
-                        <Truck className="w-3.5 h-3.5 text-[#D1B2DB]" />
+                      <span className="text-slate-400 block text-[10px] font-medium">Courier Partner</span>
+                      <span className="font-bold text-slate-800 flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5 text-[#694873]" />
                         <span>{selectedOrder.carrier || selectedOrder.courier_name || "Express Courier"}</span>
                       </span>
                     </div>
