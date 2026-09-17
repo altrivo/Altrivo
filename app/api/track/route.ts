@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import fs from "fs";
 import path from "path";
+import { supabaseAdmin } from "@/lib/supabase";
 
 // ---------------------------------------------------------------------------
 // File-backed Event Store — persists to .data/tracking_events.json
@@ -82,6 +83,40 @@ export async function POST(req: NextRequest) {
 
     // Persist to disk
     appendEvent(eventRecord);
+
+    // Persist to Supabase database (real-time cloud analytics)
+    if (supabaseAdmin) {
+      (async () => {
+        try {
+          let vId = (eventRecord.vendorId || "").toString();
+          const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vId);
+
+          if (!isValidUUID && eventRecord.storeId) {
+            const sId = (eventRecord.storeId || "").toString();
+            const isStoreUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sId);
+            let sQuery = supabaseAdmin.from("stores").select("vendor_id");
+            if (isStoreUUID) sQuery = sQuery.eq("id", sId);
+            else sQuery = sQuery.or(`slug.eq.${sId},subdomain.eq.${sId}`);
+            const { data: sData } = await sQuery.maybeSingle();
+            if (sData?.vendor_id) vId = sData.vendor_id;
+          }
+
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vId)) {
+            await supabaseAdmin.from("page_views").insert({
+              vendor_id: vId,
+              session_id: eventRecord.sessionId,
+              page: eventRecord.page,
+              city: eventRecord.city,
+              country: eventRecord.country,
+              device: eventRecord.device,
+              referrer: eventRecord.referrer,
+            });
+          }
+        } catch (dbErr) {
+          console.warn("[Track API] Supabase page_views insert notice:", dbErr);
+        }
+      })();
+    }
 
     return NextResponse.json(
       {

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { ShoppingCart, DollarSign, TrendingUp, Package, Plus } from "lucide-react";
 
 export default function AnalyticsPage() {
-  const { activeStoreId, stores, isLoading: isStoreLoading } = useVendorStore();
+  const { activeStore, activeStoreId, vendor, stores, isLoading: isStoreLoading } = useVendorStore();
   const [range, setRange] = useState<string>("7d");
   const [loading, setLoading] = useState<boolean>(true);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -33,6 +33,12 @@ export default function AnalyticsPage() {
       if (activeStoreId) {
         params.set("storeId", activeStoreId);
       }
+      if (activeStore?.slug) {
+        params.set("storeSlug", activeStore.slug);
+      }
+      if (vendor?.id) {
+        params.set("vendorId", vendor.id);
+      }
       const res = await fetch(`/api/analytics?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
@@ -49,7 +55,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics(range);
-  }, [range, activeStoreId, isStoreLoading, stores.length]);
+  }, [range, activeStoreId, activeStore?.slug, vendor?.id, isStoreLoading, stores.length]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-normal select-none">

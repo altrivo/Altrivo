@@ -35,11 +35,12 @@ export function StorefrontBeacon({
     }
 
     // 2. Session ID Management via sessionStorage
-    let sessionId = sessionStorage.getItem("altrivo_session_id");
+    let sessionId = sessionStorage.getItem("altrivo_session_id") || sessionStorage.getItem("artrivo_session_id");
     if (!sessionId) {
       sessionId =
         "sess_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now();
       sessionStorage.setItem("altrivo_session_id", sessionId);
+      sessionStorage.setItem("artrivo_session_id", sessionId);
     }
 
     // 3. Device Classification
