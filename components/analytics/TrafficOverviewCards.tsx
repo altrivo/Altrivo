@@ -26,14 +26,18 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
     );
   }
 
-  // Use real sparklines if provided, else fallback static data
-  const sparklineVisits  = (overview.sparklineVisits  && overview.sparklineVisits.length  > 0)
-    ? overview.sparklineVisits
-    : [12000, 14500, 16000, 15200, 17800, 19100, 21500];
+  // Use real sparklines if provided, else clean zeros
+  const sparklineVisits =
+    overview.sparklineVisits && overview.sparklineVisits.length > 0
+      ? overview.sparklineVisits
+      : [0, 0, 0, 0, 0, 0, 0];
 
-  const sparklineUnique  = (overview.sparklineUnique  && overview.sparklineUnique.length  > 0)
-    ? overview.sparklineUnique
-    : [8500, 9200, 10100, 9800, 11200, 12000, 13400];
+  const sparklineUnique =
+    overview.sparklineUnique && overview.sparklineUnique.length > 0
+      ? overview.sparklineUnique
+      : [0, 0, 0, 0, 0, 0, 0];
+
+  const hasTraffic = (overview.rawVisits || 0) > 0;
 
   const cards = [
     {
@@ -60,7 +64,7 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
       change: overview.durationChange,
       icon: Clock,
       trend: "up" as const,
-      sparkline: [2.8, 3.0, 3.1, 3.2, 3.4, 3.5, parseFloat(overview.avgSessionDuration) || 3.7],
+      sparkline: hasTraffic ? [2.8, 3.0, 3.1, 3.2, 3.4, 3.5, parseFloat(overview.avgSessionDuration) || 3.7] : [0, 0, 0, 0, 0, 0, 0],
       iconBg: "bg-info-50 text-info-600 border border-info-200",
     },
     {
@@ -69,7 +73,7 @@ export function TrafficOverviewCards({ overview, isLive, loading }: TrafficOverv
       change: overview.bounceChange,
       icon: Activity,
       trend: overview.bounceChange < 0 ? ("up" as const) : ("down" as const),
-      sparkline: [38.2, 37.0, 36.1, 35.4, 34.2, 33.0, parseFloat(overview.bounceRate) || 32.4],
+      sparkline: hasTraffic ? [38.2, 37.0, 36.1, 35.4, 34.2, 33.0, parseFloat(overview.bounceRate) || 32.4] : [0, 0, 0, 0, 0, 0, 0],
       iconBg: "bg-warning-50 text-warning-600 border border-warning-200",
     },
   ];

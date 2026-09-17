@@ -9,6 +9,7 @@ import HeaderStandard from "@/components/sections/HeaderStandard";
 import FooterDetailed from "@/components/sections/FooterDetailed";
 import StorefrontGlobalModals from "@/components/sections/StorefrontGlobalModals";
 import ProductDetailClient from "./ProductDetailClient";
+import { StorefrontBeacon } from "@/components/analytics/StorefrontBeacon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -165,6 +166,19 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <CartProvider storeId={slug}>
+      <StorefrontBeacon
+        vendorId={config.vendorId}
+        storeId={config.storeId}
+        productContext={{
+          productId: normalizedProduct.id,
+          productName: normalizedProduct.name,
+          category: normalizedProduct.category,
+          price:
+            typeof normalizedProduct.price === "number"
+              ? normalizedProduct.price
+              : parseFloat(String(normalizedProduct.price).replace(/[^0-9.]/g, "")) || 0,
+        }}
+      />
       {/* Main Page Layout */}
       <div
         className="min-h-screen bg-slate-50 text-slate-900"

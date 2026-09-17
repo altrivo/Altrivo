@@ -10,8 +10,15 @@ interface CustomerRetentionBarChartProps {
 
 export function CustomerRetentionBarChart({ data }: CustomerRetentionBarChartProps) {
   const maxVal = Math.max(
+    0,
     ...data.flatMap((d) => [d.newCustomers, d.returningCustomers])
   );
+  const safeMax = maxVal > 0 ? maxVal : 1;
+  const totalNew = data.reduce((s, d) => s + d.newCustomers, 0);
+  const totalRet = data.reduce((s, d) => s + d.returningCustomers, 0);
+  const totalCustomers = totalNew + totalRet;
+  const avgNewPerDay = data.length > 0 ? Math.round(totalNew / data.length) : 0;
+  const retentionRate = totalCustomers > 0 ? ((totalRet / totalCustomers) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="rounded-2xl bg-card border border-default p-5 sm:p-6 shadow-card space-y-5 flex flex-col justify-between">
@@ -47,8 +54,8 @@ export function CustomerRetentionBarChart({ data }: CustomerRetentionBarChartPro
       {/* Bar Chart Bars Container */}
       <div className="pt-4 flex items-end justify-between gap-2 sm:gap-4 h-52 px-2 border-b border-default">
         {data.map((item) => {
-          const newHeight = (item.newCustomers / maxVal) * 100;
-          const retHeight = (item.returningCustomers / maxVal) * 100;
+          const newHeight = maxVal > 0 ? (item.newCustomers / safeMax) * 100 : 0;
+          const retHeight = maxVal > 0 ? (item.returningCustomers / safeMax) * 100 : 0;
 
           return (
             <div key={item.period} className="flex-1 flex flex-col items-center gap-2 group">
@@ -88,11 +95,11 @@ export function CustomerRetentionBarChart({ data }: CustomerRetentionBarChartPro
       <div className="flex items-center justify-between text-xs text-subtle pt-1 font-medium">
         <span className="flex items-center gap-1">
           <UserPlus className="w-3.5 h-3.5 text-accent-600" />
-          Average 610 new buyers/day
+          Average {avgNewPerDay} new buyers/day
         </span>
         <span className="flex items-center gap-1 font-bold text-primary-700">
           <UserCheck className="w-3.5 h-3.5 text-primary-600" />
-          41.8% Retention Rate
+          {retentionRate}% Retention Rate
         </span>
       </div>
     </div>

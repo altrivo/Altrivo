@@ -66,11 +66,21 @@ export function TrafficSourceDonut({ sources }: TrafficSourceDonutProps) {
           </svg>
 
           {/* Center Donut Label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-[10px] font-bold text-subtle uppercase">Top Channel</span>
-            <span className="text-sm font-extrabold text-heading">Meta Ads</span>
-            <span className="text-xs font-bold text-accent-600">42.5%</span>
-          </div>
+          {(() => {
+            const top = sources.find((s) => s.percentage > 0) || sources[0];
+            const hasTraffic = top && top.percentage > 0;
+            return (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+                <span className="text-[10px] font-bold text-subtle uppercase">Top Channel</span>
+                <span className="text-xs font-extrabold text-heading truncate max-w-[100px]">
+                  {hasTraffic ? top.source.split(" ")[0] : "Direct"}
+                </span>
+                <span className="text-xs font-bold text-accent-600">
+                  {hasTraffic ? `${top.percentage}%` : "0%"}
+                </span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Channel Breakdown Legend */}

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Pencil, Sparkles, Globe, ArrowLeft } from "lucide-react";
 import StorefrontRenderer from "@/components/sections/StorefrontRenderer";
 import { getStoreConfigBySlug, convertConfigToDynamicSchema } from "@/lib/storefront/themeResolver";
+import { StorefrontBeacon } from "@/components/analytics/StorefrontBeacon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,6 +53,7 @@ export default async function StorePreviewPage({ params }: PreviewPageProps) {
 
   return (
     <div className="relative min-h-screen">
+      <StorefrontBeacon vendorId={config.vendorId} storeId={config.storeId} />
       {/* Main Storefront Render Body */}
       <div>
         <StorefrontRenderer

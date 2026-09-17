@@ -148,7 +148,7 @@ export function KPICardRow({
               },
             };
           } else {
-            const finalViews = Math.max(dataToSet.views?.rawValue || 0, finalOrders * 25);
+            const finalViews = dataToSet.views?.rawValue || 0;
             const finalConv = finalViews > 0 ? (finalOrders / finalViews) * 100 : 0;
 
             dataToSet = {

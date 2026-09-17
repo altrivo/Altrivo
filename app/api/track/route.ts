@@ -89,19 +89,42 @@ export async function POST(req: NextRequest) {
       (async () => {
         try {
           let vId = (eventRecord.vendorId || "").toString();
-          const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vId);
+          let isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vId);
 
           if (!isValidUUID && eventRecord.storeId) {
             const sId = (eventRecord.storeId || "").toString();
             const isStoreUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sId);
-            let sQuery = supabaseAdmin.from("stores").select("vendor_id");
+            let sQuery = supabaseAdmin.from("stores").select("id, vendor_id");
             if (isStoreUUID) sQuery = sQuery.eq("id", sId);
             else sQuery = sQuery.or(`slug.eq.${sId},subdomain.eq.${sId}`);
             const { data: sData } = await sQuery.maybeSingle();
-            if (sData?.vendor_id) vId = sData.vendor_id;
+            if (sData?.vendor_id) {
+              vId = sData.vendor_id;
+              isValidUUID = true;
+              if (!eventRecord.storeId) eventRecord.storeId = sData.id;
+            }
           }
 
-          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vId)) {
+          const pageStr = String(eventRecord.page || "");
+          if (!isValidUUID && pageStr) {
+            const match = pageStr.match(/^\/(?:store|preview)\/([^\/?#]+)/i);
+            if (match && match[1]) {
+              const slug = match[1];
+              const { data: sData } = await supabaseAdmin
+                .from("stores")
+                .select("id, vendor_id")
+                .or(`slug.eq.${slug},id.eq.${slug}`)
+                .maybeSingle();
+              if (sData?.vendor_id) {
+                vId = sData.vendor_id;
+                isValidUUID = true;
+                if (!eventRecord.storeId) eventRecord.storeId = sData.id;
+              }
+            }
+          }
+
+          if (isValidUUID) {
+            // 1. Record Page View
             await supabaseAdmin.from("page_views").insert({
               vendor_id: vId,
               session_id: eventRecord.sessionId,
@@ -111,9 +134,39 @@ export async function POST(req: NextRequest) {
               device: eventRecord.device,
               referrer: eventRecord.referrer,
             });
+
+            // 2. Record or Update Session duration
+            const nowIso = new Date().toISOString();
+            const { data: existingSession } = await supabaseAdmin
+              .from("sessions")
+              .select("session_id, started_at")
+              .eq("session_id", eventRecord.sessionId)
+              .maybeSingle();
+
+            if (existingSession) {
+              const started = new Date(existingSession.started_at).getTime();
+              const duration = Math.max(1, Math.round((Date.now() - started) / 1000));
+              await supabaseAdmin
+                .from("sessions")
+                .update({
+                  ended_at: nowIso,
+                  duration_seconds: duration,
+                })
+                .eq("session_id", eventRecord.sessionId);
+            } else {
+              await supabaseAdmin
+                .from("sessions")
+                .insert({
+                  session_id: eventRecord.sessionId,
+                  vendor_id: vId,
+                  started_at: nowIso,
+                  ended_at: nowIso,
+                  duration_seconds: 0,
+                });
+            }
           }
         } catch (dbErr) {
-          console.warn("[Track API] Supabase page_views insert notice:", dbErr);
+          console.warn("[Track API] Supabase tracking notice:", dbErr);
         }
       })();
     }

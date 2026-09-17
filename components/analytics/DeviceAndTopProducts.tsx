@@ -12,7 +12,7 @@ interface DeviceAndTopProductsProps {
 export function DeviceAndTopProducts({ deviceSplit, topProducts }: DeviceAndTopProductsProps) {
   // Compute mobile % dynamically from data
   const mobileItem = deviceSplit.find((d) => d.device.toLowerCase().includes("mobile"));
-  const mobilePct = mobileItem ? mobileItem.percentage : 78.4;
+  const mobilePct = mobileItem ? mobileItem.percentage : 0;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       {/* Device Split Pie / Donut (5 cols) */}
@@ -108,29 +108,37 @@ export function DeviceAndTopProducts({ deviceSplit, topProducts }: DeviceAndTopP
               </tr>
             </thead>
             <tbody className="divide-y divide-default font-medium text-heading">
-              {topProducts.map((p) => (
-                <tr key={p.rank} className="hover:bg-sidebar-hover transition-colors">
-                  <td className="p-3 flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-lg bg-primary-100 text-primary-800 font-extrabold text-xs flex items-center justify-center flex-shrink-0">
-                      #{p.rank}
-                    </span>
-                    <div>
-                      <div className="font-bold text-heading truncate max-w-[200px]">{p.name}</div>
-                      <div className="text-[10px] text-subtle font-mono">{p.sku}</div>
-                    </div>
-                  </td>
-                  <td className="p-3 font-semibold text-subtle">{p.category}</td>
-                  <td className="p-3">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-accent-100 text-accent-800 border border-accent-300">
-                      <Clock className="w-3 h-3 text-accent-600" />
-                      {p.avgTimeSpent}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right font-bold text-heading">
-                    {p.totalViews}
+              {topProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-6 text-center text-subtle text-xs">
+                    No products added to this store yet.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                topProducts.map((p) => (
+                  <tr key={p.rank} className="hover:bg-sidebar-hover transition-colors">
+                    <td className="p-3 flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-lg bg-primary-100 text-primary-800 font-extrabold text-xs flex items-center justify-center flex-shrink-0">
+                        #{p.rank}
+                      </span>
+                      <div>
+                        <div className="font-bold text-heading truncate max-w-[200px]">{p.name}</div>
+                        <div className="text-[10px] text-subtle font-mono">{p.sku}</div>
+                      </div>
+                    </td>
+                    <td className="p-3 font-semibold text-subtle">{p.category}</td>
+                    <td className="p-3">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-accent-100 text-accent-800 border border-accent-300">
+                        <Clock className="w-3 h-3 text-accent-600" />
+                        {p.avgTimeSpent}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right font-bold text-heading">
+                      {p.totalViews}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
