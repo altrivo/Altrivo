@@ -467,9 +467,21 @@ export async function GET(request: Request) {
     return now - t <= windowMs;
   });
 
+  const validStoreIds = new Set(
+    [
+      storeId ? storeId.toLowerCase() : "",
+      store?.id ? String(store.id).toLowerCase() : "",
+      store?.slug ? String(store.slug).toLowerCase() : "",
+      store?.subdomain ? String(store.subdomain).toLowerCase() : "",
+    ].filter(Boolean)
+  );
+
   // Filter by storeId if provided (events include storeId from beacon)
-  if (storeId) {
-    windowEvents = windowEvents.filter((e) => e.storeId === storeId);
+  if (storeId && validStoreIds.size > 0) {
+    windowEvents = windowEvents.filter((e) => {
+      const sid = (e.storeId || e.store_id || "").toLowerCase();
+      return validStoreIds.has(sid);
+    });
   } else {
     windowEvents = [];
   }
@@ -480,10 +492,10 @@ export async function GET(request: Request) {
   const ordersMetadata = loadOrdersMetadata();
   let allOrders = Object.values(ordersMetadata) as any[];
 
-  if (storeId) {
+  if (storeId && validStoreIds.size > 0) {
     allOrders = allOrders.filter((o: any) => {
-      const sid = o.store_id || o.storeId;
-      return sid === storeId;
+      const sid = (o.store_id || o.storeId || "").toLowerCase();
+      return validStoreIds.has(sid);
     });
   } else {
     allOrders = [];
@@ -528,10 +540,11 @@ export async function GET(request: Request) {
   const uniqueSessions = new Set(windowEvents.map((e) => e.sessionId || e.id)).size;
 
   // Compute previous period for % change
-  const prevWindowEvents = storeId
+  const prevWindowEvents = (storeId && validStoreIds.size > 0)
     ? allEvents.filter((e) => {
         const t = new Date(e.timestamp || e.receivedAt || 0).getTime();
-        return e.storeId === storeId && t >= now - 2 * windowMs && t < now - windowMs;
+        const sid = (e.storeId || e.store_id || "").toLowerCase();
+        return validStoreIds.has(sid) && t >= now - 2 * windowMs && t < now - windowMs;
       })
     : [];
   const prevVisits  = prevWindowEvents.length;

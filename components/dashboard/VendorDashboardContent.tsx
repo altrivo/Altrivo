@@ -67,11 +67,21 @@ export function VendorDashboardContent() {
           </div>
 
           {/* Top Row of 4 KPI Cards strictly scoped to activeStore and vendor */}
-          <KPICardRow vendorId={vendor?.id} storeId={activeStore.id} />
+          <KPICardRow
+            key={`kpi-${activeStore.id}`}
+            vendorId={vendor?.id}
+            storeId={activeStore.id}
+            storeSlug={activeStore.slug || activeStore.subdomain}
+          />
 
           {/* Recent Orders Table strictly scoped to activeStore and vendor */}
           <div className="w-full">
-            <RecentOrdersTable vendorId={vendor?.id} storeId={activeStore.id} />
+            <RecentOrdersTable
+              key={`recent-orders-${activeStore.id}`}
+              vendorId={vendor?.id}
+              storeId={activeStore.id}
+              storeSlug={activeStore.slug || activeStore.subdomain}
+            />
           </div>
         </>
       )}

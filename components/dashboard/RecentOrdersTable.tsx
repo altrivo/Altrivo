@@ -16,7 +16,15 @@ import {
 } from "lucide-react";
 import { OrderItem } from "@/app/api/orders/recent/route";
 
-export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; storeId?: string } = {}) {
+export function RecentOrdersTable({
+  vendorId,
+  storeId,
+  storeSlug,
+}: {
+  vendorId?: string;
+  storeId?: string;
+  storeSlug?: string;
+} = {}) {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -32,6 +40,7 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
       let url = `/api/orders/recent?page=${pageNum}&limit=5`;
       if (vendorId) url += `&vendorId=${encodeURIComponent(vendorId)}`;
       if (storeId) url += `&storeId=${encodeURIComponent(storeId)}`;
+      if (storeSlug) url += `&storeSlug=${encodeURIComponent(storeSlug)}`;
 
       let backendOrders: OrderItem[] = [];
       let backendTotal = 0;
@@ -50,14 +59,27 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
       // 2. Read local customer placed orders strictly for real-time responsiveness of THIS store
       let localOrders: OrderItem[] = [];
       try {
-        if (storeId) {
-          const storeKeys = [`storefront_customer_orders_${storeId}`];
+        if (storeId || storeSlug) {
+          const validStoreIdentifiers = [
+            storeId ? storeId.toLowerCase() : "",
+            storeSlug ? storeSlug.toLowerCase() : "",
+          ].filter(Boolean);
+
+          const storeKeys: string[] = [];
+          for (const ident of validStoreIdentifiers) {
+            storeKeys.push(`storefront_customer_orders_${ident}`);
+          }
 
           // Also match customer suffixed keys for this specific store
           for (let i = 0; i < localStorage.length; i++) {
             const k = localStorage.key(i) || "";
-            if (k.startsWith(`storefront_customer_orders_${storeId}_`)) {
-              storeKeys.push(k);
+            for (const ident of validStoreIdentifiers) {
+              if (
+                k === `storefront_customer_orders_${ident}` ||
+                k.startsWith(`storefront_customer_orders_${ident}_`)
+              ) {
+                storeKeys.push(k);
+              }
             }
           }
 
@@ -68,7 +90,13 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
               try {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
-                  rawList.push(...parsed);
+                  for (const item of parsed) {
+                    const ordStore = (item.store_id || item.storeId || item.storeSlug || "").toLowerCase();
+                    if (ordStore && validStoreIdentifiers.length > 0 && !validStoreIdentifiers.includes(ordStore)) {
+                      continue;
+                    }
+                    rawList.push(item);
+                  }
                 }
               } catch {}
             }
@@ -188,6 +216,10 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [storeId, storeSlug]);
+
+  useEffect(() => {
     fetchOrders(page, true);
 
     // Quiet background refresh every 60s without UI reload
@@ -207,7 +239,7 @@ export function RecentOrdersTable({ vendorId, storeId }: { vendorId?: string; st
       clearInterval(interval);
       if (bc) bc.close();
     };
-  }, [page, storeId, vendorId]);
+  }, [page, storeId, storeSlug, vendorId]);
 
   const getStatusBadge = (status: OrderItem["status"]) => {
     switch (status) {

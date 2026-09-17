@@ -148,6 +148,8 @@ export class OrdersBackendService {
   ): Promise<{ orders: Order[]; totalCount: number; analytics: any }> {
     let combinedOrders: Order[] = [];
     let realStoreId = filters?.storeId;
+    let validCustIds = new Set<string>();
+    let validOrderIds = new Set<string>();
 
     // Query Supabase for real orders
     if (supabaseAdmin) {
@@ -162,6 +164,21 @@ export class OrdersBackendService {
               .limit(1)
               .maybeSingle();
             if (sRow) realStoreId = sRow.id;
+          }
+
+          if (realStoreId) {
+            try {
+              const [custRes, eventRes, payRes] = await Promise.all([
+                supabaseAdmin.from("store_customers").select("id").eq("store_id", realStoreId),
+                supabaseAdmin.from("order_events").select("order_id").eq("store_id", realStoreId),
+                supabaseAdmin.from("payments").select("order_id").eq("store_id", realStoreId),
+              ]);
+              validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
+              validOrderIds = new Set([
+                ...(eventRes?.data || []).map((e: any) => e.order_id),
+                ...(payRes?.data || []).map((p: any) => p.order_id),
+              ]);
+            } catch {}
           }
         }
 
@@ -230,7 +247,7 @@ export class OrdersBackendService {
               id: dbo.id,
               order_number: displayOrderNumber,
               orderNumber: displayOrderNumber,
-              store_id: dbo.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+              store_id: dbo.store_id || meta.store_id || meta.storeId || (realStoreId && (validOrderIds.has(dbo.id) || (dbo.customer_id && validCustIds.has(dbo.customer_id))) ? realStoreId : "unknown_store"),
               vendor_id: dbo.vendor_id || vendorId,
               customer_id: dbo.customer_id,
               customerId: dbo.customer_id,
@@ -362,7 +379,8 @@ export class OrdersBackendService {
         (o) =>
           o.store_id === targetStoreId ||
           (o as any).storeId === targetStoreId ||
-          (filters?.storeId && (o.store_id === filters.storeId || (o as any).storeId === filters.storeId))
+          (filters?.storeId && (o.store_id === filters.storeId || (o as any).storeId === filters.storeId)) ||
+          (targetStoreId && (validOrderIds.has(o.id) || (o.customer_id && validCustIds.has(o.customer_id))))
       );
     }
 

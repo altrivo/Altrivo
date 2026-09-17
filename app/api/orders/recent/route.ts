@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "5", 10);
     let vendorId = searchParams.get("vendorId");
     const storeId = searchParams.get("storeId");
+    const storeSlug = searchParams.get("storeSlug");
 
     // 1. Identify active logged in vendor from Supabase session
     if (!vendorId) {
@@ -75,40 +76,95 @@ export async function GET(request: Request) {
       }
     }
 
-    // Filter strictly by storeId if provided
-    if (storeId && supabaseAdmin && vendorOrders.length > 0) {
-      let targetStoreId = storeId;
+    // 4. Resolve target store UUID and slug if provided
+    let targetStoreId = storeId || "";
+    let targetStoreSlug = storeSlug || "";
+
+    if (supabaseAdmin && (targetStoreId || targetStoreSlug)) {
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
-      if (!isUUID) {
+      if (targetStoreId && !isUUID) {
         try {
           const { data: sRow } = await supabaseAdmin
             .from("stores")
-            .select("id")
+            .select("id, slug")
             .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
             .limit(1)
             .maybeSingle();
-          if (sRow?.id) targetStoreId = sRow.id;
+          if (sRow?.id) {
+            targetStoreId = sRow.id;
+            if (sRow.slug && !targetStoreSlug) targetStoreSlug = sRow.slug;
+          }
+        } catch {}
+      } else if (!targetStoreId && targetStoreSlug) {
+        try {
+          const { data: sRow } = await supabaseAdmin
+            .from("stores")
+            .select("id, slug")
+            .eq("slug", targetStoreSlug)
+            .limit(1)
+            .maybeSingle();
+          if (sRow?.id) {
+            targetStoreId = sRow.id;
+          }
         } catch {}
       }
+    }
 
-      try {
-        const [custRes, eventRes] = await Promise.all([
-          supabaseAdmin.from("store_customers").select("id").eq("store_id", targetStoreId),
-          supabaseAdmin.from("order_events").select("order_id").eq("store_id", targetStoreId),
-        ]);
+    // 5. Filter strictly by storeId or storeSlug if provided
+    if ((targetStoreId || targetStoreSlug) && vendorOrders.length > 0) {
+      let validCustIds = new Set<string>();
+      let validOrderIds = new Set<string>();
 
-        const validCustIds = new Set((custRes.data || []).map((c: any) => c.id));
-        const validOrderIds = new Set((eventRes.data || []).map((e: any) => e.order_id));
+      if (supabaseAdmin && targetStoreId) {
+        try {
+          const [custRes, eventRes, payRes] = await Promise.all([
+            supabaseAdmin.from("store_customers").select("id").eq("store_id", targetStoreId),
+            supabaseAdmin.from("order_events").select("order_id").eq("store_id", targetStoreId),
+            supabaseAdmin.from("payments").select("order_id").eq("store_id", targetStoreId),
+          ]);
 
-        vendorOrders = vendorOrders.filter((o: any) => {
-          if (o.store_id && (o.store_id === targetStoreId || o.store_id === storeId)) return true;
-          if (o.customer_id && validCustIds.has(o.customer_id)) return true;
-          if (validOrderIds.has(o.id)) return true;
-          return false;
-        });
-      } catch (fErr) {
-        console.warn("[RecentOrders] Store filter error:", fErr);
+          validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
+          validOrderIds = new Set([
+            ...(eventRes?.data || []).map((e: any) => e.order_id),
+            ...(payRes?.data || []).map((p: any) => p.order_id),
+          ]);
+        } catch (fErr) {
+          console.warn("[RecentOrders] Store filter error:", fErr);
+        }
       }
+
+      // Also check local orders metadata for store attribution
+      try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const metaPath = path.join(process.cwd(), ".data", "orders_metadata.json");
+        if (fs.existsSync(metaPath)) {
+          const metaMap = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
+          Object.entries(metaMap).forEach(([orderId, val]: [string, any]) => {
+            const sid = (val?.store_id || val?.storeId || "").toLowerCase();
+            if (
+              (targetStoreId && sid === targetStoreId.toLowerCase()) ||
+              (targetStoreSlug && sid === targetStoreSlug.toLowerCase()) ||
+              (storeId && sid === storeId.toLowerCase())
+            ) {
+              validOrderIds.add(orderId);
+            }
+          });
+        }
+      } catch {}
+
+      vendorOrders = vendorOrders.filter((o: any) => {
+        if (o.store_id && (
+          (targetStoreId && o.store_id === targetStoreId) ||
+          (targetStoreSlug && o.store_id === targetStoreSlug) ||
+          (storeId && o.store_id === storeId)
+        )) {
+          return true;
+        }
+        if (o.customer_id && validCustIds.has(o.customer_id)) return true;
+        if (validOrderIds.has(o.id)) return true;
+        return false;
+      });
     }
 
     // New vendor with 0 orders gets empty array
