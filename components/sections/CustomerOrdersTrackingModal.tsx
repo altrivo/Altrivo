@@ -977,28 +977,10 @@ export default function CustomerOrdersTrackingModal({
                             </span>
 
                             <span className="text-[11px] text-slate-400 block" suppressHydrationWarning>
-
                               {new Date(ord.createdAt).toLocaleDateString()}
-
                             </span>
-
                           </div>
-
                         </div>
-
-                        <div>
-                          {getStatusBadge(
-                            (
-                              ord.deliveryStatus ||
-                              ord.delivery_status ||
-                              ord.order_status ||
-                              ord.status ||
-                              "pending"
-                            ).toLowerCase(),
-                            ord.carrier || ord.courier_name
-                          )}
-                        </div>
-
                       </div>
 
 
