@@ -1286,7 +1286,6 @@ export default function StoreBuilderPage() {
         const data = await res.json();
         setPlan(data.plan);
         setPreviews(data.previews || []);
-        if (data.plan?.suggestedName && !customStoreName.trim()) setCustomStoreName(data.plan.suggestedName);
         if (data.plan?.suggestedTagline) setCustomStoreTagline(data.plan.suggestedTagline);
 
         if (data.plan?.recommendedSections) {
@@ -1310,7 +1309,6 @@ export default function StoreBuilderPage() {
           industry: detectedNiche,
           style: "luxury",
         });
-        if (!customStoreName.trim()) setCustomStoreName(fName);
         setCustomStoreTagline(fTagline);
       }
 
@@ -1326,7 +1324,6 @@ export default function StoreBuilderPage() {
         industry: detectedNiche,
         style: "luxury",
       });
-      setCustomStoreName(fName);
       setCustomStoreTagline(fTagline);
       setCurrentStep(2);
     } finally {
@@ -1733,11 +1730,11 @@ export default function StoreBuilderPage() {
     } catch (error) {
       console.error("Build failed:", error);
       clearInterval(interval);
-      const fallbackSlug = customStoreName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "stepcraft-premium";
+      const fallbackSlug = (customStoreName.trim() ? customStoreName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") : "store") || "store";
       const fallbackStore = {
         id: `store_${Date.now()}`,
         slug: fallbackSlug,
-        name: customStoreName || "StepCraft Premium",
+        name: customStoreName.trim() || "My Store",
         niche: plan?.industry || "shoes",
         description: customStoreTagline || "Handcrafted luxury footwear",
         is_published: true,
@@ -1940,9 +1937,6 @@ export default function StoreBuilderPage() {
                         type="button"
                         onClick={() => {
                           setPrompt(item.prompt);
-                          if (!customStoreName.trim() && item.suggestedName) {
-                            setCustomStoreName(item.suggestedName);
-                          }
                         }}
                         className="px-3 py-2.5 rounded-xl bg-white hover:bg-primary-50/50 border border-default hover:border-primary-300 text-xs font-semibold text-heading hover:text-primary-950 transition-all flex items-center gap-2 text-left active:scale-98 shadow-2xs cursor-pointer group"
                       >
