@@ -17,7 +17,8 @@ export interface CustomComponentProps {
   imagePosition?: "right" | "left" | "center" | "background" | "none";
   imageAlignment?: "right" | "left" | "center" | "background" | "none";
   imageAspect?: "portrait" | "square" | "landscape" | "tall" | "wide";
-  bgTheme?: "slate" | "gold" | "glass" | "black" | "minimal";
+  bgTheme?: "slate" | "gold" | "glass" | "black" | "minimal" | "white" | "light";
+  backgroundColor?: string;
   buttonTheme?: "purple" | "emerald" | "gold" | "white" | "outline";
 }
 
@@ -43,6 +44,7 @@ export default function CustomComponent({
   imageAlignment,
   imageAspect = "landscape",
   bgTheme = "slate",
+  backgroundColor,
   buttonTheme = "purple",
 }: CustomComponentProps) {
   const effectivePosition = imageAlignment || imagePosition || "right";
@@ -56,6 +58,8 @@ export default function CustomComponent({
       glass: "bg-slate-900/70 backdrop-blur-xl border-y border-emerald-500/30 text-slate-100",
       black: "bg-black border-y border-slate-800 text-white",
       minimal: "bg-slate-950 border-y border-dashed border-slate-800 text-slate-200",
+      white: "bg-white border-y border-slate-200 text-slate-900",
+      light: "bg-slate-50 border-y border-slate-200 text-slate-800",
       slate: "bg-slate-950 border-y border-slate-800 text-slate-100",
     }[bgTheme] || "bg-slate-950 border-y border-slate-800 text-slate-100";
 
@@ -66,11 +70,16 @@ export default function CustomComponent({
       white: "bg-white text-slate-950 hover:bg-slate-100 shadow-white/10",
       outline: "bg-transparent border border-emerald-400 text-emerald-400 hover:bg-emerald-500/10",
       purple: "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20",
-    emerald: "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20",
+      emerald: "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20",
     }[buttonTheme] || "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20";
 
+  const isLightMode = bgTheme === "white" || bgTheme === "light" || (backgroundColor && (backgroundColor.toLowerCase() === "#ffffff" || backgroundColor.toLowerCase() === "#fff" || backgroundColor.toLowerCase() === "white"));
+
   return (
-    <section className={`py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden transition-all ${themeClasses}`}>
+    <section
+      className={`py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden transition-all ${isLightMode ? "text-slate-900" : ""} ${themeClasses}`}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       {/* Background Photo Overlay Mode */}
       {effectivePosition === "background" && effectiveImg && (
         <div

@@ -40,36 +40,47 @@ export default function InventoryPage() {
     window.addEventListener(PRODUCTS_UPDATED_EVENT, syncInventory);
     window.addEventListener("storage", syncInventory);
 
-    // Fetch database products from store endpoint
+    // Fetch database products directly from products API & store endpoint
     const lookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
     if (lookup && typeof fetch === "function") {
-      fetch(`/api/stores/${lookup}`)
+      fetch(`/api/products?storeId=${encodeURIComponent(lookup)}`)
         .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          const store = data?.store;
-          if (store) {
-            const commerceProds = Array.isArray(store.commerce_config?.products)
-              ? store.commerce_config.products
-              : [];
-            const layoutProds = Array.isArray(store.layout_config?.products)
-              ? store.layout_config.products
-              : [];
-            const pMap = new Map<string, any>();
-            commerceProds.forEach((p: any) => {
-              if (p && (p.id || p.sku || p.name || p.title)) pMap.set(p.id || p.sku || p.name || p.title, p);
-            });
-            layoutProds.forEach((p: any) => {
-              const k = p?.id || p?.sku || p?.name || p?.title;
-              if (p && k && !pMap.has(k)) pMap.set(k, p);
-            });
-            const dbProducts = Array.from(pMap.values());
-            if (dbProducts.length > 0) {
-              const mapped = generateMockInventory(dbProducts, effectiveStoreId);
-              setItems(mapped);
-            }
+        .then((pData) => {
+          if (pData?.success && Array.isArray(pData.products) && pData.products.length > 0) {
+            const mapped = generateMockInventory(pData.products, effectiveStoreId);
+            setItems(mapped);
+            return;
           }
+
+          // Fallback to store configuration API
+          return fetch(`/api/stores/${lookup}`)
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              const store = data?.store;
+              if (store) {
+                const commerceProds = Array.isArray(store.commerce_config?.products)
+                  ? store.commerce_config.products
+                  : [];
+                const layoutProds = Array.isArray(store.layout_config?.products)
+                  ? store.layout_config.products
+                  : [];
+                const pMap = new Map<string, any>();
+                commerceProds.forEach((p: any) => {
+                  if (p && (p.id || p.sku || p.name || p.title)) pMap.set(p.id || p.sku || p.name || p.title, p);
+                });
+                layoutProds.forEach((p: any) => {
+                  const k = p?.id || p?.sku || p?.name || p?.title;
+                  if (p && k && !pMap.has(k)) pMap.set(k, p);
+                });
+                const dbProducts = Array.from(pMap.values());
+                if (dbProducts.length > 0) {
+                  const mapped = generateMockInventory(dbProducts, effectiveStoreId);
+                  setItems(mapped);
+                }
+              }
+            });
         })
-        .catch((e) => console.warn("[Inventory] Store fetch note:", e));
+        .catch((e) => console.warn("[Inventory] Database products fetch note:", e));
     }
 
     return () => {

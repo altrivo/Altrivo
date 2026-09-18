@@ -24,12 +24,19 @@ interface ProductDetailPageProps {
  */
 async function getStoreProducts(slug: string): Promise<any[]> {
   try {
+    const { fetchProductsFromDatabase } = await import("@/lib/product-db-sync");
     const { getStoreBySlug, getStoreById } = await import("@/lib/store/store-service");
     let store = await getStoreBySlug(slug);
     if (!store) {
       store = await getStoreById(slug);
     }
     if (store) {
+      // 1. Check direct database products table first
+      const dbProducts = await fetchProductsFromDatabase({ storeId: store.id, vendorId: store.vendor_id });
+      if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+        return dbProducts;
+      }
+
       const commerceProducts = store.commerce_config?.products;
       const layoutProducts = store.layout_config?.products;
       if (Array.isArray(commerceProducts) && commerceProducts.length > 0) {

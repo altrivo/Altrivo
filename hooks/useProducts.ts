@@ -50,133 +50,115 @@ export function useProducts(explicitStoreId?: string) {
     setSelectedIds(new Set());
     setCurrentPage(1);
 
-    // 2. Fetch from backend store API to sync real-time database state
+    // 2. Fetch directly from database products API & backend store API to sync real-time database state
     const targetLookup = effectiveStoreId || activeStore?.slug || activeStore?.id;
     if (targetLookup && typeof fetch === "function") {
-      fetch(`/api/stores/${targetLookup}`)
+      // First try direct database products table
+      fetch(`/api/products?storeId=${encodeURIComponent(targetLookup)}`)
         .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          const store = data?.store;
-          if (store) {
-            const commerceProds = Array.isArray(store.commerce_config?.products) ? store.commerce_config.products : [];
-            const layoutProds = Array.isArray(store.layout_config?.products) ? store.layout_config.products : [];
-
-            // Combine products: commerce_config is the authoritative catalog (includes drafts & published)
-            const productMap = new Map<string, any>();
-            commerceProds.forEach((p: any) => {
-              if (p && (p.id || p.sku)) productMap.set(p.id || p.sku, p);
-            });
-            layoutProds.forEach((p: any) => {
-              if (p && (p.id || p.sku) && !productMap.has(p.id || p.sku)) {
-                productMap.set(p.id || p.sku, p);
-              }
-            });
-            const dbProducts = Array.from(productMap.values());
-
-            if (Array.isArray(dbProducts)) {
-              const resolveProductDate = (p: any) => {
-                if (p.updatedAt && !isNaN(new Date(p.updatedAt).getTime())) return new Date(p.updatedAt).toISOString();
-                if (p.updated_at && !isNaN(new Date(p.updated_at).getTime())) return new Date(p.updated_at).toISOString();
-                if (p.createdAt && !isNaN(new Date(p.createdAt).getTime())) return new Date(p.createdAt).toISOString();
-                if (p.created_at && !isNaN(new Date(p.created_at).getTime())) return new Date(p.created_at).toISOString();
-
-                // If product ID contains creation timestamp (e.g. prod_1788944746539_vzn2), use it as upload date
-                const match = typeof p.id === "string" ? p.id.match(/prod_(\d{10,15})/) : null;
-                if (match) {
-                  const ts = parseInt(match[1]);
-                  const d = new Date(ts);
-                  if (!isNaN(d.getTime())) return d.toISOString();
-                }
-
-                return new Date().toISOString();
-              };
-
-              const converted: Product[] = dbProducts.map((p: any) => {
-                let userFormImg: string | undefined = undefined;
-                if (typeof window !== "undefined" && p.id) {
-                  try {
-                    const rawForm = localStorage.getItem(`artrivo_vendor_product_form_${p.id}`);
-                    if (rawForm) {
-                      const parsedForm = JSON.parse(rawForm);
-                      const primary = parsedForm.images?.find((img: any) => img.isPrimary)?.url;
-                      const first = parsedForm.images?.[0]?.url;
-                      if (isValidImageUrl(primary)) userFormImg = primary;
-                      else if (isValidImageUrl(first)) userFormImg = first;
-                    }
-                  } catch {}
-                }
-
-                const cleanImg =
-                  userFormImg ||
-                  (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
-                  (isValidImageUrl(p.image) && p.image) ||
-                  (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
-                  getCategoryDefaultImage(p.category, p.name);
-                const priceNum = typeof p.price === "number" ? p.price : parseFloat(String(p.price).replace(/[^0-9.]/g, "")) || 0;
-                const candidateImages =
-                  Array.isArray(p.images) && p.images.length > 0
-                    ? p.images.filter((img: string) => isValidImageUrl(img))
-                    : [cleanImg];
-                if (cleanImg && !candidateImages.includes(cleanImg)) {
-                  candidateImages.unshift(cleanImg);
-                }
-
-                const itemUpdatedDate = resolveProductDate(p);
-
-                return {
-                  id: p.id,
-                  storeId: effectiveStoreId || store.id,
-                  name: p.name || p.title || "Untitled Product",
-                  sku: p.sku || generateUniqueSku(p.name, p.category),
-                  price: priceNum,
-                  stock: p.stock !== undefined ? Number(p.stock) : 10,
-                  category: p.category || p.tag || "Electronics",
-                  brand: p.brand || "Altrivo Signature",
-                  status: (p.status === "draft" ? "draft" : p.status === "out-of-stock" ? "out-of-stock" : "published") as ProductStatus,
-                  thumbnail: cleanImg,
-                  image: cleanImg,
-                  images: candidateImages,
-                  createdAt: p.createdAt || p.created_at || itemUpdatedDate,
-                  updatedAt: itemUpdatedDate,
-                  variantsCount: p.variantsCount || 0,
-                  description: p.description || "",
-                };
-              });
-
-              const currentLocal = getStoredProducts(effectiveStoreId);
-
-              // Guard: If DB has 0 products, NEVER wipe out local products
-              if (converted.length === 0) {
-                if (currentLocal.length > 0) {
-                  setProducts(currentLocal);
-                  saveStoredProducts(currentLocal, effectiveStoreId);
-                  return;
-                }
-                setProducts([]);
-                return;
-              }
-
-              // Merge DB products with any local products not yet in the DB
-              const mergedMap = new Map<string, Product>();
-              converted.forEach((p) => mergedMap.set(p.id, p));
-              currentLocal.forEach((p) => {
-                if (!mergedMap.has(p.id)) {
-                  mergedMap.set(p.id, p);
-                }
-              });
-              const finalList = Array.from(mergedMap.values());
-
-              setProducts(finalList);
-
-              // Sync localStorage to match the authoritative merged state for this store
-              if (typeof window !== "undefined" && effectiveStoreId) {
-                const key = getStorageKey(effectiveStoreId);
-                safeLocalStorageSet(key, JSON.stringify(finalList));
-              }
-            }
+        .then((pData) => {
+          if (pData?.success && Array.isArray(pData.products) && pData.products.length > 0) {
+            setProducts(pData.products);
+            saveStoredProducts(pData.products, effectiveStoreId);
+            return;
           }
+
+          // Fallback to store configuration API
+          return fetch(`/api/stores/${targetLookup}`)
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              const store = data?.store;
+              if (store) {
+                const commerceProds = Array.isArray(store.commerce_config?.products) ? store.commerce_config.products : [];
+                const layoutProds = Array.isArray(store.layout_config?.products) ? store.layout_config.products : [];
+
+                const productMap = new Map<string, any>();
+                commerceProds.forEach((p: any) => {
+                  if (p && (p.id || p.sku)) productMap.set(p.id || p.sku, p);
+                });
+                layoutProds.forEach((p: any) => {
+                  if (p && (p.id || p.sku) && !productMap.has(p.id || p.sku)) {
+                    productMap.set(p.id || p.sku, p);
+                  }
+                });
+                const dbProducts = Array.from(productMap.values());
+
+                if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+                  const resolveProductDate = (p: any) => {
+                    if (p.updatedAt && !isNaN(new Date(p.updatedAt).getTime())) return new Date(p.updatedAt).toISOString();
+                    if (p.updated_at && !isNaN(new Date(p.updated_at).getTime())) return new Date(p.updated_at).toISOString();
+                    if (p.createdAt && !isNaN(new Date(p.createdAt).getTime())) return new Date(p.createdAt).toISOString();
+                    if (p.created_at && !isNaN(new Date(p.created_at).getTime())) return new Date(p.created_at).toISOString();
+
+                    const match = typeof p.id === "string" ? p.id.match(/prod_(\d{10,15})/) : null;
+                    if (match) {
+                      const ts = parseInt(match[1]);
+                      const d = new Date(ts);
+                      if (!isNaN(d.getTime())) return d.toISOString();
+                    }
+
+                    return new Date().toISOString();
+                  };
+
+                  const converted: Product[] = dbProducts.map((p: any) => {
+                    let userFormImg: string | undefined = undefined;
+                    if (typeof window !== "undefined" && p.id) {
+                      try {
+                        const rawForm = localStorage.getItem(`artrivo_vendor_product_form_${p.id}`);
+                        if (rawForm) {
+                          const parsedForm = JSON.parse(rawForm);
+                          const primary = parsedForm.images?.find((img: any) => img.isPrimary)?.url;
+                          const first = parsedForm.images?.[0]?.url;
+                          if (isValidImageUrl(primary)) userFormImg = primary;
+                          else if (isValidImageUrl(first)) userFormImg = first;
+                        }
+                      } catch {}
+                    }
+
+                    const cleanImg =
+                      userFormImg ||
+                      (isValidImageUrl(p.thumbnail) && p.thumbnail) ||
+                      (isValidImageUrl(p.image) && p.image) ||
+                      (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
+                      getCategoryDefaultImage(p.category, p.name);
+                    const priceNum = typeof p.price === "number" ? p.price : parseFloat(String(p.price).replace(/[^0-9.]/g, "")) || 0;
+                    const candidateImages =
+                      Array.isArray(p.images) && p.images.length > 0
+                        ? p.images.filter((img: string) => isValidImageUrl(img))
+                        : [cleanImg];
+                    if (cleanImg && !candidateImages.includes(cleanImg)) {
+                      candidateImages.unshift(cleanImg);
+                    }
+
+                    const itemUpdatedDate = resolveProductDate(p);
+
+                    return {
+                      id: p.id,
+                      storeId: effectiveStoreId || store.id,
+                      name: p.name || p.title || "Untitled Product",
+                      sku: p.sku || generateUniqueSku(p.name, p.category),
+                      price: priceNum,
+                      stock: p.stock !== undefined ? Number(p.stock) : 10,
+                      category: p.category || p.tag || "Electronics",
+                      brand: p.brand || "Altrivo Signature",
+                      status: (p.status === "draft" ? "draft" : p.status === "out-of-stock" ? "out-of-stock" : "published") as ProductStatus,
+                      thumbnail: cleanImg,
+                      image: cleanImg,
+                      images: candidateImages,
+                      createdAt: p.createdAt || p.created_at || itemUpdatedDate,
+                      updatedAt: itemUpdatedDate,
+                      variantsCount: p.variantsCount || 0,
+                      description: p.description || "",
+                    };
+                  });
+
+                  setProducts(converted);
+                  saveStoredProducts(converted, effectiveStoreId);
+                }
+              }
+            });
         })
-        .catch((err) => console.warn("[useProducts] Store DB sync note:", err));
+        .catch((err) => console.warn("[useProducts] Database products sync note:", err));
     }
 
     const syncProducts = () => {
@@ -322,6 +304,16 @@ export function useProducts(explicitStoreId?: string) {
         next.delete(id);
         return next;
       });
+
+      // Directly delete from database products & product_variants tables
+      if (typeof fetch === "function") {
+        const url = effectiveStoreId
+          ? `/api/products/${encodeURIComponent(id)}?storeId=${encodeURIComponent(effectiveStoreId)}`
+          : `/api/products/${encodeURIComponent(id)}`;
+        fetch(url, { method: "DELETE" }).catch((err) =>
+          console.warn("[useProducts] Database delete product error:", err)
+        );
+      }
     },
     [effectiveStoreId],
   );
@@ -350,12 +342,25 @@ export function useProducts(explicitStoreId?: string) {
   );
 
   const bulkDelete = useCallback(() => {
+    const idsToDelete = Array.from(selectedIds);
     setProducts((prev) => {
       const next = prev.filter((p) => !selectedIds.has(p.id));
       saveStoredProducts(next, effectiveStoreId);
       return next;
     });
     setSelectedIds(new Set());
+
+    // Directly delete each from database products & product_variants tables
+    if (typeof fetch === "function") {
+      idsToDelete.forEach((id) => {
+        const url = effectiveStoreId
+          ? `/api/products/${encodeURIComponent(id)}?storeId=${encodeURIComponent(effectiveStoreId)}`
+          : `/api/products/${encodeURIComponent(id)}`;
+        fetch(url, { method: "DELETE" }).catch((err) =>
+          console.warn("[useProducts] Database bulk delete error:", err)
+        );
+      });
+    }
   }, [selectedIds, effectiveStoreId]);
 
   const bulkChangeCategory = useCallback(
@@ -402,7 +407,6 @@ export function useProducts(explicitStoreId?: string) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               commerce_config: { products: storefrontAll },
-              layout_config: { products: publishedStorefront },
             }),
           }).catch((err) => console.warn("[useProducts] DB sync error:", err));
         }
@@ -441,7 +445,6 @@ export function useProducts(explicitStoreId?: string) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               commerce_config: { products: storefrontAll },
-              layout_config: { products: publishedStorefront },
             }),
           }).catch((err) => console.warn("[useProducts] DB sync error:", err));
         }

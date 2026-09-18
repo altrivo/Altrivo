@@ -36,7 +36,7 @@ describe("AiCopywritingPopover Component", () => {
       />,
     );
 
-    const generateBtn = screen.getByText("✨ Generate AI Copy");
+    const generateBtn = screen.getByText(/Generate AI Copy/i);
     fireEvent.click(generateBtn);
 
     const applyBtn = await screen.findByText("Apply to Product");

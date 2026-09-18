@@ -547,26 +547,51 @@ export function saveStoredProducts(products: Product[], explicitStoreId?: string
     }
     window.dispatchEvent(new CustomEvent(PRODUCTS_UPDATED_EVENT));
 
-    if (storeId && typeof fetch === "function") {
-      // Synchronize to the backend / database for this store:
-      // commerce_config keeps all products (both published and drafts for catalog inventory)
-      const storefrontProducts = scopedProducts.map((p) => toStorefrontProduct(p));
-      // layout_config ONLY receives published products so drafts never auto-populate live storefront sections
-      const publishedStorefrontProducts = scopedProducts
-        .filter((p) => p.status === "published")
-        .map((p) => toStorefrontProduct(p));
-
-      fetch(`/api/stores/${storeId}`, {
-        method: "PATCH",
+    if (typeof fetch === "function") {
+      // 1. Direct database sync: Save all products into Supabase products & product_variants tables
+      fetch("/api/products/sync", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          commerce_config: { products: storefrontProducts },
-          layout_config: { products: publishedStorefrontProducts },
+          storeId: storeId || undefined,
+          products: scopedProducts,
         }),
-      }).catch((err) => console.warn("[product-storage] DB sync background note:", err));
+      }).catch((err) => console.warn("[product-storage] DB products sync error:", err));
+
+      // 2. Synchronize store commerce_config for backward compatibility
+      if (storeId) {
+        const storefrontProducts = scopedProducts.map((p) => toStorefrontProduct(p));
+
+        fetch(`/api/stores/${storeId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commerce_config: { products: storefrontProducts },
+          }),
+        }).catch((err) => console.warn("[product-storage] DB store sync background note:", err));
+      }
     }
   } catch (e) {
     console.warn("[product-storage] Error in saveStoredProducts background:", e);
+  }
+}
+
+/**
+ * Deletes a product from localStorage and deletes it directly from the database products table.
+ */
+export function deleteStoredProduct(productId: string, explicitStoreId?: string): void {
+  if (typeof window === "undefined") return;
+  const storeId = resolveStoreId(explicitStoreId);
+  const products = getStoredProducts(storeId);
+  const nextProducts = products.filter((p) => p.id !== productId);
+  saveStoredProducts(nextProducts, storeId);
+
+  // Directly delete from database products & product_variants tables
+  if (typeof fetch === "function") {
+    const url = storeId ? `/api/products/${productId}?storeId=${encodeURIComponent(storeId)}` : `/api/products/${productId}`;
+    fetch(url, { method: "DELETE" }).catch((err) =>
+      console.warn("[product-storage] DB delete product error:", err)
+    );
   }
 }
 
@@ -669,6 +694,21 @@ export function saveProductFromForm(
       `${FORM_STORAGE_PREFIX}${productId}`,
       JSON.stringify(updatedFormData),
     );
+  }
+
+  // Persist directly to Supabase products & product_variants database tables
+  if (typeof fetch === "function") {
+    fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...updatedFormData,
+        id: productId,
+        storeId: currentStoreId,
+        stock: totalStock,
+        sku,
+      }),
+    }).catch((err) => console.warn("[product-storage] Direct DB create product error:", err));
   }
 
   const existingIndex = products.findIndex((p) => p.id === productId);

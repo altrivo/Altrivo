@@ -17,6 +17,7 @@ export interface HeroSplitImageProps {
   imageAlignment?: "left" | "right" | "center" | "background" | "none";
   imagePosition?: "left" | "right" | "center" | "background" | "none";
   imageAspect?: "portrait" | "square" | "landscape" | "tall" | "wide";
+  backgroundColor?: string;
   storeSlug?: string;
 }
 
@@ -42,6 +43,7 @@ export default function HeroSplitImage({
   imageAlignment,
   imagePosition,
   imageAspect = "square",
+  backgroundColor,
 }: HeroSplitImageProps) {
   const displayTitle = title || headline || "Exclusive Collection";
   const displaySubtitle = subtitle || subline;
@@ -52,7 +54,10 @@ export default function HeroSplitImage({
   // 1. Position: NONE (Text Only Showcase)
   if (position === "none" || !effectiveImg) {
     return (
-      <section className="relative overflow-hidden select-none py-14 sm:py-20 lg:py-28 bg-[var(--color-bg,#ffffff)] max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section
+        className="relative overflow-hidden select-none py-14 sm:py-20 lg:py-28 bg-[var(--color-bg,#ffffff)] max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+        style={backgroundColor ? { backgroundColor } : undefined}
+      >
         <div className="space-y-6 max-w-3xl mx-auto">
           <h1
             className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[var(--color-text,#1e293b)] leading-[1.1]"
@@ -147,7 +152,10 @@ export default function HeroSplitImage({
   // 3. Position: CENTER (Centered Text with Centered Hero Image below)
   if (position === "center") {
     return (
-      <section className="relative overflow-hidden select-none py-12 sm:py-18 lg:py-24 bg-[var(--color-bg,#ffffff)] max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        className="relative overflow-hidden select-none py-12 sm:py-18 lg:py-24 bg-[var(--color-bg,#ffffff)] max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+        style={backgroundColor ? { backgroundColor } : undefined}
+      >
         <div className="space-y-8 text-center">
           {/* Top Centered Text Block */}
           <div className="space-y-4 max-w-3xl mx-auto">
@@ -208,7 +216,10 @@ export default function HeroSplitImage({
   const isImageRight = position !== "left";
 
   return (
-    <section className="relative overflow-hidden select-none py-10 sm:py-16 lg:py-24 bg-[var(--color-bg,#ffffff)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      className="relative overflow-hidden select-none py-10 sm:py-16 lg:py-24 bg-[var(--color-bg,#ffffff)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center">
         {/* Text Column */}
         <div

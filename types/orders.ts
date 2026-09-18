@@ -210,6 +210,10 @@ export interface Order {
   order_number?: string; // Human-friendly e.g. DS-2026-000125
   orderNumber: string; // alias for compatibility
   store_id?: string;
+  storeName?: string;
+  store_name?: string;
+  storeSlug?: string;
+  store_slug?: string;
   vendor_id?: string;
   customer_id?: string | null;
 

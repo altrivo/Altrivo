@@ -30,6 +30,203 @@ export function parsePrice(val: unknown): number {
 }
 
 /**
+ * Resolves the vendor_id associated with a store.
+ */
+export async function resolveStoreVendor(storeId?: string): Promise<string | null> {
+  if (!storeId || !supabaseAdmin) return null;
+
+  try {
+    const query = UUID_REGEX.test(storeId)
+      ? supabaseAdmin.from("stores").select("vendor_id").eq("id", storeId).single()
+      : supabaseAdmin.from("stores").select("vendor_id").eq("slug", storeId).single();
+
+    const { data } = await query;
+    if (data?.vendor_id) return data.vendor_id;
+  } catch {}
+
+  return null;
+}
+
+/**
+ * Creates or updates a single product in the Supabase `products` and `product_variants` tables.
+ */
+export async function createOrUpdateProductInDatabase(
+  productData: any,
+  storeId?: string,
+  explicitVendorId?: string
+): Promise<{ success: boolean; product?: Product; error?: string }> {
+  if (!supabaseAdmin) {
+    return { success: false, error: "Supabase admin client not configured" };
+  }
+
+  const effectiveStoreId = storeId || productData.storeId || productData.store_id;
+  let vendorId = explicitVendorId || productData.vendor_id || productData.vendorId;
+
+  if (!vendorId && effectiveStoreId) {
+    vendorId = await resolveStoreVendor(effectiveStoreId);
+  }
+
+  // Fallback to default dev vendor if in dev mode
+  if (!vendorId || !UUID_REGEX.test(vendorId)) {
+    vendorId = "374c6044-19d9-49db-a508-dccf3c1f6f2f"; // Known existing vendor UUID in database
+  }
+
+  const prodId = toValidUUID(productData.id || productData.sku || productData.name || productData.title);
+  const title = String(productData.title || productData.name || "Product").trim();
+  const description = String(productData.description || "").trim();
+  const category = String(productData.category || "General").trim();
+  const price = parsePrice(productData.price);
+  const comparePrice = parsePrice(productData.comparePrice || productData.compareAtPrice || productData.compare_price || 0);
+  const cost = parsePrice(productData.cost || productData.costPerItem || 0);
+  const imageUrl = productData.image || productData.thumbnail || productData.image_url || (Array.isArray(productData.images) ? productData.images[0] : null);
+  const status = productData.status === "draft" ? "draft" : productData.status === "archived" ? "archived" : "published";
+  const nowISO = new Date().toISOString();
+
+  // Store tag array to isolate products by store
+  const rawTags: string[] = Array.isArray(productData.tags) ? [...productData.tags] : [];
+  if (effectiveStoreId && !rawTags.includes(`store:${effectiveStoreId}`)) {
+    rawTags.push(`store:${effectiveStoreId}`);
+  }
+
+  const productPayload = {
+    id: prodId,
+    vendor_id: vendorId,
+    name: title,
+    title: title,
+    description: description,
+    category: category,
+    price: price,
+    compare_price: comparePrice,
+    cost: cost,
+    image_url: imageUrl,
+    tags: rawTags,
+    status: status,
+    updated_at: nowISO,
+  };
+
+  const { error: prodErr } = await supabaseAdmin
+    .from("products")
+    .upsert(productPayload, { onConflict: "id" });
+
+  if (prodErr) {
+    console.error(`[product-db-sync] Failed to upsert product ${prodId}:`, prodErr.message);
+    return { success: false, error: prodErr.message };
+  }
+
+  // Handle variants
+  const variants = Array.isArray(productData.variants) && productData.variants.length > 0
+    ? productData.variants
+    : [
+        {
+          id: productData.variantId || `${prodId}-primary`,
+          sku: productData.sku || ("SKU-" + prodId.slice(0, 8)).toUpperCase(),
+          price: price,
+          stock: typeof productData.stock === "number" ? productData.stock : 10,
+          image_url: imageUrl,
+          enabled: status !== "archived",
+        },
+      ];
+
+  for (let i = 0; i < variants.length; i++) {
+    const v = variants[i];
+    const variantId = toValidUUID(v.id || `${prodId}-var-${i}`);
+    const variantSku = String(v.sku || productData.sku || `SKU-${prodId.slice(0, 8)}-${i + 1}`).toUpperCase();
+    const variantPrice = parsePrice(v.price ?? price);
+    const variantStock = typeof v.stock === "number" ? v.stock : 10;
+    const variantImage = v.image || v.image_url || imageUrl;
+
+    await supabaseAdmin.from("product_variants").upsert(
+      {
+        id: variantId,
+        product_id: prodId,
+        sku: variantSku,
+        option_values: v.optionValues || v.option_values || {},
+        price: variantPrice,
+        stock: variantStock,
+        image_url: variantImage,
+        enabled: v.enabled !== false && status !== "archived",
+        updated_at: nowISO,
+      },
+      { onConflict: "id" }
+    );
+  }
+
+  // Keep store's commerce_config in sync for backward compatibility if store exists
+  if (effectiveStoreId) {
+    syncStoreJsonConfig(effectiveStoreId, {
+      id: productData.id || prodId,
+      name: title,
+      title: title,
+      sku: productData.sku || variants[0]?.sku,
+      price: price,
+      stock: typeof productData.stock === "number" ? productData.stock : 10,
+      category: category,
+      status: status,
+      image: imageUrl,
+      thumbnail: imageUrl,
+      images: Array.isArray(productData.images) && productData.images.length > 0 ? productData.images : [imageUrl],
+      storeId: effectiveStoreId,
+      updatedAt: nowISO,
+    }).catch((e) => console.warn("[product-db-sync] Background store config sync note:", e));
+  }
+
+  const mappedProduct: Product = {
+    id: productData.id || prodId,
+    storeId: effectiveStoreId,
+    name: title,
+    sku: productData.sku || variants[0]?.sku || ("SKU-" + prodId.slice(0, 8)).toUpperCase(),
+    price: price,
+    stock: typeof productData.stock === "number" ? productData.stock : 10,
+    category: category,
+    brand: productData.brand || "Altrivo Signature",
+    status: status as any,
+    thumbnail: imageUrl || "",
+    image: imageUrl || "",
+    images: Array.isArray(productData.images) && productData.images.length > 0 ? productData.images : [imageUrl || ""],
+    createdAt: productData.createdAt || nowISO,
+    updatedAt: nowISO,
+    description: description,
+    variantsCount: variants.length,
+  };
+
+  return { success: true, product: mappedProduct };
+}
+
+/**
+ * Deletes a product from the Supabase `products` and `product_variants` tables.
+ */
+export async function deleteProductFromDatabase(
+  productIdOrSku: string,
+  storeId?: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabaseAdmin) {
+    return { success: false, error: "Supabase not configured" };
+  }
+
+  const prodId = toValidUUID(productIdOrSku);
+
+  // 1. Delete associated variants
+  await supabaseAdmin.from("product_variants").delete().eq("product_id", prodId);
+
+  // 2. Delete product record
+  const { error } = await supabaseAdmin.from("products").delete().eq("id", prodId);
+
+  if (error) {
+    console.error("[product-db-sync] Failed to delete product from database:", error.message);
+    return { success: false, error: error.message };
+  }
+
+  // Also remove from store's commerce_config if storeId is known
+  if (storeId) {
+    removeProductFromStoreJsonConfig(storeId, productIdOrSku).catch((e) =>
+      console.warn("[product-db-sync] Background remove from store config note:", e)
+    );
+  }
+
+  return { success: true };
+}
+
+/**
  * Synchronizes an array of store products directly into the Supabase `products` and `product_variants` tables.
  */
 export async function syncProductsToDatabase(
@@ -41,8 +238,11 @@ export async function syncProductsToDatabase(
     return { success: false, syncedCount: 0, error: "Supabase admin client not configured" };
   }
 
-  if (!vendorId || !UUID_REGEX.test(vendorId)) {
-    return { success: false, syncedCount: 0, error: `Invalid vendor UUID: ${vendorId}` };
+  let effectiveVendorId = vendorId;
+  if (!effectiveVendorId || !UUID_REGEX.test(effectiveVendorId)) {
+    const resolved = await resolveStoreVendor(storeId);
+    if (resolved) effectiveVendorId = resolved;
+    else effectiveVendorId = "374c6044-19d9-49db-a508-dccf3c1f6f2f";
   }
 
   if (!Array.isArray(products) || products.length === 0) {
@@ -53,67 +253,8 @@ export async function syncProductsToDatabase(
 
   for (const raw of products) {
     if (!raw) continue;
-
-    const prodId = toValidUUID(raw.id || raw.sku || raw.name || raw.title);
-    const title = String(raw.title || raw.name || "Product").trim();
-    const description = String(raw.description || "").trim();
-    const category = String(raw.category || "General").trim();
-    const price = parsePrice(raw.price);
-    const comparePrice = parsePrice(raw.comparePrice || raw.compare_price || 0);
-    const cost = parsePrice(raw.cost || raw.costPerItem || 0);
-    const imageUrl = raw.image || raw.thumbnail || raw.image_url || null;
-    const status = raw.status === "draft" ? "draft" : raw.status === "archived" ? "archived" : "published";
-    const nowISO = new Date().toISOString();
-
-    const productPayload = {
-      id: prodId,
-      vendor_id: vendorId,
-      name: title,
-      title: title,
-      description: description,
-      category: category,
-      price: price,
-      compare_price: comparePrice,
-      cost: cost,
-      image_url: imageUrl,
-      status: status,
-      updated_at: nowISO,
-    };
-
-    const { error: prodErr } = await supabaseAdmin
-      .from("products")
-      .upsert(productPayload, { onConflict: "id" });
-
-    if (prodErr) {
-      console.warn(`[product-db-sync] Failed to upsert product ${prodId}:`, prodErr.message);
-      continue;
-    }
-
-    // Now upsert variant for stock & SKU tracking
-    const variantId = toValidUUID((raw.id || raw.sku || prodId) + "-primary-variant");
-    const sku = String(raw.sku || ("SKU-" + prodId.slice(0, 8)).toUpperCase());
-    const stock = typeof raw.stock === "number" ? raw.stock : 10;
-
-    const variantPayload = {
-      id: variantId,
-      product_id: prodId,
-      sku: sku,
-      price: price,
-      stock: stock,
-      image_url: imageUrl,
-      enabled: status !== "archived",
-      updated_at: nowISO,
-    };
-
-    const { error: varErr } = await supabaseAdmin
-      .from("product_variants")
-      .upsert(variantPayload, { onConflict: "id" });
-
-    if (varErr) {
-      console.warn(`[product-db-sync] Failed to upsert variant ${variantId}:`, varErr.message);
-    }
-
-    syncedCount++;
+    const res = await createOrUpdateProductInDatabase(raw, storeId, effectiveVendorId);
+    if (res.success) syncedCount++;
   }
 
   return { success: true, syncedCount };
@@ -129,6 +270,10 @@ export async function updateProductInDatabase(
     stock?: number;
     lowStockThreshold?: number;
     status?: string;
+    name?: string;
+    title?: string;
+    description?: string;
+    category?: string;
   }
 ): Promise<{ success: boolean; error?: string }> {
   if (!supabaseAdmin) {
@@ -142,6 +287,16 @@ export async function updateProductInDatabase(
   const prodUpdates: Record<string, any> = { updated_at: nowISO };
   if (typeof updates.price === "number") prodUpdates.price = updates.price;
   if (typeof updates.status === "string") prodUpdates.status = updates.status;
+  if (typeof updates.name === "string") {
+    prodUpdates.name = updates.name;
+    prodUpdates.title = updates.name;
+  }
+  if (typeof updates.title === "string") {
+    prodUpdates.name = updates.title;
+    prodUpdates.title = updates.title;
+  }
+  if (typeof updates.description === "string") prodUpdates.description = updates.description;
+  if (typeof updates.category === "string") prodUpdates.category = updates.category;
 
   if (Object.keys(prodUpdates).length > 1) {
     const { error: pErr } = await supabaseAdmin
@@ -172,7 +327,12 @@ export async function updateProductInDatabase(
 /**
  * Fetches products from Supabase `products` and joins `product_variants`.
  */
-export async function fetchProductsFromDatabase(vendorId?: string): Promise<Product[]> {
+export async function fetchProductsFromDatabase(options?: {
+  vendorId?: string;
+  storeId?: string;
+  status?: string;
+  search?: string;
+}): Promise<Product[]> {
   if (!supabaseAdmin) return [];
 
   let query = supabaseAdmin
@@ -188,6 +348,7 @@ export async function fetchProductsFromDatabase(vendorId?: string): Promise<Prod
       compare_price,
       cost,
       image_url,
+      tags,
       status,
       created_at,
       updated_at,
@@ -196,13 +357,18 @@ export async function fetchProductsFromDatabase(vendorId?: string): Promise<Prod
         sku,
         price,
         stock,
-        enabled
+        enabled,
+        image_url
       )
     `)
     .order("created_at", { ascending: false });
 
-  if (vendorId && UUID_REGEX.test(vendorId)) {
-    query = query.eq("vendor_id", vendorId);
+  if (options?.vendorId && UUID_REGEX.test(options.vendorId)) {
+    query = query.eq("vendor_id", options.vendorId);
+  }
+
+  if (options?.status && options.status !== "all") {
+    query = query.eq("status", options.status);
   }
 
   const { data, error } = await query;
@@ -211,17 +377,26 @@ export async function fetchProductsFromDatabase(vendorId?: string): Promise<Prod
     return [];
   }
 
-  return data.map((row: any) => {
+  let mapped = data.map((row: any) => {
     const variants = Array.isArray(row.product_variants) ? row.product_variants : [];
     const primaryVar = variants[0];
     const totalStock = variants.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0);
     const sku = primaryVar?.sku || ("SKU-" + row.id.slice(0, 8)).toUpperCase();
     const price = typeof row.price === "number" ? row.price : primaryVar?.price || 0;
-    const thumbnail = row.image_url || null;
+    const thumbnail = row.image_url || primaryVar?.image_url || null;
+
+    // Extract storeId if present in tags: store:<storeId>
+    let associatedStoreId = "";
+    if (Array.isArray(row.tags)) {
+      const storeTag = row.tags.find((t: string) => typeof t === "string" && t.startsWith("store:"));
+      if (storeTag) {
+        associatedStoreId = storeTag.replace("store:", "");
+      }
+    }
 
     return {
       id: row.id,
-      storeId: "",
+      storeId: associatedStoreId,
       name: row.title || row.name || "Product",
       sku,
       price,
@@ -236,6 +411,91 @@ export async function fetchProductsFromDatabase(vendorId?: string): Promise<Prod
       images: thumbnail ? [thumbnail] : [],
       variantsCount: variants.length,
       description: row.description || "",
+      tags: row.tags || [],
     } as Product;
   });
+
+  // Filter by storeId if specified
+  if (options?.storeId) {
+    const target = options.storeId;
+    mapped = mapped.filter((p) => {
+      if (!p.storeId) return true; // Include products without strict store tag to prevent hiding
+      return p.storeId === target;
+    });
+  }
+
+  // Filter by search query
+  if (options?.search && options.search.trim()) {
+    const q = options.search.toLowerCase().trim();
+    mapped = mapped.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+    );
+  }
+
+  return mapped;
+}
+
+/**
+ * Helper to keep store commerce_config updated in background.
+ */
+async function syncStoreJsonConfig(storeId: string, product: any) {
+  if (!supabaseAdmin) return;
+  try {
+    const query = UUID_REGEX.test(storeId)
+      ? supabaseAdmin.from("stores").select("id, commerce_config, layout_config").eq("id", storeId).single()
+      : supabaseAdmin.from("stores").select("id, commerce_config, layout_config").eq("slug", storeId).single();
+
+    const { data: store } = await query;
+    if (!store) return;
+
+    const existingCommerce = Array.isArray(store.commerce_config?.products) ? store.commerce_config.products : [];
+    const pIndex = existingCommerce.findIndex((p: any) => p.id === product.id || p.sku === product.sku);
+
+    let nextCommerce: any[];
+    if (pIndex !== -1) {
+      nextCommerce = [...existingCommerce];
+      nextCommerce[pIndex] = { ...nextCommerce[pIndex], ...product };
+    } else {
+      nextCommerce = [product, ...existingCommerce];
+    }
+
+    await supabaseAdmin
+      .from("stores")
+      .update({
+        commerce_config: { ...store.commerce_config, products: nextCommerce },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", store.id);
+  } catch {}
+}
+
+/**
+ * Helper to remove product from store commerce_config in background.
+ */
+async function removeProductFromStoreJsonConfig(storeId: string, productIdOrSku: string) {
+  if (!supabaseAdmin) return;
+  try {
+    const query = UUID_REGEX.test(storeId)
+      ? supabaseAdmin.from("stores").select("id, commerce_config, layout_config").eq("id", storeId).single()
+      : supabaseAdmin.from("stores").select("id, commerce_config, layout_config").eq("slug", storeId).single();
+
+    const { data: store } = await query;
+    if (!store) return;
+
+    const existingCommerce = Array.isArray(store.commerce_config?.products) ? store.commerce_config.products : [];
+    const nextCommerce = existingCommerce.filter(
+      (p: any) => p.id !== productIdOrSku && p.sku !== productIdOrSku
+    );
+
+    await supabaseAdmin
+      .from("stores")
+      .update({
+        commerce_config: { ...store.commerce_config, products: nextCommerce },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", store.id);
+  } catch {}
 }

@@ -55,6 +55,8 @@ import {
   Home,
   Info,
   Phone,
+  AtSign,
+  Target,
 } from "lucide-react";
 import StorefrontRenderer from "@/components/sections/StorefrontRenderer";
 import {
@@ -707,6 +709,8 @@ export default function VisualLayoutEditor() {
   // AI Assistant Chat inside Editor
   const [aiInput, setAiInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [showMentionMenu, setShowMentionMenu] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
   const [aiChatMessages, setAiChatMessages] = useState<
     Array<{
       role: "ai" | "user";
@@ -1518,15 +1522,119 @@ export default function VisualLayoutEditor() {
   };
 
   // -------------------------------------------------------------------------
+  // Active Section & Niche Selection Context
+  // -------------------------------------------------------------------------
+  const activeSection = layoutConfig.sections.find((s) => s.id === activeSectionId) || null;
+  const currentNichePreset = NICHE_PRESETS[activeNiche] || NICHE_PRESETS.shoes;
+
+  // -------------------------------------------------------------------------
+  // AI Assistant Section Tagging (@hero, @navbar, @theme, @active, etc.)
+  // -------------------------------------------------------------------------
+  const mentionOptions = useMemo(() => {
+    const opts = [
+      {
+        tag: "active",
+        icon: "🎯",
+        label: activeSection?.props?.title ? `Active: ${activeSection.props.title.slice(0, 18)}` : "Active Canvas Section",
+        description: "Target whichever section is currently selected on the canvas",
+      },
+      {
+        tag: "hero",
+        icon: "🖼️",
+        label: "Hero Section",
+        description: "Main showcase banner, headline, subtitle, buttons & background",
+      },
+      {
+        tag: "theme",
+        icon: "🎨",
+        label: "Theme & Colors",
+        description: "Global store palette (background, primary, text) & typography",
+      },
+      {
+        tag: "navbar",
+        icon: "🧭",
+        label: "Header / Navbar",
+        description: "Store logo, top navigation links, and brand title",
+      },
+      {
+        tag: "products",
+        icon: "🛍️",
+        label: "Product Catalog Grid",
+        description: "Featured product list, display columns, limits & layout",
+      },
+      {
+        tag: "banner",
+        icon: "📢",
+        label: "Promo Banner",
+        description: "Top announcement bar with sale discounts and coupon codes",
+      },
+      {
+        tag: "story",
+        icon: "📖",
+        label: "Brand Story",
+        description: "Store heritage, craftsmanship, and about section",
+      },
+      {
+        tag: "reviews",
+        icon: "⭐",
+        label: "Customer Reviews",
+        description: "Testimonial cards and client ratings slider",
+      },
+    ];
+    if (!mentionQuery) return opts;
+    return opts.filter(
+      (o) =>
+        o.tag.toLowerCase().includes(mentionQuery) ||
+        o.label.toLowerCase().includes(mentionQuery) ||
+        o.description.toLowerCase().includes(mentionQuery)
+    );
+  }, [mentionQuery, activeSection]);
+
+  const handleAiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setAiInput(val);
+
+    const lastAtIdx = val.lastIndexOf("@");
+    if (lastAtIdx !== -1 && (lastAtIdx === 0 || val[lastAtIdx - 1] === " ")) {
+      const query = val.slice(lastAtIdx + 1).toLowerCase();
+      if (!query.includes(" ")) {
+        setMentionQuery(query);
+        setShowMentionMenu(true);
+        return;
+      }
+    }
+    setShowMentionMenu(false);
+  };
+
+  const handleInsertTag = (tag: string) => {
+    const lastAtIdx = aiInput.lastIndexOf("@");
+    let newVal = "";
+    if (lastAtIdx !== -1) {
+      newVal = aiInput.slice(0, lastAtIdx) + `@${tag} `;
+    } else {
+      newVal = aiInput.trim() ? `@${tag} ${aiInput.trim()} ` : `@${tag} `;
+    }
+    setAiInput(newVal);
+    setShowMentionMenu(false);
+  };
+
+  // -------------------------------------------------------------------------
   // Handle AI Chat Commands (Urdu / English) via AI API
   // -------------------------------------------------------------------------
   const handleAiCommand = async (customPrompt?: string) => {
     const userMsg = (customPrompt || aiInput).trim();
     if (!userMsg) return;
 
+    // Detect explicit section tag from message e.g. @hero, @navbar, @theme, @active
+    const tagMatch = userMsg.match(/@(active|hero|navbar|theme|products|banner|story|reviews|footer)/i);
+    const targetTag = tagMatch ? tagMatch[1].toLowerCase() : undefined;
+
     const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     setAiChatMessages((prev) => [...prev, { role: "user", text: userMsg, time: timeStr }]);
-    if (!customPrompt) setAiInput("");
+    if (!customPrompt) {
+      setAiInput("");
+      setShowMentionMenu(false);
+    }
     setIsAiLoading(true);
 
     try {
@@ -1539,6 +1647,8 @@ export default function VisualLayoutEditor() {
           storeName,
           currentLayout: layoutConfig,
           userInstruction: userMsg,
+          activeSectionId,
+          targetTag,
         }),
       });
 
@@ -1586,16 +1696,13 @@ export default function VisualLayoutEditor() {
   };
 
   const AI_QUICK_ACTIONS = [
-    { label: "🎨 Royal Gold & Dark Theme", prompt: "Theme colors ko Royal Gold (#D4AF37) aur sleek dark background me change kardo" },
-    { label: "✨ Royal Purple & Slate", prompt: "Theme ko luxury deep purple (#2C1C31), soft lavender (#F5EFF7) aur royal purple (#694873) buttons me change kardo" },
-    { label: "🏷️ 20% Off Promo Banner", prompt: "Top par 20% discount aur Free Nationwide Delivery ka promo banner add kardo with coupon code ALT20" },
-    { label: "✍️ Luxury Hero Heading", prompt: `Hero section ki heading aur subtitle ko high-converting luxury boutique tone me rewrite kardo for ${storeName}` },
+    { label: "🎨 Royal Gold & Dark Theme", prompt: "@theme Theme colors ko Royal Gold (#D4AF37) aur sleek dark background me change kardo" },
+    { label: "✨ Royal Purple & Slate", prompt: "@theme Theme ko luxury deep purple (#2C1C31), soft lavender (#F5EFF7) aur royal purple (#694873) buttons me change kardo" },
+    { label: "🏷️ 20% Off Promo Banner", prompt: "@banner Top par 20% discount aur Free Nationwide Delivery ka promo banner add kardo with coupon code ALT20" },
+    { label: "✍️ Luxury Hero Heading", prompt: `@hero Hero section ki heading aur subtitle ko high-converting luxury boutique tone me rewrite kardo for ${storeName}` },
     { label: "🚚 Trust & COD Highlights", prompt: "Features grid me Cash on Delivery, 100% Escrow Protection, aur TCS Express Shipping ke trust badges highlight kardo" },
-    { label: "⭐ Customer Testimonials", prompt: "Store me 5-star customer reviews aur testimonials slider section add kardo" },
+    { label: "⭐ Customer Testimonials", prompt: "@reviews Store me 5-star customer reviews aur testimonials slider section add kardo" },
   ];
-
-  const activeSection = layoutConfig.sections.find((s) => s.id === activeSectionId) || null;
-  const currentNichePreset = NICHE_PRESETS[activeNiche] || NICHE_PRESETS.shoes;
 
   return (
     <div className="h-screen w-full flex flex-col bg-slate-50 text-slate-800 font-sans select-none overflow-hidden">
@@ -3163,8 +3270,95 @@ export default function VisualLayoutEditor() {
                 )}
               </div>
 
-              {/* Bottom Input Area */}
-              <div className="p-3 bg-white border-t border-slate-200">
+              {/* Bottom Input Area with @ Tagging System */}
+              <div className="p-3 bg-white border-t border-slate-200 relative">
+                {/* Floating @ Mention Autocomplete Popover */}
+                {showMentionMenu && (
+                  <div className="absolute bottom-full left-3 right-3 mb-2 bg-white/95 backdrop-blur-md rounded-2xl border border-violet-200/90 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                    <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 mb-1.5">
+                      <span className="flex items-center gap-1.5 text-violet-700">
+                        <AtSign className="w-3.5 h-3.5 text-violet-600" />
+                        Select Section to Tag
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-normal">Click or press Esc</span>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                      {mentionOptions.map((opt) => (
+                        <button
+                          key={opt.tag}
+                          type="button"
+                          onClick={() => handleInsertTag(opt.tag)}
+                          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-violet-50 text-left transition-all group"
+                        >
+                          <span className="text-base flex-shrink-0">{opt.icon}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-violet-700 group-hover:text-violet-900">
+                                @{opt.tag}
+                              </span>
+                              <span className="text-[11px] font-semibold text-slate-700 truncate">
+                                {opt.label}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 truncate">{opt.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick-Tap Section Action Chips */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-[11px]">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 pl-0.5 flex-shrink-0">
+                    <AtSign className="w-2.5 h-2.5 text-violet-500" /> Tag:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("active")}
+                    className="px-2 py-0.5 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                    title={activeSection?.props?.title || "Target canvas active selection"}
+                  >
+                    <Target className="w-3 h-3 text-violet-600" />
+                    <span>@active</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("hero")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                  >
+                    <span>🖼️ @hero</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("theme")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                  >
+                    <span>🎨 @theme</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("navbar")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                  >
+                    <span>🧭 @navbar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("products")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                  >
+                    <span>🛍️ @products</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleInsertTag("banner")}
+                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
+                  >
+                    <span>📢 @banner</span>
+                  </button>
+                </div>
+
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -3175,15 +3369,21 @@ export default function VisualLayoutEditor() {
                   <input
                     type="text"
                     value={aiInput}
-                    onChange={(e) => setAiInput(e.target.value)}
-                    placeholder="Describe changes: e.g. change hero title, update colors..."
+                    onChange={handleAiInputChange}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") setShowMentionMenu(false);
+                    }}
+                    placeholder="Type @ to tag section (e.g. @hero bg white, @theme gold)..."
                     disabled={isAiLoading}
                     className="flex-1 bg-transparent py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
                   {aiInput && (
                     <button
                       type="button"
-                      onClick={() => setAiInput("")}
+                      onClick={() => {
+                        setAiInput("");
+                        setShowMentionMenu(false);
+                      }}
                       className="p-1 text-slate-400 hover:text-slate-600"
                     >
                       <X className="w-3 h-3" />

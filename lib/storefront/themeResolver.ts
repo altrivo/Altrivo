@@ -273,6 +273,15 @@ export async function getStoreConfigBySlug(slug: string): Promise<VendorStoreCon
     const { getStoreBySlug } = await import("@/lib/store/store-service");
     const store = await getStoreBySlug(slug);
     if (store && store.layout_config) {
+      if (!store.commerce_config?.products?.length && !store.layout_config?.products?.length) {
+        try {
+          const { fetchProductsFromDatabase } = await import("@/lib/product-db-sync");
+          const dbProds = await fetchProductsFromDatabase({ storeId: store.id, vendorId: store.vendor_id });
+          if (dbProds.length > 0) {
+            store.commerce_config = { ...(store.commerce_config || {}), products: dbProds };
+          }
+        } catch {}
+      }
       return convertDbStoreToConfig(store);
     }
   } catch (err) {
@@ -289,6 +298,15 @@ export async function getStoreConfigById(id: string): Promise<VendorStoreConfig 
     const { getStoreById } = await import("@/lib/store/store-service");
     const store = await getStoreById(id);
     if (store && store.layout_config) {
+      if (!store.commerce_config?.products?.length && !store.layout_config?.products?.length) {
+        try {
+          const { fetchProductsFromDatabase } = await import("@/lib/product-db-sync");
+          const dbProds = await fetchProductsFromDatabase({ storeId: store.id, vendorId: store.vendor_id });
+          if (dbProds.length > 0) {
+            store.commerce_config = { ...(store.commerce_config || {}), products: dbProds };
+          }
+        } catch {}
+      }
       return convertDbStoreToConfig(store);
     }
   } catch (err) {

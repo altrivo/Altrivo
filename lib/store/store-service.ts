@@ -598,15 +598,49 @@ export async function updateStore(storeId: string, updates: Partial<StoreRow>): 
       s.subdomain?.toLowerCase() === clean
   );
 
-  const targetId = idx !== -1 ? stores[idx].id : storeId;
+  let existingStore: StoreRow | null = idx !== -1 ? stores[idx] : null;
+  if (!existingStore) {
+    existingStore = await getStoreById(clean) || await getStoreBySlug(clean);
+  }
 
-  const mergedLayout = updates.layout_config && idx !== -1 && stores[idx].layout_config
-    ? { ...stores[idx].layout_config, ...updates.layout_config }
-    : updates.layout_config;
+  const targetId = idx !== -1 ? stores[idx].id : existingStore?.id || storeId;
 
-  const mergedCommerce = updates.commerce_config && idx !== -1 && stores[idx].commerce_config
-    ? { ...stores[idx].commerce_config, ...updates.commerce_config }
-    : updates.commerce_config;
+  let mergedLayout = updates.layout_config;
+  if (existingStore?.layout_config) {
+    mergedLayout = {
+      ...existingStore.layout_config,
+      ...(updates.layout_config || {}),
+    };
+
+    // CRITICAL: NEVER wipe out existing sections if updates didn't include valid sections!
+    if (
+      (!updates.layout_config?.sections || updates.layout_config.sections.length === 0) &&
+      existingStore.layout_config.sections &&
+      existingStore.layout_config.sections.length > 0
+    ) {
+      mergedLayout.sections = existingStore.layout_config.sections;
+    }
+
+    if (!updates.layout_config?.theme && existingStore.layout_config.theme) {
+      mergedLayout.theme = existingStore.layout_config.theme;
+    }
+
+    if (!updates.layout_config?.categories && existingStore.layout_config.categories) {
+      mergedLayout.categories = existingStore.layout_config.categories;
+    }
+
+    if (!updates.layout_config?.storeName && existingStore.layout_config.storeName) {
+      mergedLayout.storeName = existingStore.layout_config.storeName;
+    }
+  }
+
+  let mergedCommerce = updates.commerce_config;
+  if (existingStore?.commerce_config) {
+    mergedCommerce = {
+      ...existingStore.commerce_config,
+      ...(updates.commerce_config || {}),
+    };
+  }
 
   // If products were updated in layout_config, also sync them to sections that display products
   if (mergedLayout?.products && Array.isArray(mergedLayout.products) && mergedLayout.sections) {
