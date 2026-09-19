@@ -9,6 +9,7 @@ interface RequestBody {
   userInstruction: string;
   activeSectionId?: string;
   targetTag?: string;
+  activeNiche?: string;
 }
 
 const GEMINI_MODELS = [
@@ -29,7 +30,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<any | null> {
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               responseMimeType: "application/json",
-              temperature: 0.2,
+              temperature: 0.3,
             },
           }),
         }
@@ -50,7 +51,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<any | null> {
         const errText = await res.text();
         console.warn(`[Gemini API ${model} Error]: ${res.status}`, errText.substring(0, 150));
         if (res.status === 503 || res.status === 429) {
-          // Service is overloaded right now, fall back instantly
+          // Service is overloaded, break immediately to fallback
           break;
         }
       }
@@ -87,10 +88,63 @@ const COLOR_MAP: Record<string, { hex: string; bgTheme: string; name: string }> 
   lal: { hex: "#DC2626", bgTheme: "glass", name: "Lal (Red)" },
 };
 
+// High-converting luxury copywriting templates by niche
+interface NicheCopyTemplate {
+  title: string;
+  subtitle: string;
+  ctaText?: string;
+  image?: string;
+}
+
+const NICHE_TEMPLATES: Record<string, NicheCopyTemplate> = {
+  shoes: {
+    title: "Handcrafted Distinction & Timeless Luxury",
+    subtitle: "Discover bespoke footwear meticulously handcrafted from 100% full-grain leather, engineered for enduring comfort and effortless prestige.",
+    ctaText: "Shop Collection",
+    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80",
+  },
+  cosmetics: {
+    title: "Pure Radiance & Botanical Luxury",
+    subtitle: "Dermatologically formulated essentials designed to nourish, illuminate, and celebrate your natural skin glow.",
+    ctaText: "Explore Beauty",
+    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80",
+  },
+  jewelry: {
+    title: "Timeless Allure & Master Craftsmanship",
+    subtitle: "Exquisite handcrafted jewels and bespoke heirlooms set in 18K gold and radiant stones designed to captivate for generations.",
+    ctaText: "View Heirlooms",
+    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1200&q=80",
+  },
+  clothing: {
+    title: "Contemporary Elegance & Tailored Perfection",
+    subtitle: "Explore bespoke silhouettes and luxury menswear masterfully tailored from premium Egyptian cotton and rich woven fabrics.",
+    ctaText: "Explore Wardrobe",
+    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80",
+  },
+  watches: {
+    title: "Precision Engineering & Timeless Prestige",
+    subtitle: "High-precision automatic chronographs and artisanal timepieces engineered with sapphire crystal for the modern connoisseur.",
+    ctaText: "Discover Timepieces",
+    image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80",
+  },
+  perfume: {
+    title: "Sensory Masterpieces & Unforgettable Sillage",
+    subtitle: "Rare botanicals, pure oud, and French essences harmoniously blended for an unforgettable signature presence.",
+    ctaText: "Experience Fragrances",
+    image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=80",
+  },
+  general: {
+    title: "Signature Luxury & Bespoke Distinction",
+    subtitle: "Experience master craftsmanship, handpicked materials, and exclusive designs curated to elevate your lifestyle.",
+    ctaText: "Explore Now",
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
+  },
+};
+
 export async function POST(req: Request) {
   try {
     const body: RequestBody = await req.json();
-    const { storeId, storeSlug, storeName, currentLayout, userInstruction, activeSectionId, targetTag } = body;
+    const { storeId, storeSlug, storeName, currentLayout, userInstruction, activeSectionId, targetTag, activeNiche } = body;
 
     if (!userInstruction || !userInstruction.trim()) {
       return NextResponse.json({ error: "userInstruction is required" }, { status: 400 });
@@ -101,6 +155,8 @@ export async function POST(req: Request) {
     }
 
     const effectiveStoreName = storeName || currentLayout.storeName || "My Store";
+    const detectedStoreNiche = (activeNiche || currentLayout.niche || "shoes").toLowerCase();
+
     let apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       try {
@@ -121,7 +177,7 @@ export async function POST(req: Request) {
 
     if (apiKey) {
       const systemPrompt = `You are an expert, world-class e-commerce store designer, copywriter, and UI/UX engineer for the Altrivo e-commerce platform.
-The vendor is editing their live store: "${effectiveStoreName}".
+The vendor is editing their live store: "${effectiveStoreName}" (Industry/Niche: "${detectedStoreNiche}").
 
 CURRENT STORE LAYOUT CONFIG (JSON):
 ${JSON.stringify(currentLayout, null, 2)}
@@ -142,26 +198,23 @@ STRICT RULES & PRECISION HANDLING:
    - If user tags "@products": Modify product catalog layout / column limits.
    - If user tags "@active" or "is section ka": Target the section with id "${activeSectionId}".
 
-2. PRECISE PROPERTY MODIFICATION — DO NOT CONFUSE COLOR WITH TITLE:
+2. INTELLIGENT COPYWRITING & TEXT REWRITES:
+   - When the user asks to change, rewrite, or update text/content/copy/heading/para/title/description (e.g. "@hero text ko change kry", "text badlo", "hero ka text likho", "cosmetic type text likhy", "jewelry tone"):
+     - YOU ARE AN EXPERT COPYWRITER. Generate a stunning, high-converting, boutique Headline (props.title) and persuasive Subheadline (props.subtitle) matching the store name, niche, and user tone.
+     - DO NOT leave generic placeholder text like "Make A Hero Section With Text".
+     - Craft elegant, bespoke copy tailored to the vendor's brand.
+
+3. PRECISE PROPERTY MODIFICATION — DO NOT CONFUSE COLOR WITH TITLE:
    - BACKGROUND / COLOR CHANGES:
      - If the user asks to change background color (e.g. "background color change kr do white", "bg black kardo", "color emerald karo"):
        - Update the target section's "props.backgroundColor" (e.g. "#FFFFFF") and/or "props.bgTheme" ("white" | "slate" | "gold" | "black" | "light" | "glass").
        - Or if targeting store theme, update "theme.colors.background".
        - CRITICAL: NEVER overwrite or put instructions into "props.title" or "props.subtitle" when the user asked for a color or background change!
-   - TITLE / HEADLINE CHANGES:
-     - Only update "props.title" when user explicitly requests a title or headline change (e.g. "title badal kar 'Luxury Shoes' kardo").
-     - Extract only the title text, DO NOT include conversational filler like "kardo", "change", etc.
-   - SUBTITLE / PARAGRAPH CHANGES:
-     - Update "props.subtitle" or "props.paragraphs".
-   - BUTTON / CTA CHANGES:
-     - Update "props.ctaText", "props.ctaLink", or "props.buttonTheme".
-   - BANNER PROMOTIONS:
-     - Add PromoBanner at index 0 of sections if user asks for sale/coupon banner.
 
-3. REQUIRED OUTPUT FORMAT:
+4. REQUIRED OUTPUT FORMAT:
    Return ONLY a valid JSON object with EXACTLY these three keys:
-   - "reply": A warm, polite, and clear explanation in Roman Urdu (e.g. "Hero section ka background color White (#FFFFFF) kar diya gaya hai!").
-   - "changesSummary": A short 1-line English summary (e.g. "Changed Hero Background to White").
+   - "reply": A warm, polite, and clear explanation in Roman Urdu (e.g. "Hero section ka text luxury footwear tone me rewrite kar diya gaya hai!").
+   - "changesSummary": A short 1-line English summary (e.g. "Rewrote Hero Headline & Subtitle").
    - "updatedLayout": The complete updated layout JSON object.
 
 DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JSON ONLY.`;
@@ -170,14 +223,14 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
     }
 
     // =========================================================================
-    // SMART MULTI-PROPERTY FALLBACK ENGINE (Bulletproof Roman Urdu & Tag Support)
+    // SMART MULTI-PROPERTY & COPYWRITING ENGINE (Bulletproof Fallback Engine)
     // =========================================================================
     if (!aiResponse || !aiResponse.updatedLayout) {
-      console.warn("[Editor Assistant] Running Smart Multi-Property Fallback Engine");
+      console.warn("[Editor Assistant] Running Smart Multi-Property & Copywriting Engine");
       const cloned = JSON.parse(JSON.stringify(currentLayout));
       const lower = userInstruction.toLowerCase();
 
-      // 1. Detect Tag from input if not passed explicitly (e.g., "@hero", "@theme", "@navbar", "@banner", "@products", "@story")
+      // 1. Detect Tag from input if not passed explicitly
       let tag = (targetTag || "").toLowerCase().replace("@", "");
       if (!tag) {
         const tagMatch = lower.match(/@(hero|navbar|theme|products|catalog|banner|story|about|reviews|footer|active)/);
@@ -205,6 +258,9 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
       if (!targetSection && activeSectionId) {
         targetSection = cloned.sections?.find((s: any) => s.id === activeSectionId);
       }
+      if (!targetSection && cloned.sections?.[0]) {
+        targetSection = cloned.sections[0];
+      }
 
       let reply = "Aapki request ke mutabiq store update kar diya gaya hai!";
       let summary = "Updated store layout";
@@ -212,17 +268,14 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
       // 3. INTENT A: BACKGROUND COLOR / THEME COLOR
       const isColorIntent = lower.includes("color") || lower.includes("colour") || lower.includes("background") || lower.includes("bg") || lower.includes("rang") || lower.includes("safaid") || lower.includes("kala");
       
-      // Match color from text
       let matchedColor: { hex: string; bgTheme: string; name: string } | null = null;
       for (const [key, val] of Object.entries(COLOR_MAP)) {
-        // Match word boundaries to avoid false positives
         const regex = new RegExp(`\\b${key}\\b`, "i");
         if (regex.test(lower)) {
           matchedColor = val;
           break;
         }
       }
-      // Check for hex color pattern e.g. #fff, #ffffff, #123456
       const hexMatch = lower.match(/#([0-9a-f]{3}|[0-9a-f]{6})\b/i);
       if (hexMatch) {
         const hex = hexMatch[0].toUpperCase();
@@ -230,7 +283,6 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
       }
 
       if (isColorIntent && matchedColor) {
-        // If targeted section exists, update that section's background color
         if (targetSection) {
           targetSection.props = targetSection.props || {};
           targetSection.props.backgroundColor = matchedColor.hex;
@@ -240,7 +292,6 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
           reply = `${sectionLabel} section ka background color ${matchedColor.name} kar diya gaya hai!`;
           summary = `Updated section background to ${matchedColor.name}`;
         } else if (tag === "theme" || lower.includes("theme") || lower.includes("store") || lower.includes("puri") || lower.includes("website")) {
-          // Update global theme
           cloned.theme = cloned.theme || {};
           cloned.theme.colors = cloned.theme.colors || {};
           cloned.theme.colors.background = matchedColor.hex;
@@ -251,13 +302,6 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
           }
           reply = `Store ka overall theme background color ${matchedColor.name} kar diya gaya hai!`;
           summary = `Updated theme background to ${matchedColor.name}`;
-        } else if (cloned.sections?.[0]) {
-          // Default to top/hero section
-          cloned.sections[0].props = cloned.sections[0].props || {};
-          cloned.sections[0].props.backgroundColor = matchedColor.hex;
-          cloned.sections[0].props.bgTheme = matchedColor.bgTheme;
-          reply = `Top section ka background color ${matchedColor.name} kar diya gaya hai!`;
-          summary = `Updated top section background to ${matchedColor.name}`;
         }
       }
       // 4. INTENT B: PROMO BANNER ADDITION
@@ -276,53 +320,98 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
         reply = "Top announcement promo banner 20% discount aur Free Delivery ke sath add kar diya gaya hai!";
         summary = "Added Promo Announcement Banner";
       }
-      // 5. INTENT C: EXPLICIT TITLE / HEADING CHANGE (Only when explicit!)
-      else if (lower.includes("heading") || lower.includes("title") || lower.includes("unwan") || lower.includes("naam")) {
-        // Extract title from quotes if available
-        let extractedTitle = "";
+      // 5. INTENT C: INTELLIGENT COPYWRITING & TEXT REWRITES (e.g. "@hero text ko change kry", "text likho", "title badlo")
+      else if (
+        lower.includes("text") ||
+        lower.includes("heading") ||
+        lower.includes("title") ||
+        lower.includes("headline") ||
+        lower.includes("para") ||
+        lower.includes("subtitle") ||
+        lower.includes("description") ||
+        lower.includes("tafseel") ||
+        lower.includes("unwan") ||
+        lower.includes("naam") ||
+        lower.includes("copy") ||
+        lower.includes("likh") ||
+        lower.includes("badlo") ||
+        lower.includes("change kry") ||
+        lower.includes("change kr")
+      ) {
+        // Step 1: Detect if user provided an explicit custom title in quotes or specific phrase
+        let explicitCustomTitle = "";
         const quoteMatch = userInstruction.match(/["']([^"']+)["']/);
-        if (quoteMatch) {
-          extractedTitle = quoteMatch[1].trim();
+        if (quoteMatch && quoteMatch[1].trim().length > 2) {
+          explicitCustomTitle = quoteMatch[1].trim();
         } else {
-          // Strip instruction keywords
-          extractedTitle = userInstruction
-            .replace(/@(hero|navbar|theme|products|banner|active)/gi, "")
-            .replace(/(change|update|hero|heading|title|headline|unwan|naam|likho|rakho|kardo|krdo|kr dye|badlo|kar do|to|ko|kar dein)/gi, "")
-            .trim();
+          // Only extract if user gave an explicit command and NOT a style/type description
+          const isStyleRequest = lower.includes("type") || lower.includes("style") || lower.includes("mutabiq") || lower.includes("tarah") || lower.includes("hona chye") || lower.includes("aisa") || lower.includes("sy likh");
+          if (!isStyleRequest) {
+            const stripped = userInstruction
+              .replace(/@(hero|navbar|theme|products|banner|active|story|reviews)/gi, "")
+              .replace(/(text|heading|title|headline|subtitle|para|description|tafseel|unwan|naam|copy|likho|likhy|likh|rakho|kardo|krdo|kr dye|badlo|kar do|change kry|change karo|change kr do|change kardo|change|update|to|ko|kar dein|kry)/gi, "")
+              .trim();
+            if (stripped.length >= 4 && stripped.length <= 40 && !stripped.includes("..") && !stripped.includes("or") && !stripped.includes("aur") && !stripped.includes("ki") && !stripped.includes("ka")) {
+              explicitCustomTitle = stripped;
+            }
+          }
         }
 
-        if (extractedTitle && targetSection) {
+        // Step 2: Detect niche style cues from user prompt
+        let targetNiche = detectedStoreNiche;
+        if (lower.includes("cosmetic") || lower.includes("beauty") || lower.includes("makeup") || lower.includes("skin")) {
+          targetNiche = "cosmetics";
+        } else if (lower.includes("jewelry") || lower.includes("jewel") || lower.includes("gold") || lower.includes("heirloom")) {
+          targetNiche = "jewelry";
+        } else if (lower.includes("perfume") || lower.includes("scent") || lower.includes("fragrance") || lower.includes("khushboo") || lower.includes("ittar")) {
+          targetNiche = "perfume";
+        } else if (lower.includes("watch") || lower.includes("ghari") || lower.includes("chrono")) {
+          targetNiche = "watches";
+        } else if (lower.includes("cloth") || lower.includes("kapre") || lower.includes("shirt") || lower.includes("kurta") || lower.includes("apparel") || lower.includes("fashion")) {
+          targetNiche = "clothing";
+        } else if (lower.includes("shoe") || lower.includes("footwear") || lower.includes("leather") || lower.includes("jota") || lower.includes("chappal")) {
+          targetNiche = "shoes";
+        }
+
+        const template = NICHE_TEMPLATES[targetNiche] || NICHE_TEMPLATES.shoes;
+
+        if (targetSection) {
           targetSection.props = targetSection.props || {};
-          targetSection.props.title = extractedTitle;
-          reply = `Section ki heading ko update karke "${extractedTitle}" kar diya gaya hai!`;
-          summary = `Updated section heading to "${extractedTitle}"`;
-        } else if (extractedTitle && cloned.sections?.[0]) {
-          cloned.sections[0].props = cloned.sections[0].props || {};
-          cloned.sections[0].props.title = extractedTitle;
-          reply = `Hero section ki heading ko update karke "${extractedTitle}" kar diya gaya hai!`;
-          summary = `Updated hero heading to "${extractedTitle}"`;
+
+          // Apply Title
+          const finalTitle = explicitCustomTitle || template.title;
+          targetSection.props.title = finalTitle;
+
+          // Apply Subtitle tailored for this store
+          const finalSubtitle = `Custom tailored for ${effectiveStoreName}. ${template.subtitle}`;
+          targetSection.props.subtitle = finalSubtitle;
+
+          if (template.ctaText && !targetSection.props.ctaText) {
+            targetSection.props.ctaText = template.ctaText;
+          }
+
+          // Also check if user asked for an image in the same instruction!
+          // (e.g. "image b jewelry ki lagai" or "photo change karo")
+          if (lower.includes("image") || lower.includes("photo") || lower.includes("tasweer") || lower.includes("picture")) {
+            let imgNiche = targetNiche;
+            if (lower.includes("jewelry")) imgNiche = "jewelry";
+            else if (lower.includes("cosmetic")) imgNiche = "cosmetics";
+            else if (lower.includes("shoe")) imgNiche = "shoes";
+            else if (lower.includes("cloth")) imgNiche = "clothing";
+            else if (lower.includes("watch")) imgNiche = "watches";
+
+            const selectedImg = NICHE_TEMPLATES[imgNiche]?.image || template.image;
+            if (selectedImg) {
+              targetSection.props.imageUrl = selectedImg;
+              targetSection.props.heroImage = selectedImg;
+            }
+          }
+
+          reply = `Hero section ke text ko ${targetNiche.toUpperCase()} boutique tone me rewrite kar diya gaya hai!\n\n✨ Naya Title: "${finalTitle}"\n📝 Subtitle: "${finalSubtitle}"`;
+          summary = `Rewrote Hero Headline & Subtitle (${targetNiche})`;
         }
       }
-      // 6. INTENT D: SUBTITLE / PARAGRAPH CHANGE
-      else if (lower.includes("subtitle") || lower.includes("para") || lower.includes("description") || lower.includes("tafseel")) {
-        let extractedSub = "";
-        const quoteMatch = userInstruction.match(/["']([^"']+)["']/);
-        if (quoteMatch) {
-          extractedSub = quoteMatch[1].trim();
-        } else {
-          extractedSub = userInstruction
-            .replace(/@(hero|navbar|theme|products|banner|active)/gi, "")
-            .replace(/(change|update|subtitle|subheading|para|description|tafseel|likho|kardo|krdo|badlo)/gi, "")
-            .trim();
-        }
-        if (extractedSub && targetSection) {
-          targetSection.props = targetSection.props || {};
-          targetSection.props.subtitle = extractedSub;
-          reply = `Section ke subtitle ko update kar diya gaya hai: "${extractedSub}"`;
-          summary = `Updated subtitle`;
-        }
-      }
-      // 7. INTENT E: GENERAL THEME PRESETS
+      // 6. INTENT D: GENERAL THEME PRESETS
       else if (lower.includes("dark") || lower.includes("black")) {
         cloned.theme = cloned.theme || {};
         cloned.theme.colors = {
@@ -340,9 +429,18 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
         reply = "Theme colors ko Royal Gold me change kar diya gaya hai!";
         summary = "Applied Royal Gold Theme";
       } else {
-        // Safe default: acknowledge without destructive changes
-        reply = "Aapki instruction record ho gayi hai. Kisi specific section me tabdeeli ke liye aap @hero, @theme, ya @banner tag use kar sakte hain!";
-        summary = "Processed editor instruction";
+        // Fallback: When the user asks something general about a section, generate fresh tailored copy!
+        if (targetSection) {
+          const template = NICHE_TEMPLATES[detectedStoreNiche] || NICHE_TEMPLATES.shoes;
+          targetSection.props = targetSection.props || {};
+          targetSection.props.title = template.title;
+          targetSection.props.subtitle = `Custom tailored for ${effectiveStoreName}. ${template.subtitle}`;
+          reply = `Section ke content ko ${detectedStoreNiche.toUpperCase()} boutique style me update kar diya gaya hai! Naya title: "${template.title}"`;
+          summary = `Refined section copy for ${effectiveStoreName}`;
+        } else {
+          reply = "Aapki instruction update ho gayi hai! Kisi specific section ke liye aap @hero, @theme, ya @banner tag use kar sakte hain.";
+          summary = "Processed editor instruction";
+        }
       }
 
       aiResponse = {

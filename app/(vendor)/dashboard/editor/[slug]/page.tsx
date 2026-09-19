@@ -1649,6 +1649,7 @@ export default function VisualLayoutEditor() {
           userInstruction: userMsg,
           activeSectionId,
           targetTag,
+          activeNiche,
         }),
       });
 
