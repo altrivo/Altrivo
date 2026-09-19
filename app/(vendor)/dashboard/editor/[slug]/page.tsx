@@ -3309,57 +3309,6 @@ export default function VisualLayoutEditor() {
                   </div>
                 )}
 
-                {/* Quick-Tap Section Action Chips */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none text-[11px]">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 pl-0.5 flex-shrink-0">
-                    <AtSign className="w-2.5 h-2.5 text-violet-500" /> Tag:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("active")}
-                    className="px-2 py-0.5 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 font-bold border border-violet-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                    title={activeSection?.props?.title || "Target canvas active selection"}
-                  >
-                    <Target className="w-3 h-3 text-violet-600" />
-                    <span>@active</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("hero")}
-                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                  >
-                    <span>🖼️ @hero</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("theme")}
-                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                  >
-                    <span>🎨 @theme</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("navbar")}
-                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                  >
-                    <span>🧭 @navbar</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("products")}
-                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                  >
-                    <span>🛍️ @products</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleInsertTag("banner")}
-                    className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium border border-slate-200 transition-all flex items-center gap-1 flex-shrink-0 text-[10.5px]"
-                  >
-                    <span>📢 @banner</span>
-                  </button>
-                </div>
-
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
