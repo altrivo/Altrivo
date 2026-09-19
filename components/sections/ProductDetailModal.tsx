@@ -223,24 +223,8 @@ export default function ProductDetailModal({
               )}
             </div>
 
-            {/* RIGHT: Product Info, Variants, Quantity & Buy CTAs (7 Cols) */}
             <div className="lg:col-span-6 space-y-5">
-              {/* Brand & Category */}
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                    {product.brand || "StepCraft Heritage"}
-                  </span>
-                  <span className="text-[11px] font-bold text-slate-500">
-                    {product.category || "Footwear"}
-                  </span>
-                  {product.sku && (
-                    <span className="text-[10px] font-mono text-slate-400 ml-auto">
-                      SKU: {product.sku}
-                    </span>
-                  )}
-                </div>
-
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
                   {product.name}
                 </h1>

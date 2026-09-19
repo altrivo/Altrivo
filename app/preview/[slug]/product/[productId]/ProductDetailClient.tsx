@@ -190,17 +190,7 @@ export default function ProductDetailClient({
         {/* RIGHT: Product Details, Pricing, Variants & CTAs (6 Cols) */}
         <div className="lg:col-span-6 space-y-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
-                {product.brand || storeName || "StepCraft Heritage"}
-              </span>
-              <span className="text-xs font-bold text-slate-500">{product.category || "Footwear"}</span>
-              {product.sku && (
-                <span className="text-xs font-mono text-slate-400 ml-auto">
-                  SKU: {product.sku}
-                </span>
-              )}
-            </div>
+
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
               {product.name}

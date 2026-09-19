@@ -110,13 +110,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           {/* Details (6 Cols) */}
           <div className="lg:col-span-6 space-y-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
-                  {product.brand || "StepCraft Heritage"}
-                </span>
-                <span className="text-xs font-bold text-slate-500">{product.category}</span>
-                <span className="text-xs font-mono text-slate-400 ml-auto">SKU: {product.sku}</span>
-              </div>
+
 
               <h1 className="text-3xl font-extrabold text-slate-900 font-display">
                 {product.name}
