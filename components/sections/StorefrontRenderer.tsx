@@ -292,6 +292,8 @@ export default function StorefrontRenderer({
               storeSlug={storeIdentifier}
               isEditorMode={isEditorMode}
               onNavigatePage={handlePageChange}
+              headerConfig={(config as any)?.header}
+              theme={(config as any)?.theme}
             />
           </div>
         ) : (
@@ -304,6 +306,8 @@ export default function StorefrontRenderer({
             storeSlug={storeIdentifier}
             isEditorMode={isEditorMode}
             onNavigatePage={handlePageChange}
+            headerConfig={(config as any)?.header}
+            theme={(config as any)?.theme}
           />
         )}
 

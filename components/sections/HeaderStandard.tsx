@@ -44,6 +44,8 @@ export interface HeaderStandardProps {
   storeSlug?: string;
   isEditorMode?: boolean;
   onNavigatePage?: (page: string) => void;
+  headerConfig?: any;
+  theme?: any;
 }
 
 export default function HeaderStandard({
@@ -57,6 +59,8 @@ export default function HeaderStandard({
   storeSlug = "",
   isEditorMode = false,
   onNavigatePage,
+  headerConfig,
+  theme,
 }: HeaderStandardProps) {
   const { 
     itemCount, 
@@ -576,9 +580,11 @@ export default function HeaderStandard({
           {/* Strictly 4 Core Store Navigation Pages in Center */}
           {primaryLinks.map((link) => {
             const isPageActive = activePage === link.pageKey;
+            const activeColor = headerConfig?.activeIndicatorColor || headerConfig?.hoverColor || theme?.colors?.primary || "#B88BC5";
+            const hoverColor = headerConfig?.hoverColor || theme?.colors?.primary || "#D4AF37";
             const linkClasses = `relative py-1 px-1 text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 cursor-pointer group flex flex-col items-center ${
               isPageActive
-                ? "text-purple-300 font-extrabold"
+                ? "font-extrabold"
                 : "text-slate-300 hover:text-white font-semibold"
             }`;
 
@@ -586,9 +592,12 @@ export default function HeaderStandard({
               <span
                 className={`block h-[2.5px] rounded-full transition-all duration-200 mt-1 ${
                   isPageActive
-                    ? "w-full bg-[#B88BC5] shadow-xs shadow-purple-400/50"
-                    : "w-0 group-hover:w-full bg-slate-400/70"
+                    ? "w-full shadow-xs"
+                    : "w-0 group-hover:w-full"
                 }`}
+                style={{
+                  backgroundColor: isPageActive ? activeColor : hoverColor,
+                }}
               />
             );
 

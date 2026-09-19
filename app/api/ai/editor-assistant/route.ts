@@ -233,41 +233,21 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
       // 1. Detect Tag from input if not passed explicitly
       let tag = (targetTag || "").toLowerCase().replace("@", "");
       if (!tag) {
-        const tagMatch = lower.match(/@(hero|navbar|theme|products|catalog|banner|story|about|reviews|footer|active)/);
+        const tagMatch = lower.match(/@(hero|navbar|header|theme|products|catalog|banner|story|about|reviews|footer|active)/);
         if (tagMatch) tag = tagMatch[1];
       }
-
-      // 2. Identify Targeted Section
-      let targetSection = null;
-      if (tag === "active" && activeSectionId) {
-        targetSection = cloned.sections?.find((s: any) => s.id === activeSectionId);
-      }
-      if (!targetSection && (tag === "hero" || lower.includes("hero") || lower.includes("top section"))) {
-        targetSection = cloned.sections?.find((s: any) => s.type?.startsWith("Hero") || s.type === "CustomComponent" || s.id?.includes("hero")) || cloned.sections?.[0];
-      }
-      if (!targetSection && (tag === "story" || lower.includes("story") || lower.includes("about"))) {
-        targetSection = cloned.sections?.find((s: any) => s.type === "BrandStory" || s.id?.includes("story"));
-      }
-      if (!targetSection && (tag === "reviews" || lower.includes("review") || lower.includes("testimonial"))) {
-        targetSection = cloned.sections?.find((s: any) => s.type === "TestimonialSlider" || s.id?.includes("review"));
-      }
-      if (!targetSection && (tag === "products" || lower.includes("product") || lower.includes("catalog"))) {
-        targetSection = cloned.sections?.find((s: any) => s.type?.includes("Product") || s.id?.includes("product"));
-      }
-      // If still not matched, check active section from canvas
-      if (!targetSection && activeSectionId) {
-        targetSection = cloned.sections?.find((s: any) => s.id === activeSectionId);
-      }
-      if (!targetSection && cloned.sections?.[0]) {
-        targetSection = cloned.sections[0];
+      if (!tag) {
+        if (lower.includes("navbar") || lower.includes("header") || lower.includes("menu")) tag = "navbar";
+        else if (lower.includes("theme") || lower.includes("palette")) tag = "theme";
+        else if (lower.includes("banner") || lower.includes("promo")) tag = "banner";
+        else if (lower.includes("hero")) tag = "hero";
+        else if (lower.includes("story") || lower.includes("about")) tag = "story";
+        else if (lower.includes("review") || lower.includes("testimonial")) tag = "reviews";
+        else if (lower.includes("product") || lower.includes("catalog")) tag = "products";
       }
 
-      let reply = "Aapki request ke mutabiq store update kar diya gaya hai!";
-      let summary = "Updated store layout";
-
-      // 3. INTENT A: BACKGROUND COLOR / THEME COLOR
+      // Color parsing
       const isColorIntent = lower.includes("color") || lower.includes("colour") || lower.includes("background") || lower.includes("bg") || lower.includes("rang") || lower.includes("safaid") || lower.includes("kala");
-      
       let matchedColor: { hex: string; bgTheme: string; name: string } | null = null;
       for (const [key, val] of Object.entries(COLOR_MAP)) {
         const regex = new RegExp(`\\b${key}\\b`, "i");
@@ -282,29 +262,106 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
         matchedColor = { hex, bgTheme: hex === "#FFFFFF" || hex === "#FFF" ? "white" : "slate", name: hex };
       }
 
-      if (isColorIntent && matchedColor) {
-        if (targetSection) {
-          targetSection.props = targetSection.props || {};
-          targetSection.props.backgroundColor = matchedColor.hex;
-          targetSection.props.bgTheme = matchedColor.bgTheme;
-          
-          const sectionLabel = targetSection.props.title ? `"${targetSection.props.title}"` : "Hero";
-          reply = `${sectionLabel} section ka background color ${matchedColor.name} kar diya gaya hai!`;
-          summary = `Updated section background to ${matchedColor.name}`;
-        } else if (tag === "theme" || lower.includes("theme") || lower.includes("store") || lower.includes("puri") || lower.includes("website")) {
+      let reply = "Aapki request ke mutabiq store update kar diya gaya hai!";
+      let summary = "Updated store layout";
+
+      // =======================================================================
+      // SCOPE 1: NAVBAR / HEADER COMMANDS (Strictly Isolated)
+      // =======================================================================
+      if (tag === "navbar" || lower.includes("navbar") || (!tag && (lower.includes("header") || lower.includes("nav link")))) {
+        cloned.header = cloned.header || {};
+
+        let targetColor = matchedColor ? matchedColor.hex : "#D4AF37";
+        let targetColorName = matchedColor ? matchedColor.name : "Royal Gold (#D4AF37)";
+
+        if (!matchedColor) {
+          const currentHover = cloned.header?.hoverColor || cloned.theme?.colors?.primary;
+          if (currentHover === "#D4AF37") {
+            targetColor = "#38BDF8";
+            targetColorName = "Sky Blue (#38BDF8)";
+          } else {
+            targetColor = "#D4AF37";
+            targetColorName = "Royal Gold (#D4AF37)";
+          }
+        }
+
+        if (lower.includes("hover") || lower.includes("link") || lower.includes("underline") || lower.includes("active")) {
+          cloned.header.hoverColor = targetColor;
+          cloned.header.activeIndicatorColor = targetColor;
           cloned.theme = cloned.theme || {};
           cloned.theme.colors = cloned.theme.colors || {};
-          cloned.theme.colors.background = matchedColor.hex;
-          if (matchedColor.bgTheme === "black") {
-            cloned.theme.colors.text = "#F8FAFC";
-          } else if (matchedColor.bgTheme === "white") {
-            cloned.theme.colors.text = "#0F172A";
-          }
-          reply = `Store ka overall theme background color ${matchedColor.name} kar diya gaya hai!`;
-          summary = `Updated theme background to ${matchedColor.name}`;
+          cloned.theme.colors.secondary = targetColor;
+
+          reply = `Navbar menu links ka hover aur active indicator color ${targetColorName} kar diya gaya hai! Navigation bar par hover ab ${targetColorName} me highlight hoga.`;
+          summary = `Updated Navbar Hover Color to ${targetColorName}`;
+        } else if (isColorIntent && matchedColor) {
+          cloned.header.backgroundColor = matchedColor.hex;
+          reply = `Navbar header ka background color ${matchedColor.name} kar diya gaya hai!`;
+          summary = `Updated Navbar Background to ${matchedColor.name}`;
+        } else if (lower.includes("logo") || lower.includes("naam") || lower.includes("title")) {
+          const quoteMatch = userInstruction.match(/["']([^"']+)["']/);
+          const extractedLogo = quoteMatch ? quoteMatch[1] : effectiveStoreName;
+          cloned.storeName = extractedLogo;
+          cloned.header.logoText = extractedLogo;
+          reply = `Navbar logo / store name ko update karke "${extractedLogo}" kar diya gaya hai!`;
+          summary = `Updated Navbar Logo to "${extractedLogo}"`;
+        } else {
+          cloned.header.hoverColor = targetColor;
+          cloned.header.activeIndicatorColor = targetColor;
+          reply = `Navbar styling aur link hover colors ko ${targetColorName} me update kar diya gaya hai!`;
+          summary = `Updated Navbar Styling`;
         }
+
+        aiResponse = {
+          reply,
+          changesSummary: summary,
+          updatedLayout: cloned,
+        };
       }
-      // 4. INTENT B: PROMO BANNER ADDITION
+      // =======================================================================
+      // SCOPE 2: THEME COLORS & PALETTE (Strictly Isolated)
+      // =======================================================================
+      else if (tag === "theme" || lower.includes("theme") || lower.includes("palette")) {
+        cloned.theme = cloned.theme || {};
+        cloned.theme.colors = cloned.theme.colors || {};
+
+        if (matchedColor) {
+          cloned.theme.colors.primary = matchedColor.hex;
+          if (lower.includes("background") || lower.includes("bg")) {
+            cloned.theme.colors.background = matchedColor.hex;
+            if (matchedColor.bgTheme === "white") cloned.theme.colors.text = "#0F172A";
+            if (matchedColor.bgTheme === "black") cloned.theme.colors.text = "#F8FAFC";
+          }
+          reply = `Store ka theme color ${matchedColor.name} me update kar diya gaya hai!`;
+          summary = `Updated Store Theme to ${matchedColor.name}`;
+        } else if (lower.includes("dark") || lower.includes("black")) {
+          cloned.theme.colors = {
+            ...cloned.theme.colors,
+            background: "#090D16",
+            text: "#F8FAFC",
+            primary: "#D4AF37",
+            secondary: "#94A3B8",
+          };
+          reply = "Store theme ko sleek Dark mode me change kar diya gaya hai!";
+          summary = "Applied Dark Mode Theme";
+        } else if (lower.includes("gold")) {
+          cloned.theme.colors = { ...cloned.theme.colors, primary: "#D4AF37", secondary: "#B45309" };
+          reply = "Store theme colors ko Royal Gold me change kar diya gaya hai!";
+          summary = "Applied Royal Gold Theme";
+        } else {
+          reply = "Store theme colors ko modern palette me update kar diya gaya hai!";
+          summary = "Updated Theme Colors";
+        }
+
+        aiResponse = {
+          reply,
+          changesSummary: summary,
+          updatedLayout: cloned,
+        };
+      }
+      // =======================================================================
+      // SCOPE 3: PROMO BANNER (Strictly Isolated)
+      // =======================================================================
       else if (tag === "banner" || lower.includes("banner") || lower.includes("sale") || lower.includes("discount") || lower.includes("promo")) {
         const promo = {
           id: `promo-${Date.now()}`,
@@ -319,70 +376,109 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
         cloned.sections = [promo, ...(cloned.sections || []).filter((s: any) => s.type !== "PromoBanner")];
         reply = "Top announcement promo banner 20% discount aur Free Delivery ke sath add kar diya gaya hai!";
         summary = "Added Promo Announcement Banner";
+
+        aiResponse = {
+          reply,
+          changesSummary: summary,
+          updatedLayout: cloned,
+        };
       }
-      // 5. INTENT C: INTELLIGENT COPYWRITING & TEXT REWRITES (e.g. "@hero text ko change kry", "text likho", "title badlo")
-      else if (
-        lower.includes("text") ||
-        lower.includes("heading") ||
-        lower.includes("title") ||
-        lower.includes("headline") ||
-        lower.includes("para") ||
-        lower.includes("subtitle") ||
-        lower.includes("description") ||
-        lower.includes("tafseel") ||
-        lower.includes("unwan") ||
-        lower.includes("naam") ||
-        lower.includes("copy") ||
-        lower.includes("likh") ||
-        lower.includes("badlo") ||
-        lower.includes("change kry") ||
-        lower.includes("change kr")
-      ) {
-        // Step 1: Detect if user provided an explicit custom title in quotes or specific phrase
-        let explicitCustomTitle = "";
-        const quoteMatch = userInstruction.match(/["']([^"']+)["']/);
-        if (quoteMatch && quoteMatch[1].trim().length > 2) {
-          explicitCustomTitle = quoteMatch[1].trim();
-        } else {
-          // Only extract if user gave an explicit command and NOT a style/type description
-          const isStyleRequest = lower.includes("type") || lower.includes("style") || lower.includes("mutabiq") || lower.includes("tarah") || lower.includes("hona chye") || lower.includes("aisa") || lower.includes("sy likh");
-          if (!isStyleRequest) {
-            const stripped = userInstruction
-              .replace(/@(hero|navbar|theme|products|banner|active|story|reviews)/gi, "")
-              .replace(/(text|heading|title|headline|subtitle|para|description|tafseel|unwan|naam|copy|likho|likhy|likh|rakho|kardo|krdo|kr dye|badlo|kar do|change kry|change karo|change kr do|change kardo|change|update|to|ko|kar dein|kry)/gi, "")
-              .trim();
-            if (stripped.length >= 4 && stripped.length <= 40 && !stripped.includes("..") && !stripped.includes("or") && !stripped.includes("aur") && !stripped.includes("ki") && !stripped.includes("ka")) {
-              explicitCustomTitle = stripped;
+      // =======================================================================
+      // SCOPE 4: CANVAS SECTIONS (Hero, Story, Reviews, Products)
+      // =======================================================================
+      else {
+        let targetSection = null;
+        if (tag === "active" && activeSectionId) {
+          targetSection = cloned.sections?.find((s: any) => s.id === activeSectionId);
+        }
+        if (!targetSection && (tag === "hero" || lower.includes("hero") || lower.includes("top section"))) {
+          targetSection = cloned.sections?.find((s: any) => s.type?.startsWith("Hero") || s.type === "CustomComponent" || s.id?.includes("hero")) || cloned.sections?.[0];
+        }
+        if (!targetSection && (tag === "story" || lower.includes("story") || lower.includes("about"))) {
+          targetSection = cloned.sections?.find((s: any) => s.type === "BrandStory" || s.id?.includes("story"));
+        }
+        if (!targetSection && (tag === "reviews" || lower.includes("review") || lower.includes("testimonial"))) {
+          targetSection = cloned.sections?.find((s: any) => s.type === "TestimonialSlider" || s.id?.includes("review"));
+        }
+        if (!targetSection && (tag === "products" || lower.includes("product") || lower.includes("catalog"))) {
+          targetSection = cloned.sections?.find((s: any) => s.type?.includes("Product") || s.id?.includes("product"));
+        }
+        if (!targetSection && activeSectionId) {
+          targetSection = cloned.sections?.find((s: any) => s.id === activeSectionId);
+        }
+        if (!targetSection && cloned.sections?.[0]) {
+          targetSection = cloned.sections[0];
+        }
+
+        // Section Background Color
+        if (isColorIntent && matchedColor && targetSection) {
+          targetSection.props = targetSection.props || {};
+          targetSection.props.backgroundColor = matchedColor.hex;
+          targetSection.props.bgTheme = matchedColor.bgTheme;
+          
+          const sectionLabel = targetSection.props.title ? `"${targetSection.props.title}"` : "Hero";
+          reply = `${sectionLabel} section ka background color ${matchedColor.name} kar diya gaya hai!`;
+          summary = `Updated section background to ${matchedColor.name}`;
+        }
+        // Section Copywriting (STRICTLY requiring an actual text keyword)
+        else if (
+          targetSection &&
+          (
+            lower.includes("text") ||
+            lower.includes("heading") ||
+            lower.includes("title") ||
+            lower.includes("headline") ||
+            lower.includes("para") ||
+            lower.includes("subtitle") ||
+            lower.includes("description") ||
+            lower.includes("tafseel") ||
+            lower.includes("unwan") ||
+            lower.includes("naam") ||
+            lower.includes("copy") ||
+            lower.includes("likh") ||
+            lower.includes("rewrite") ||
+            lower.includes("content")
+          )
+        ) {
+          let explicitCustomTitle = "";
+          const quoteMatch = userInstruction.match(/["']([^"']+)["']/);
+          if (quoteMatch && quoteMatch[1].trim().length > 2) {
+            explicitCustomTitle = quoteMatch[1].trim();
+          } else {
+            const isStyleRequest = lower.includes("type") || lower.includes("style") || lower.includes("mutabiq") || lower.includes("tarah") || lower.includes("hona chye") || lower.includes("aisa") || lower.includes("sy likh");
+            if (!isStyleRequest) {
+              const stripped = userInstruction
+                .replace(/@(hero|navbar|theme|products|banner|active|story|reviews)/gi, "")
+                .replace(/(text|heading|title|headline|subtitle|para|description|tafseel|unwan|naam|copy|likho|likhy|likh|rakho|kardo|krdo|kr dye|badlo|kar do|change kry|change karo|change kr do|change kardo|change|update|to|ko|kar dein|kry)/gi, "")
+                .trim();
+              if (stripped.length >= 4 && stripped.length <= 40 && !stripped.includes("..") && !stripped.includes("or") && !stripped.includes("aur") && !stripped.includes("ki") && !stripped.includes("ka")) {
+                explicitCustomTitle = stripped;
+              }
             }
           }
-        }
 
-        // Step 2: Detect niche style cues from user prompt
-        let targetNiche = detectedStoreNiche;
-        if (lower.includes("cosmetic") || lower.includes("beauty") || lower.includes("makeup") || lower.includes("skin")) {
-          targetNiche = "cosmetics";
-        } else if (lower.includes("jewelry") || lower.includes("jewel") || lower.includes("gold") || lower.includes("heirloom")) {
-          targetNiche = "jewelry";
-        } else if (lower.includes("perfume") || lower.includes("scent") || lower.includes("fragrance") || lower.includes("khushboo") || lower.includes("ittar")) {
-          targetNiche = "perfume";
-        } else if (lower.includes("watch") || lower.includes("ghari") || lower.includes("chrono")) {
-          targetNiche = "watches";
-        } else if (lower.includes("cloth") || lower.includes("kapre") || lower.includes("shirt") || lower.includes("kurta") || lower.includes("apparel") || lower.includes("fashion")) {
-          targetNiche = "clothing";
-        } else if (lower.includes("shoe") || lower.includes("footwear") || lower.includes("leather") || lower.includes("jota") || lower.includes("chappal")) {
-          targetNiche = "shoes";
-        }
+          let targetNiche = detectedStoreNiche;
+          if (lower.includes("cosmetic") || lower.includes("beauty") || lower.includes("makeup") || lower.includes("skin")) {
+            targetNiche = "cosmetics";
+          } else if (lower.includes("jewelry") || lower.includes("jewel") || lower.includes("gold") || lower.includes("heirloom")) {
+            targetNiche = "jewelry";
+          } else if (lower.includes("perfume") || lower.includes("scent") || lower.includes("fragrance") || lower.includes("khushboo") || lower.includes("ittar")) {
+            targetNiche = "perfume";
+          } else if (lower.includes("watch") || lower.includes("ghari") || lower.includes("chrono")) {
+            targetNiche = "watches";
+          } else if (lower.includes("cloth") || lower.includes("kapre") || lower.includes("shirt") || lower.includes("kurta") || lower.includes("apparel") || lower.includes("fashion")) {
+            targetNiche = "clothing";
+          } else if (lower.includes("shoe") || lower.includes("footwear") || lower.includes("leather") || lower.includes("jota") || lower.includes("chappal")) {
+            targetNiche = "shoes";
+          }
 
-        const template = NICHE_TEMPLATES[targetNiche] || NICHE_TEMPLATES.shoes;
+          const template = NICHE_TEMPLATES[targetNiche] || NICHE_TEMPLATES.shoes;
 
-        if (targetSection) {
           targetSection.props = targetSection.props || {};
 
-          // Apply Title
           const finalTitle = explicitCustomTitle || template.title;
           targetSection.props.title = finalTitle;
 
-          // Apply Subtitle tailored for this store
           const finalSubtitle = `Custom tailored for ${effectiveStoreName}. ${template.subtitle}`;
           targetSection.props.subtitle = finalSubtitle;
 
@@ -390,8 +486,6 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
             targetSection.props.ctaText = template.ctaText;
           }
 
-          // Also check if user asked for an image in the same instruction!
-          // (e.g. "image b jewelry ki lagai" or "photo change karo")
           if (lower.includes("image") || lower.includes("photo") || lower.includes("tasweer") || lower.includes("picture")) {
             let imgNiche = targetNiche;
             if (lower.includes("jewelry")) imgNiche = "jewelry";
@@ -409,38 +503,16 @@ DO NOT wrap your response in markdown code blocks like \`\`\`json. Output raw JS
 
           reply = `Hero section ke text ko ${targetNiche.toUpperCase()} boutique tone me rewrite kar diya gaya hai!\n\n✨ Naya Title: "${finalTitle}"\n📝 Subtitle: "${finalSubtitle}"`;
           summary = `Rewrote Hero Headline & Subtitle (${targetNiche})`;
-        }
-      }
-      // 6. INTENT D: GENERAL THEME PRESETS
-      else if (lower.includes("dark") || lower.includes("black")) {
-        cloned.theme = cloned.theme || {};
-        cloned.theme.colors = {
-          ...cloned.theme.colors,
-          background: "#090D16",
-          text: "#F8FAFC",
-          primary: lower.includes("gold") ? "#D4AF37" : "#38BDF8",
-          secondary: "#94A3B8",
-        };
-        reply = "Theme ko sleek Dark mode me change kar diya gaya hai!";
-        summary = "Applied Dark Mode Theme";
-      } else if (lower.includes("gold")) {
-        cloned.theme = cloned.theme || {};
-        cloned.theme.colors = { ...cloned.theme.colors, primary: "#D4AF37", secondary: "#B45309" };
-        reply = "Theme colors ko Royal Gold me change kar diya gaya hai!";
-        summary = "Applied Royal Gold Theme";
-      } else {
-        // Fallback: When the user asks something general about a section, generate fresh tailored copy!
-        if (targetSection) {
-          const template = NICHE_TEMPLATES[detectedStoreNiche] || NICHE_TEMPLATES.shoes;
-          targetSection.props = targetSection.props || {};
-          targetSection.props.title = template.title;
-          targetSection.props.subtitle = `Custom tailored for ${effectiveStoreName}. ${template.subtitle}`;
-          reply = `Section ke content ko ${detectedStoreNiche.toUpperCase()} boutique style me update kar diya gaya hai! Naya title: "${template.title}"`;
-          summary = `Refined section copy for ${effectiveStoreName}`;
         } else {
-          reply = "Aapki instruction update ho gayi hai! Kisi specific section ke liye aap @hero, @theme, ya @banner tag use kar sakte hain.";
+          reply = "Aapki instruction process ho gayi hai! Kisi specific section ke liye aap @hero, @navbar, @theme, ya @banner tag use kar sakte hain.";
           summary = "Processed editor instruction";
         }
+
+        aiResponse = {
+          reply,
+          changesSummary: summary,
+          updatedLayout: cloned,
+        };
       }
 
       aiResponse = {
