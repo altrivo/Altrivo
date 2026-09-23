@@ -19,23 +19,25 @@ export async function GET(request: NextRequest) {
     // Fetch directly from Supabase with strict store scoping
     if (supabaseAdmin) {
       try {
-        let query = supabaseAdmin
-          .from("orders")
-          .select("*, order_items(*), shipments(*), order_events(*), returns(*), complaints(*)")
-          .order("created_at", { ascending: false });
+        let validCustomerId = customerId;
 
-        if (customerId) {
-          query = query.eq("customer_id", customerId);
-        } else if (email) {
-          query = query.eq("customer_email", email);
+        // If email provided or customerId needs validation for this store
+        if (!validCustomerId && email && storeId) {
+          const { data: sc } = await supabaseAdmin
+            .from("store_customers")
+            .select("id")
+            .eq("store_id", storeId)
+            .ilike("email", email)
+            .maybeSingle();
+          if (sc?.id) validCustomerId = sc.id;
         }
 
-        // CRITICAL: Scope to specific store — customer orders must never cross stores
-        if (storeId) {
-          query = query.eq("store_id", storeId);
-        }
-
-        const { data: dbOrders } = await query;
+        if (validCustomerId) {
+          const { data: dbOrders } = await supabaseAdmin
+            .from("orders")
+            .select("*, order_items(*), shipments(*)")
+            .eq("customer_id", validCustomerId)
+            .order("created_at", { ascending: false });
 
         if (dbOrders && dbOrders.length > 0) {
           customerOrders = dbOrders.map((d: any) => ({
@@ -82,6 +84,7 @@ export async function GET(request: NextRequest) {
             returns: d.returns || [],
             complaints: d.complaints || [],
           }));
+        }
         }
       } catch (sbErr) {
         console.warn("[Customer Orders API] Supabase check notice:", sbErr);

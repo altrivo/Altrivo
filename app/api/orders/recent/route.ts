@@ -94,30 +94,43 @@ export async function GET(request: Request) {
         }
       }
 
-      let query = supabaseAdmin
+      // Fetch store customers for this store
+      let storeCustIds = new Set<string>();
+      if (targetStoreId) {
+        try {
+          const { data: storeCusts } = await supabaseAdmin
+            .from("store_customers")
+            .select("id, auth_user_id")
+            .eq("store_id", targetStoreId);
+          storeCustIds = new Set((storeCusts || []).flatMap((c: any) => [c.id, c.auth_user_id]).filter(Boolean));
+        } catch {}
+      }
+
+      const { data: orders, error } = await supabaseAdmin
         .from("orders")
         .select("*, order_items(*)")
         .eq("vendor_id", vendorId)
         .order("created_at", { ascending: false });
 
-      // CRITICAL: Always scope to specific store at DB level
-      if (targetStoreId) {
-        query = query.eq("store_id", targetStoreId);
-      } else {
-        // No store context — return empty for safety (new vendor has no data)
-        return NextResponse.json({
-          success: true,
-          page,
-          limit,
-          totalOrders: 0,
-          totalPages: 1,
-          orders: [],
-        });
-      }
-
-      const { data: orders, error } = await query;
       if (!error && orders) {
-        vendorOrders = orders;
+        const fs = await import("fs");
+        const path = await import("path");
+        const metaFile = path.join(process.cwd(), ".data", "orders_metadata.json");
+        let ordersMetadata: Record<string, any> = {};
+        try {
+          if (fs.existsSync(metaFile)) ordersMetadata = JSON.parse(fs.readFileSync(metaFile, "utf-8"));
+        } catch {}
+
+        vendorOrders = orders.filter((o: any) => {
+          if (o.customer_id && storeCustIds.has(o.customer_id)) return true;
+          const meta = ordersMetadata[o.id];
+          if (meta) {
+            const sid = String(meta.store_id || meta.storeId || "").toLowerCase();
+            if (targetStoreId && sid === targetStoreId.toLowerCase()) return true;
+            if (targetStoreSlug && sid === targetStoreSlug.toLowerCase()) return true;
+          }
+          return false;
+        });
       }
     }
 

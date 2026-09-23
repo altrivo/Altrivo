@@ -61,20 +61,14 @@ export async function GET(request: Request) {
 
 
     // 4. Fetch real orders specifically for THIS vendor AND store from Supabase
-    // CRITICAL: Both vendor_id and store_id must be filtered at DB level — never mix across stores
+    // CRITICAL: Both vendor_id and store scope must be strictly filtered — never mix across stores
     let vendorOrders: any[] = [];
-    // Declare outside supabaseAdmin block so they're accessible in page_views section below
     let targetStoreId = storeId || "";
-    const targetStoreSlug = storeSlug || "";
+    let targetStoreSlug = storeSlug || "";
 
     if (supabaseAdmin) {
-      let query = supabaseAdmin
-        .from("orders")
-        .select("id, total, delivery_status, payment_status, created_at, customer_id, store_id")
-        .eq("vendor_id", vendorId);
-
-      // Resolve target store UUID first (before running the query)
-      if (supabaseAdmin && (targetStoreId || targetStoreSlug)) {
+      // Resolve target store UUID and slug first
+      if (targetStoreId || targetStoreSlug) {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
         if (targetStoreId && !isUUID) {
           try {
@@ -84,13 +78,26 @@ export async function GET(request: Request) {
               .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
               .limit(1)
               .maybeSingle();
-            if (sRow?.id) targetStoreId = sRow.id;
+            if (sRow?.id) {
+              targetStoreId = sRow.id;
+              if (sRow.slug && !targetStoreSlug) targetStoreSlug = sRow.slug;
+            }
+          } catch {}
+        } else if (!targetStoreSlug && targetStoreId) {
+          try {
+            const { data: sRow } = await supabaseAdmin
+              .from("stores")
+              .select("slug")
+              .eq("id", targetStoreId)
+              .limit(1)
+              .maybeSingle();
+            if (sRow?.slug) targetStoreSlug = sRow.slug;
           } catch {}
         } else if (!targetStoreId && targetStoreSlug) {
           try {
             const { data: sRow } = await supabaseAdmin
               .from("stores")
-              .select("id")
+              .select("id, slug")
               .eq("slug", targetStoreSlug)
               .limit(1)
               .maybeSingle();
@@ -99,10 +106,7 @@ export async function GET(request: Request) {
         }
       }
 
-      // CRITICAL: Filter by store_id at DB level when store context is known
-      if (targetStoreId) {
-        query = query.eq("store_id", targetStoreId);
-      } else if (!storeId && !storeSlug) {
+      if (!targetStoreId && !targetStoreSlug) {
         // No store context provided at all — return 0 KPIs safely
         return NextResponse.json({
           success: true,
@@ -112,9 +116,44 @@ export async function GET(request: Request) {
         });
       }
 
-      const { data: orders, error } = await query;
+      // Fetch customers strictly registered to this store
+      let storeCustIds = new Set<string>();
+      if (targetStoreId) {
+        try {
+          const { data: storeCusts } = await supabaseAdmin
+            .from("store_customers")
+            .select("id, auth_user_id")
+            .eq("store_id", targetStoreId);
+          storeCustIds = new Set((storeCusts || []).flatMap((c: any) => [c.id, c.auth_user_id]).filter(Boolean));
+        } catch {}
+      }
+
+      // Query vendor orders
+      const { data: orders, error } = await supabaseAdmin
+        .from("orders")
+        .select("id, total, delivery_status, payment_status, created_at, customer_id")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false });
+
       if (!error && orders) {
-        vendorOrders = orders;
+        const fs = await import("fs");
+        const path = await import("path");
+        const metaFile = path.join(process.cwd(), ".data", "orders_metadata.json");
+        let ordersMetadata: Record<string, any> = {};
+        try {
+          if (fs.existsSync(metaFile)) ordersMetadata = JSON.parse(fs.readFileSync(metaFile, "utf-8"));
+        } catch {}
+
+        vendorOrders = orders.filter((o: any) => {
+          if (o.customer_id && storeCustIds.has(o.customer_id)) return true;
+          const meta = ordersMetadata[o.id];
+          if (meta) {
+            const sid = String(meta.store_id || meta.storeId || "").toLowerCase();
+            if (targetStoreId && sid === targetStoreId.toLowerCase()) return true;
+            if (targetStoreSlug && sid === targetStoreSlug.toLowerCase()) return true;
+          }
+          return false;
+        });
       }
     }
 
@@ -127,7 +166,6 @@ export async function GET(request: Request) {
         data: getZeroMetrics(dates),
       });
     }
-
 
     // Otherwise, compute real metrics for this specific store
     const totalSales = vendorOrders.reduce(
@@ -146,16 +184,13 @@ export async function GET(request: Request) {
           .select("id, timestamp, page")
           .eq("vendor_id", vendorId);
 
-        // CRITICAL: Filter by store_id to only count views for THIS store
-        if (targetStoreId) {
-          pvQuery = pvQuery.eq("store_id", targetStoreId);
-        } else if (targetStoreSlug) {
-          pvQuery = pvQuery.ilike("page", `%${targetStoreSlug}%`);
-        }
-
         const { data: pvs } = await pvQuery;
         if (pvs) {
-          viewsCount = pvs.length;
+          const slugKey = (targetStoreSlug || targetStoreId || "").toLowerCase();
+          const matchedPvs = slugKey 
+            ? pvs.filter((p: any) => (p.page || "").toLowerCase().includes(slugKey))
+            : pvs;
+          viewsCount = matchedPvs.length;
           if (viewsCount > 0) {
             viewsSparkline = [
               Math.max(0, Math.round(viewsCount * 0.2)),

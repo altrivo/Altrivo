@@ -173,23 +173,36 @@ export class OrdersBackendService {
         // CRITICAL: Always filter by vendor_id when provided
         if (vendorId && vendorId !== "all" && vendorId !== "vendor_dev_123") {
           query = query.eq("vendor_id", vendorId);
-        }
-
-        // CRITICAL: Always filter by store_id at DB level — never mix orders across stores
-        if (realStoreId) {
-          query = query.eq("store_id", realStoreId);
-        } else if (vendorId && vendorId !== "all" && vendorId !== "vendor_dev_123") {
-          // No store specified but vendor is known — still safe (vendor-scoped only)
-          // This is acceptable only for vendor-level aggregate views
-        } else {
+        } else if (!realStoreId) {
           // Neither vendor nor store is known — return empty for safety
           return { orders: [], totalCount: 0, analytics: this.calculateAnalytics([]) };
+        }
+
+        let storeCustIds = new Set<string>();
+        if (realStoreId) {
+          try {
+            const { data: storeCusts } = await supabaseAdmin
+              .from("store_customers")
+              .select("id, auth_user_id")
+              .eq("store_id", realStoreId);
+            storeCustIds = new Set((storeCusts || []).flatMap((c: any) => [c.id, c.auth_user_id]).filter(Boolean));
+          } catch {}
         }
 
         const { data: dbOrders, error } = await query;
 
         if (!error && dbOrders && dbOrders.length > 0) {
-          combinedOrders = dbOrders.map((dbo: any) => {
+          const sid = realStoreId ? realStoreId.toLowerCase() : "";
+          const filteredDbOrders = sid
+            ? dbOrders.filter((dbo: any) => {
+                if (dbo.customer_id && storeCustIds.has(dbo.customer_id)) return true;
+                const meta = getCachedMetadata(dbo.id);
+                if (meta?.store_id && String(meta.store_id).toLowerCase() === sid) return true;
+                return false;
+              })
+            : dbOrders;
+
+          combinedOrders = filteredDbOrders.map((dbo: any) => {
             const meta = getCachedMetadata(dbo.id);
             const metaItems = meta.items || [];
             const items: OrderItem[] = (dbo.order_items || []).map((oi: any, idx: number) => {
@@ -998,6 +1011,8 @@ export class OrdersBackendService {
     saveCachedMetadata(orderUUID, {
       orderNumber,
       order_number: orderNumber,
+      store_id: storeId,
+      vendor_id: vendorId,
       subtotal: newOrder.subtotal,
       shipping_total: newOrder.shipping_total,
       discount_total: newOrder.discount_total,
