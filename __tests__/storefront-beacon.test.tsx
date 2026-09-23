@@ -5,7 +5,7 @@ import { POST, GET } from "@/app/api/track/route";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
-  usePathname: () => "/shop",
+  usePathname: () => "/store/aura-wellness",
 }));
 
 describe("Storefront Beacon & /api/track Ingestion API", () => {

@@ -4,7 +4,7 @@ test.describe("V4 End-To-End Workflows", () => {
   
   test("(1) customer places order via COD -> verification -> vendor accepts", async ({ page }) => {
     // 1. Customer visits storefront checkout page
-    await page.goto("/shop/checkout");
+    await page.goto("/checkout");
     
     // Fill out shipping address
     await page.fill('input[placeholder="e.g. Ayesha Malik"]', "Ayesha Malik");
@@ -35,7 +35,7 @@ test.describe("V4 End-To-End Workflows", () => {
 
   test("(2) customer checkout via PayFast credit card redirect flow", async ({ page }) => {
     // Customer checks out using debit card payment
-    await page.goto("/shop/checkout");
+    await page.goto("/checkout");
     
     await page.fill('input[placeholder="e.g. Ayesha Malik"]', "Noah Wilson");
     await page.fill('input[placeholder="e.g. 0300 1234567"]', "03009999999");

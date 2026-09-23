@@ -103,7 +103,7 @@ function OrderSuccessContent() {
           )}
 
           <Link
-            href="/shop"
+            href="/"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-[#5c3d5c] hover:text-[#3e2845] px-3 py-2"
           >
             <span>Continue Shopping</span>

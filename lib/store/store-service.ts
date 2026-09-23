@@ -103,7 +103,7 @@ const SEED_STORE: StoreRow = {
           title: "Walk With Royal Distinction",
           subtitle: "100% pure full-grain calfskin leather shoes. Handcrafted in Pakistan with ergonomic cushioning for all-day comfort.",
           ctaText: "Shop Collection",
-          ctaLink: "/shop",
+          ctaLink: "#products",
           secondaryCtaText: "Explore Heritage",
           secondaryCtaLink: "/about",
           imageUrl: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80",

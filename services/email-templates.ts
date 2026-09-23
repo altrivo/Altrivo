@@ -482,7 +482,7 @@ export class EmailTemplates {
       </div>
 
       <div style="text-align: center;">
-        <a href="http://localhost:3000/shop" style="display: inline-block; background: ${primaryColor}; color: #ffffff; padding: 14px 28px; border-radius: 12px; font-weight: 800; font-size: 13px; text-decoration: none;">
+        <a href="http://localhost:3000/" style="display: inline-block; background: ${primaryColor}; color: #ffffff; padding: 14px 28px; border-radius: 12px; font-weight: 800; font-size: 13px; text-decoration: none;">
           Explore More Products →
         </a>
       </div>

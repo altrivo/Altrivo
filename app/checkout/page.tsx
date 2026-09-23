@@ -225,7 +225,7 @@ export default function CheckoutPage() {
           </p>
           <div className="pt-2">
             <Link
-              href="/shop"
+              href="/"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3e2845] text-white text-xs font-bold hover:bg-[#4b3254] transition-all shadow-xs"
             >
               <span>Explore Products</span>

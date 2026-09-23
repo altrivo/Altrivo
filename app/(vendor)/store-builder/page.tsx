@@ -976,7 +976,7 @@ export default function StoreBuilderPage() {
     title: "Handcrafted Luxury Heritage",
     subtitle: "Every product is meticulously crafted with high grade materials.",
     primaryCtaText: "Discover Now",
-    primaryCtaLink: "/shop",
+    primaryCtaLink: "#products",
     secondaryCtaText: "Learn More",
     secondaryCtaLink: "#story",
     imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop",
@@ -1029,7 +1029,7 @@ export default function StoreBuilderPage() {
       title: preset.customComponent.title,
       subtitle: preset.customComponent.subtitle,
       primaryCtaText: preset.customComponent.primaryCtaText,
-      primaryCtaLink: "/shop",
+      primaryCtaLink: "#products",
       secondaryCtaText: "Learn More",
       secondaryCtaLink: "#story",
       imageUrl: preset.customComponent.imageUrl,
@@ -1260,7 +1260,7 @@ export default function StoreBuilderPage() {
       title: preset.customComponent.title,
       subtitle: preset.customComponent.subtitle,
       primaryCtaText: preset.customComponent.primaryCtaText,
-      primaryCtaLink: "/shop",
+      primaryCtaLink: "#products",
       secondaryCtaText: "Learn More",
       secondaryCtaLink: "#story",
       imageUrl: preset.customComponent.imageUrl,
@@ -1397,9 +1397,9 @@ export default function StoreBuilderPage() {
             title: effectiveNiche === "watches" ? "Precision Engineering & Timeless Horology" : effectiveNiche === "perfumes" ? "The Royal Essence of Pure Luxury" : "Handcrafted Luxury Heritage",
             subtitle: effectiveTagline,
             ctaText: "Shop Collection",
-            ctaLink: "/shop",
+            ctaLink: "#products",
             secondaryCtaText: "View Catalog",
-            secondaryCtaLink: "/shop",
+            secondaryCtaLink: "#products",
             imageUrl: effectiveNiche === "watches" ? "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80" : effectiveNiche === "perfumes" ? "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=80" : "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80",
             imageAlignment: "right",
           },
@@ -1581,9 +1581,9 @@ export default function StoreBuilderPage() {
             title: effectiveNiche === "watches" ? "Precision Engineering & Timeless Horology" : effectiveNiche === "perfumes" ? "The Royal Essence of Pure Luxury" : "Handcrafted Luxury Heritage",
             subtitle: effectiveTagline,
             ctaText: "Shop Collection",
-            ctaLink: "/shop",
+            ctaLink: "#products",
             secondaryCtaText: "View Catalog",
-            secondaryCtaLink: "/shop",
+            secondaryCtaLink: "#products",
             imageUrl: effectiveNiche === "watches" ? "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=1200&q=80" : "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80",
             imageAlignment: "right",
           },
@@ -2877,7 +2877,7 @@ export default function StoreBuilderPage() {
                           type="text"
                           value={customComp.primaryCtaLink}
                           onChange={(e) => setCustomComp({ ...customComp, primaryCtaLink: e.target.value })}
-                          placeholder="e.g. /shop or /checkout or https://..."
+                          placeholder="e.g. #products or /checkout or https://..."
                           className="w-full p-2 rounded-lg bg-white border border-[#5c3d5c]/25 text-[#3e2845] focus:outline-none focus:border-[#4b3254] font-mono"
                         />
                       </div>

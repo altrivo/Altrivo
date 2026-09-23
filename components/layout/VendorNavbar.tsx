@@ -444,7 +444,7 @@ export function VendorNavbar({ onToggleMobileMenu }: VendorNavbarProps) {
       <StorefrontPreviewModal
         isOpen={previewModalOpen}
         onClose={() => setPreviewModalOpen(false)}
-        previewUrl={activeStore?.slug ? `/store/${activeStore.slug}` : "/shop"}
+        previewUrl={activeStore?.slug ? `/store/${activeStore.slug}` : "/"}
         storeName={activeStore?.name || "My Store"}
       />
     </header>

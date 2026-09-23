@@ -57,9 +57,9 @@ describe("Multi-Tenant Storefront Routing (Domain -> Vendor)", () => {
           host: "www.brandxyz.com",
         }),
         nextUrl: {
-          pathname: "/shop",
+          pathname: "/",
         },
-        url: "http://www.brandxyz.com/shop",
+        url: "http://www.brandxyz.com/",
       };
 
       const res = await middleware(req as any);
@@ -72,9 +72,9 @@ describe("Multi-Tenant Storefront Routing (Domain -> Vendor)", () => {
           host: "unknown-brand-999.com",
         }),
         nextUrl: {
-          pathname: "/shop",
+          pathname: "/",
         },
-        url: "http://unknown-brand-999.com/shop",
+        url: "http://unknown-brand-999.com/",
       };
 
       const res = await middleware(req as any);

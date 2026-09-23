@@ -412,7 +412,7 @@ const VISUAL_COMPONENT_CATALOG: VisualComponentBlueprint[] = [
       title: "Limited Edition Handcrafted Collection",
       subtitle: "Engineered with precision and premium craftsmanship for connoisseurs of timeless luxury.",
       ctaText: "Discover Now",
-      ctaLink: "/shop",
+      ctaLink: "#products",
       secondaryCtaText: "Learn Heritage",
       secondaryCtaLink: "#story",
       imageUrl: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=80",
@@ -2460,7 +2460,7 @@ export default function VisualLayoutEditor() {
                           <label className="text-[10px] text-slate-400 font-semibold block">Primary Target URL</label>
                           <input
                             type="text"
-                            value={activeSection.props.ctaLink || activeSection.props.primaryCtaLink || "/shop"}
+                            value={activeSection.props.ctaLink || activeSection.props.primaryCtaLink || "#products"}
                             onChange={(e) => {
                               if (activeSection.props.primaryCtaLink !== undefined) handlePropChange("primaryCtaLink", e.target.value);
                               else handlePropChange("ctaLink", e.target.value);

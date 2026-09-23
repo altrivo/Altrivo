@@ -109,7 +109,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
       {/* Main Header Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
         {/* Vendor Logo & Brand */}
-        <Link href="/shop" className="flex items-center gap-3 group focus:outline-none">
+        <Link href="/" className="flex items-center gap-3 group focus:outline-none">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-400 via-primary-500 to-primary-800 p-[1px] shadow-md group-hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-[11px] bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center text-white">
               <Sparkles className="w-5 h-5 text-accent-200" />
@@ -139,7 +139,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
         {/* Right Customer Action Links: Wishlist & Cart */}
         <div className="flex items-center gap-3">
           <Link
-            href="/shop"
+            href="/"
             aria-label="Wishlist"
             className="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl border border-default bg-card hover:bg-sidebar-hover text-heading shadow-xs active:scale-95 transition-all"
           >
@@ -147,7 +147,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
           </Link>
 
           <Link
-            href="/shop/cart"
+            href="/cart"
             aria-label="Shopping Cart"
             className="relative flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl border border-accent-300 bg-accent-50 hover:bg-accent-100 text-accent-900 font-extrabold text-xs shadow-xs active:scale-95 transition-all"
           >

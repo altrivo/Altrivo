@@ -35,7 +35,7 @@ export default function CustomComponent({
   title = "Custom Section Title",
   subtitle,
   ctaText,
-  ctaLink = "/shop",
+  ctaLink = "#products",
   secondaryCtaText,
   secondaryCtaLink = "#story",
   imageUrl,
@@ -123,7 +123,7 @@ export default function CustomComponent({
               >
                 {ctaText && (
                   <Link
-                    href={ctaLink || "/shop"}
+                    href={ctaLink || "#products"}
                     className={`px-6 py-3 rounded-xl font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2 transition-all active:scale-95 ${primaryBtnClasses}`}
                   >
                     <span>{ctaText}</span>

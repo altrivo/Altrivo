@@ -127,7 +127,7 @@ export default function CustomerWishlistPage() {
                   <Heart className="w-10 h-10 text-[#5c3d5c]/40 mx-auto" />
                   <p className="text-xs font-semibold text-black">Your wishlist is currently empty.</p>
                   <Link
-                    href="/shop"
+                    href="/"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#3e2845] text-white text-xs font-bold shadow-xs hover:bg-[#4b3254]"
                   >
                     <ShoppingBag className="w-4 h-4" />

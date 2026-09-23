@@ -43,7 +43,7 @@ test.describe("E2E Flow 3 — AI Theme Rebrand & Public Storefront Verification"
     expect(json.tokens.primaryColor).toMatch(/^#/);
   });
 
-  test("public storefront /shop loads correctly after theme rebrand", async ({ page }) => {
+  test("public storefront loads correctly after theme rebrand", async ({ page }) => {
     // Rebrand via API
     await page.request.post("/api/theme/rebrand", {
       data: {
@@ -52,7 +52,7 @@ test.describe("E2E Flow 3 — AI Theme Rebrand & Public Storefront Verification"
       },
     });
 
-    await page.goto("/shop");
+    await page.goto("/");
     await expect(page.locator("main")).toBeVisible();
 
     const bodyText = await page.locator("body").innerText();

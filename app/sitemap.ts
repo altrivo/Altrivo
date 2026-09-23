@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const routes: MetadataRoute.Sitemap = [
     {
-      url: `${baseUrl}/shop`,
+      url: baseUrl,
       lastModified: lastmod,
       changeFrequency: "daily",
       priority: 1.0,

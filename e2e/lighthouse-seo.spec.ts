@@ -18,8 +18,8 @@ import { test, expect } from "@playwright/test";
  * These checks map directly to the SEO audit criteria Lighthouse evaluates.
  */
 test.describe("E2E Flow 4 — Storefront SEO Lighthouse ≥95 Validation", () => {
-  test("storefront /shop has required SEO meta tags for Lighthouse ≥95", async ({ page }) => {
-    await page.goto("/shop");
+  test("storefront has required SEO meta tags for Lighthouse ≥95", async ({ page }) => {
+    await page.goto("/");
     await expect(page.locator("main")).toBeVisible();
 
     // Title tag present and non-empty

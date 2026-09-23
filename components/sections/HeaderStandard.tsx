@@ -102,12 +102,12 @@ export default function HeaderStandard({
   const primaryLinks: NavLink[] = [
     { name: "Home", href: baseRoute || "/", pageKey: "home" },
     { name: "About", href: `${baseRoute}/about`, pageKey: "about" },
-    { name: "Shop", href: `${baseRoute}/shop`, pageKey: "shop" },
+    { name: "Products", href: `${baseRoute}#products`, pageKey: "products" },
     { name: "Contact", href: `${baseRoute}/contact`, pageKey: "contact" },
   ];
 
   const categoryLinks = (navigation || []).filter(
-    (l) => !["home", "about", "shop", "contact"].includes(l.name.toLowerCase())
+    (l) => !["home", "about", "products", "contact"].includes(l.name.toLowerCase())
   );
 
   // Listen to #tracking hash in URL

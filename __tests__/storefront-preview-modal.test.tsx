@@ -14,7 +14,7 @@ describe("StorefrontPreviewModal Component", () => {
 
   it("renders modal dialog, toolbar, viewport toggles, and iframe when isOpen is true", () => {
     render(
-      <StorefrontPreviewModal isOpen={true} onClose={jest.fn()} previewUrl="/shop" />
+      <StorefrontPreviewModal isOpen={true} onClose={jest.fn()} previewUrl="/" />
     );
 
     expect(screen.getByRole("dialog")).toBeDefined();
@@ -31,12 +31,12 @@ describe("StorefrontPreviewModal Component", () => {
     // Iframe
     const iframe = screen.getByTitle("Storefront Desktop Live Preview");
     expect(iframe).toBeDefined();
-    expect(iframe.getAttribute("src")).toBe("/shop");
+    expect(iframe.getAttribute("src")).toBe("/");
   });
 
   it("toggles to mobile viewport frame on mobile pill click", () => {
     render(
-      <StorefrontPreviewModal isOpen={true} onClose={jest.fn()} previewUrl="/shop" />
+      <StorefrontPreviewModal isOpen={true} onClose={jest.fn()} previewUrl="/" />
     );
 
     const mobileBtn = screen.getByText("Mobile");
@@ -49,7 +49,7 @@ describe("StorefrontPreviewModal Component", () => {
   it("invokes onClose when close button is clicked", () => {
     const handleClose = jest.fn();
     render(
-      <StorefrontPreviewModal isOpen={true} onClose={handleClose} previewUrl="/shop" />
+      <StorefrontPreviewModal isOpen={true} onClose={handleClose} previewUrl="/" />
     );
 
     const closeBtn = screen.getByLabelText("Close storefront preview modal");

@@ -12,7 +12,7 @@ describe("Storefront SEO Meta Tags, JSON-LD, Sitemap.xml & Robots.txt", () => {
       const routes = sitemap();
       expect(routes.length).toBeGreaterThan(0);
 
-      const homepage = routes.find((r) => r.url === "https://artrivo.com/shop");
+      const homepage = routes.find((r) => r.url === "https://artrivo.com");
       expect(homepage).toBeDefined();
       expect(homepage?.priority).toBe(1.0);
       expect(homepage?.changeFrequency).toBe("daily");
@@ -78,7 +78,7 @@ describe("Storefront SEO Meta Tags, JSON-LD, Sitemap.xml & Robots.txt", () => {
 
     it("generates BreadcrumbList JSON-LD schema", () => {
       const crumbs = [
-        { name: "Home", url: "/shop" },
+        { name: "Home", url: "/" },
         { name: "Decor", url: "/category/decor" },
         { name: "Ceramic Vase", url: "/product/prod-1" },
       ];

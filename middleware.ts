@@ -191,7 +191,7 @@ export async function middleware(req: NextRequest) {
       url.pathname = `/store/${tenantSubdomain}`;
       return NextResponse.rewrite(url, { headers: response.headers });
     }
-    if (["/about", "/shop", "/contact"].includes(pathname)) {
+    if (["/about", "/contact"].includes(pathname)) {
       const tab = pathname.replace("/", "");
       const url = req.nextUrl.clone();
       url.pathname = `/store/${tenantSubdomain}/${tab}`;

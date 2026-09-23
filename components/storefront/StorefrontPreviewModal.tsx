@@ -21,7 +21,7 @@ interface StorefrontPreviewModalProps {
 export function StorefrontPreviewModal({
   isOpen,
   onClose,
-  previewUrl = "/shop",
+  previewUrl = "/",
   storeName = "Artrivo Store",
 }: StorefrontPreviewModalProps) {
   const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");

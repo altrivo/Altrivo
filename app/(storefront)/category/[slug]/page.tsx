@@ -52,7 +52,7 @@ export default async function StorefrontCategoryPage({ params }: CategoryPagePro
     <div className="space-y-8 select-none">
       {/* Category Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-subtle">
-        <Link href="/shop" className="hover:text-primary-700 transition-colors">
+        <Link href="/" className="hover:text-primary-700 transition-colors">
           Home
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-muted" />

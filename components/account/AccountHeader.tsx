@@ -15,7 +15,7 @@ export function AccountHeader({ title, subtitle }: { title?: string; subtitle?: 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/shop"
+            href="/"
             className="flex items-center gap-2 text-xs font-semibold text-[#5c3d5c] hover:text-[#3e2845] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
