@@ -2,12 +2,25 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { CategoriesBackendService } from "@/services/categories-backend-service";
+import { getVendorContext } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   const startTime = performance.now();
   try {
     const { searchParams } = new URL(request.url);
-    const vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id") || "vendor_dev_123";
+    let vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id");
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      try {
+        const ctx = await getVendorContext();
+        if (ctx?.vendor?.id) {
+          vendor_id = ctx.vendor.id;
+        }
+      } catch {}
+    }
+
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      return NextResponse.json({ success: true, query: "", tags: [], total: 0 });
+    }
     const q = searchParams.get("q") || searchParams.get("query") || "";
 
     const tags = await CategoriesBackendService.searchTags(q, vendor_id);

@@ -4,11 +4,26 @@ import type { NextRequest } from "next/server";
 import { ProductsBackendService } from "@/services/products-backend-service";
 import type { BackendProductStatus } from "@/types/backend-product";
 import { escapeCsvValue } from "@/utils/csv-product-parser";
+import { getVendorContext } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id") || "vendor_dev_123";
+    const isTest = process.env.NODE_ENV === "test";
+    let vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id");
+    if (!vendor_id || (!isTest && vendor_id === "vendor_dev_123")) {
+      try {
+        const ctx = await getVendorContext();
+        if (ctx?.vendor?.id) {
+          vendor_id = ctx.vendor.id;
+        }
+      } catch {}
+    }
+
+    if (!vendor_id || (!isTest && vendor_id === "vendor_dev_123")) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
+
     const status = (searchParams.get("status") as BackendProductStatus) || undefined;
     const category_id = searchParams.get("category_id") || undefined;
     const search = searchParams.get("search") || undefined;

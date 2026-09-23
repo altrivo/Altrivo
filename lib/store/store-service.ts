@@ -752,35 +752,29 @@ export async function deleteStore(storeId: string): Promise<void> {
       // 1. Delete notifications related to this store
       await supabaseAdmin.from("notifications").delete().eq("store_id", storeId);
 
-      // 2. Delete store customers registered for this store
+      // 2. Find customer IDs belonging to this store before deleting store_customers
+      const { data: storeCusts } = await supabaseAdmin
+        .from("store_customers")
+        .select("id, auth_user_id")
+        .eq("store_id", storeId);
+      const custIds = (storeCusts || []).flatMap((c: any) => [c.id, c.auth_user_id]).filter(Boolean);
+
+      // 3. Delete store customers registered for this store
       await supabaseAdmin.from("store_customers").delete().eq("store_id", storeId);
 
-      // 3. Delete orders and child records specifically belonging to this store
-      const { data: storeOrders } = await supabaseAdmin
-        .from("orders")
-        .select("id")
-        .eq("store_id", storeId);
-
-      if (storeOrders && storeOrders.length > 0) {
-        const orderIds = storeOrders.map((o) => o.id);
-        await supabaseAdmin.from("order_items").delete().in("order_id", orderIds);
-        await supabaseAdmin.from("shipments").delete().in("order_id", orderIds);
-        await supabaseAdmin.from("order_events").delete().in("order_id", orderIds);
-        await supabaseAdmin.from("orders").delete().in("id", orderIds);
-      }
-
-      if (storeSlug) {
-        const { data: slugOrders } = await supabaseAdmin
+      // 4. Delete orders belonging to this store's customers
+      if (custIds.length > 0) {
+        const { data: storeOrders } = await supabaseAdmin
           .from("orders")
           .select("id")
-          .eq("store_id", storeSlug);
+          .in("customer_id", custIds);
 
-        if (slugOrders && slugOrders.length > 0) {
-          const sOrderIds = slugOrders.map((o) => o.id);
-          await supabaseAdmin.from("order_items").delete().in("order_id", sOrderIds);
-          await supabaseAdmin.from("shipments").delete().in("order_id", sOrderIds);
-          await supabaseAdmin.from("order_events").delete().in("order_id", sOrderIds);
-          await supabaseAdmin.from("orders").delete().in("id", sOrderIds);
+        if (storeOrders && storeOrders.length > 0) {
+          const orderIds = storeOrders.map((o) => o.id);
+          await supabaseAdmin.from("order_items").delete().in("order_id", orderIds);
+          await supabaseAdmin.from("shipments").delete().in("order_id", orderIds);
+          await supabaseAdmin.from("order_events").delete().in("order_id", orderIds);
+          await supabaseAdmin.from("orders").delete().in("id", orderIds);
         }
       }
 

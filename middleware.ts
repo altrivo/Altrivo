@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { resolveDomainToVendor } from "@/lib/storefront/domainResolver";
 
 // ─── Route Classification ────────────────────────────────────────────────────
 
@@ -212,14 +213,18 @@ export async function middleware(req: NextRequest) {
     VENDOR_PROTECTED.some((p) => pathname.startsWith(p)) ||
     CUSTOMER_PROTECTED.some((p) => pathname.startsWith(p));
 
-  if (isSystemHost || isSystemPath) {
-    return response;
+  // For non-system domains, resolve to a store via domain resolver
+  if (!isSystemHost && !tenantSubdomain) {
+    const domainResult = resolveDomainToVendor(hostWithoutPort || hostname);
+    if (!domainResult.vendorId) {
+      return new NextResponse("Store Not Found", { status: 404 });
+    }
+    response.headers.set("x-vendor-id", domainResult.vendorId);
+    if (domainResult.storeId) {
+      response.headers.set("x-store-id", domainResult.storeId);
+    }
   }
 
-  // For non-system domains, try to resolve to a store via custom domain/subdomain.
-  // The actual DB resolution happens at the page level (since middleware can't do async DB
-  // queries reliably across all deployment targets). We set the hostname header for downstream
-  // resolution.
   response.headers.set("x-vendor-host", hostname);
 
   return response;

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Store not found' }, { status: 404 });
     }
     
-    if (user && store.vendor_id && store.vendor_id !== user.id && store.vendor_id !== "vendor_dev_123") {
+    if (user && store.vendor_id && store.vendor_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

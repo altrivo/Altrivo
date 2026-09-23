@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import nodeCrypto from "crypto";
 import { Resend } from "resend";
 import { EmailTemplates, StoreBranding } from "./email-templates";
 import { EmailService } from "./email-service";
@@ -16,6 +17,18 @@ function getResend(): Resend | null {
     resendClient = new Resend(process.env.RESEND_API_KEY);
   }
   return resendClient;
+}
+
+function safeUUID(): string {
+  try {
+    return nodeCrypto.randomUUID();
+  } catch {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
 }
 
 const resend = {
@@ -84,7 +97,7 @@ export class NotificationService {
    */
   static async dispatch(payload: NotificationEventPayload): Promise<Notification | null> {
     const {
-      eventId = `${payload.eventType}_${payload.recipientType}_${payload.order?.orderNumber || payload.recipientUserId || crypto.randomUUID()}`,
+      eventId = `${payload.eventType}_${payload.recipientType}_${payload.order?.orderNumber || payload.recipientUserId || safeUUID()}`,
       eventType,
       storeId,
       storeName = "Altrivo Store",
@@ -107,7 +120,7 @@ export class NotificationService {
     }
     this.processedEvents.add(eventId);
 
-    const notificationId = crypto.randomUUID();
+    const notificationId = safeUUID();
     const createdNotification: Notification = {
       id: notificationId,
       recipient_user_id: recipientUserId,
@@ -129,7 +142,7 @@ export class NotificationService {
     if (supabaseAdmin) {
       try {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recipientUserId);
-        const validUserId = isUUID ? recipientUserId : crypto.randomUUID();
+        const validUserId = isUUID ? recipientUserId : safeUUID();
 
         const { error: insertErr } = await supabaseAdmin.from("notifications").insert({
           id: notificationId,
@@ -436,7 +449,7 @@ export class NotificationService {
     if (supabaseAdmin) {
       try {
         await supabaseAdmin.from("notification_deliveries").insert({
-          id: crypto.randomUUID(),
+          id: safeUUID(),
           notification_id: notificationId,
           channel,
           status,

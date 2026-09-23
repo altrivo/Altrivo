@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import nodeCrypto from "crypto";
 import { EventEmitter } from "events";
 import {
   Order,
@@ -20,7 +21,6 @@ import {
   ComplaintMessage,
   PaymentMethod,
 } from "@/types/orders";
-import { INITIAL_ORDERS } from "@/utils/ordersMock";
 import { supabaseAdmin } from "@/lib/supabase";
 import { NotificationService } from "@/services/notification-service";
 
@@ -68,17 +68,17 @@ export const A2EscrowService = {
   },
 };
 
-// 3. Valid State Machine Transitions (Flexible vendor execution)
+// 3. Valid State Machine Transitions (Guarded state flow)
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus | "refunded" | "paid", (OrderStatus | "refunded" | "paid")[]> = {
-  pending: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "paid"],
-  confirmed: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  processing: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  packed: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  ready_to_ship: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  shipped: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "cancelled", "refunded"],
-  delivered: ["pending", "confirmed", "processing", "packed", "ready_to_ship", "shipped", "delivered", "completed", "refunded"],
-  completed: ["delivered", "refunded"],
-  cancelled: ["pending", "confirmed", "processing"],
+  pending: ["confirmed", "cancelled", "paid"],
+  confirmed: ["processing", "cancelled"],
+  processing: ["packed", "ready_to_ship", "shipped", "cancelled", "refunded"],
+  packed: ["ready_to_ship", "cancelled", "refunded"],
+  ready_to_ship: ["shipped", "cancelled", "refunded"],
+  shipped: ["delivered", "cancelled", "refunded"],
+  delivered: ["completed", "refunded"],
+  completed: ["refunded"],
+  cancelled: [],
   refunded: [],
   paid: ["confirmed", "processing", "cancelled"],
 };
@@ -89,6 +89,18 @@ let orderEventsStore: OrderEvent[] = [];
 let returnsStore: OrderReturn[] = [];
 let refundsStore: OrderRefund[] = [];
 let complaintsStore: OrderComplaint[] = [];
+
+function safeUUID(): string {
+  try {
+    return nodeCrypto.randomUUID();
+  } catch {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+}
 
 export class OrdersBackendService {
   /**
@@ -103,27 +115,28 @@ export class OrdersBackendService {
   /**
    * Helper to fetch active vendor ID
    */
-  private static async getValidVendorId(): Promise<string> {
-    if (supabaseAdmin) {
+  private static async getValidVendorId(targetVendorId?: string): Promise<string> {
+    if (targetVendorId && targetVendorId !== "all") return targetVendorId;
+    if (supabaseAdmin && targetVendorId) {
       try {
-        const { data } = await supabaseAdmin.from("vendors").select("id").limit(1);
-        if (data && data.length > 0) return data[0].id;
+        const { data } = await supabaseAdmin.from("vendors").select("id").eq("id", targetVendorId).maybeSingle();
+        if (data?.id) return data.id;
       } catch (e) {}
     }
-    return "vendor_dev_123";
+    return targetVendorId || "";
   }
 
   /**
-   * Helper to fetch active store ID
+   * Helper to fetch active store ID for a specific vendor
    */
-  private static async getValidStoreId(): Promise<string> {
-    if (supabaseAdmin) {
+  private static async getValidStoreId(vendorId?: string): Promise<string> {
+    if (supabaseAdmin && vendorId) {
       try {
-        const { data } = await supabaseAdmin.from("stores").select("id").limit(1);
+        const { data } = await supabaseAdmin.from("stores").select("id").eq("vendor_id", vendorId).limit(1);
         if (data && data.length > 0) return data[0].id;
       } catch (e) {}
     }
-    return "753ea49c-abae-4dd3-9107-1dc8fcd6b221";
+    return "";
   }
 
   /**
@@ -171,7 +184,7 @@ export class OrdersBackendService {
           .order("created_at", { ascending: false });
 
         // CRITICAL: Always filter by vendor_id when provided
-        if (vendorId && vendorId !== "all" && vendorId !== "vendor_dev_123") {
+        if (vendorId && vendorId !== "all") {
           query = query.eq("vendor_id", vendorId);
         } else if (!realStoreId) {
           // Neither vendor nor store is known — return empty for safety
@@ -179,6 +192,7 @@ export class OrdersBackendService {
         }
 
         let storeCustIds = new Set<string>();
+        let storeProductIds = new Set<string>();
         if (realStoreId) {
           try {
             const { data: storeCusts } = await supabaseAdmin
@@ -186,6 +200,22 @@ export class OrdersBackendService {
               .select("id, auth_user_id")
               .eq("store_id", realStoreId);
             storeCustIds = new Set((storeCusts || []).flatMap((c: any) => [c.id, c.auth_user_id]).filter(Boolean));
+          } catch {}
+
+          try {
+            const { data: storeRow } = await supabaseAdmin
+              .from("stores")
+              .select("layout_config, commerce_config")
+              .eq("id", realStoreId)
+              .maybeSingle();
+            if (storeRow) {
+              const prods = [
+                ...(storeRow.layout_config?.products || []),
+                ...(storeRow.commerce_config?.products || []),
+                ...((storeRow.layout_config?.sections || []).flatMap((s: any) => s.props?.products || s.content?.products || s.products || [])),
+              ];
+              storeProductIds = new Set(prods.map((p: any) => String(p.id || p.sku || "").toLowerCase()).filter(Boolean));
+            }
           } catch {}
         }
 
@@ -198,6 +228,12 @@ export class OrdersBackendService {
                 if (dbo.customer_id && storeCustIds.has(dbo.customer_id)) return true;
                 const meta = getCachedMetadata(dbo.id);
                 if (meta?.store_id && String(meta.store_id).toLowerCase() === sid) return true;
+                if (storeProductIds.size > 0 && Array.isArray(dbo.order_items)) {
+                  const hasStoreItem = dbo.order_items.some((oi: any) =>
+                    storeProductIds.has(String(oi.product_id).toLowerCase())
+                  );
+                  if (hasStoreItem) return true;
+                }
                 return false;
               })
             : dbOrders;
@@ -327,9 +363,13 @@ export class OrdersBackendService {
       }
     }
 
-    // Combine with in-memory fallback
+    // Combine with in-memory fallback (strictly tenant-isolated)
     if (combinedOrders.length === 0 && ordersStore.length > 0) {
-      combinedOrders = [...ordersStore];
+      combinedOrders = ordersStore.filter((o) => {
+        if (vendorId && vendorId !== "all" && o.vendor_id && o.vendor_id !== vendorId) return false;
+        if (realStoreId && o.store_id && o.store_id !== realStoreId) return false;
+        return true;
+      });
     }
 
     // Sort newest first
@@ -483,7 +523,6 @@ export class OrdersBackendService {
         o.orderNumber?.toLowerCase() === orderIdOrNumber.toLowerCase() ||
         o.order_number?.toLowerCase() === orderIdOrNumber.toLowerCase()
     );
-
     // If orderIdOrNumber is an orderNumber (e.g. ALT-2026-...), check metadata cache for matching orderId
     let queryId = orderIdOrNumber;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdOrNumber);
@@ -584,7 +623,7 @@ export class OrdersBackendService {
             id: dbo.id,
             order_number: displayOrderNumber,
             orderNumber: displayOrderNumber,
-            store_id: dbo.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+            store_id: meta.store_id || dbo.store_id || inMem?.store_id || "",
             vendor_id: dbo.vendor_id,
             customer_id: dbo.customer_id,
             customerName: dbo.customer_name || inMem?.customerName || "Valued Customer",
@@ -691,7 +730,7 @@ export class OrdersBackendService {
       }
     }
 
-    const orderUUID = crypto.randomUUID();
+    const orderUUID = safeUUID();
     const orderNumber = this.generateOrderNumber();
     const nowISO = new Date().toISOString();
 
@@ -730,19 +769,46 @@ export class OrdersBackendService {
           }
         }
 
-        // If no storeId yet, fetch default valid store
+        // If no storeId yet, resolve ONLY from the specific vendor or product owner
         if (!storeId || storeId === "default_store") {
-          const { data: stores } = await supabaseAdmin.from("stores").select("id, name, vendor_id, logo_url").limit(1);
-          if (stores && stores.length > 0) {
-            storeId = stores[0].id;
-            vendorId = stores[0].vendor_id || vendorId;
-            storeName = stores[0].name || storeName;
-            storeLogo = stores[0].logo_url;
+          if (vendorId) {
+            const { data: stores } = await supabaseAdmin
+              .from("stores")
+              .select("id, name, vendor_id, logo_url")
+              .eq("vendor_id", vendorId)
+              .limit(1);
+            if (stores && stores.length > 0) {
+              storeId = stores[0].id;
+              storeName = stores[0].name || storeName;
+              storeLogo = stores[0].logo_url;
+            }
+          } else if (orderInput.items && orderInput.items.length > 0) {
+            const firstItemProdId = orderInput.items[0]?.product_id || orderInput.items[0]?.id;
+            if (firstItemProdId) {
+              const { data: prod } = await supabaseAdmin
+                .from("products")
+                .select("vendor_id")
+                .eq("id", firstItemProdId)
+                .maybeSingle();
+              if (prod?.vendor_id) {
+                vendorId = prod.vendor_id;
+                const { data: stores } = await supabaseAdmin
+                  .from("stores")
+                  .select("id, name, vendor_id, logo_url")
+                  .eq("vendor_id", vendorId)
+                  .limit(1);
+                if (stores && stores.length > 0) {
+                  storeId = stores[0].id;
+                  storeName = stores[0].name || storeName;
+                  storeLogo = stores[0].logo_url;
+                }
+              }
+            }
           }
         }
 
         // Fetch vendor's actual email & profile
-        if (vendorId && vendorId !== "vendor_dev_123") {
+        if (vendorId) {
           const { data: vendorRow } = await supabaseAdmin
             .from("vendors")
             .select("id, name, email")
@@ -758,11 +824,11 @@ export class OrdersBackendService {
       }
     }
 
-    if (!storeId) {
-      storeId = await this.getValidStoreId();
+    if (!storeId && vendorId) {
+      storeId = await this.getValidStoreId(vendorId);
     }
-    if (!vendorId) {
-      vendorId = await this.getValidVendorId();
+    if (!vendorId && storeId) {
+      vendorId = await this.getValidVendorId(vendorId);
     }
 
     const finalGrandTotal = orderInput.grandTotal ?? orderInput.totalAmount ?? 0;
@@ -782,9 +848,9 @@ export class OrdersBackendService {
     // Initial audit event
     const initialEvents: OrderEvent[] = [
       {
-        id: crypto.randomUUID(),
+        id: safeUUID(),
         order_id: orderUUID,
-        store_id: storeId,
+        store_id: storeId || "unknown_store",
         event_type: "ORDER_CREATED",
         new_status: "pending",
         actor_type: "customer",
@@ -809,7 +875,7 @@ export class OrdersBackendService {
           : `SKU-ALT-00${idx + 1}`);
       return {
         ...it,
-        id: it.id || crypto.randomUUID(),
+        id: it.id || safeUUID(),
         order_id: orderUUID,
         sku: itemSku,
         name: it.product_name_snapshot || it.name,
@@ -921,7 +987,7 @@ export class OrdersBackendService {
 
           try {
             await supabaseAdmin.from("order_items").insert({
-              id: item.id && isUUID(item.id) ? item.id : crypto.randomUUID(),
+              id: item.id && isUUID(item.id) ? item.id : safeUUID(),
               order_id: orderUUID,
               product_id: validProdId,
               variant_id: validVarId,
@@ -934,7 +1000,7 @@ export class OrdersBackendService {
         }
 
         // 3. Create payments record
-        const paymentUUID = crypto.randomUUID();
+        const paymentUUID = safeUUID();
         await supabaseAdmin.from("payments").insert({
           id: paymentUUID,
           store_id: storeId,
@@ -1109,7 +1175,7 @@ export class OrdersBackendService {
 
     // 1. Guard against invalid state machine transitions
     const allowed = VALID_ORDER_TRANSITIONS[currentStatus];
-    if (actorType !== "vendor" && allowed && !allowed.includes(nextStatus)) {
+    if (allowed && !allowed.includes(nextStatus)) {
       throw new Error(
         `Invalid status transition from '${currentStatus}' to '${nextStatus}'. Allowed next steps: ${allowed.join(", ") || "none (terminal state)"}`
       );
@@ -1134,8 +1200,8 @@ export class OrdersBackendService {
 
       case "confirmed":
         updated.fulfillment_status = "processing";
-        updated.deliveryStatus = "confirmed" as any;
-        updated.delivery_status = "confirmed" as any;
+        updated.deliveryStatus = "processing" as any;
+        updated.delivery_status = "processing" as any;
         eventMessage = "Order confirmed by vendor. Inventory verified.";
         break;
 
@@ -1238,9 +1304,9 @@ export class OrdersBackendService {
 
     // Append to audit events
     const auditEvent: OrderEvent = {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       order_id: updated.id,
-      store_id: updated.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: updated.store_id || "",
       event_type: `ORDER_${nextStatus.toUpperCase()}`,
       old_status: currentStatus,
       new_status: nextStatus,
@@ -1364,9 +1430,9 @@ export class OrdersBackendService {
         NotificationService.dispatch({
           eventType: notifEventType,
           storeId: updated.store_id,
-          recipientUserId: updated.vendor_id || "vendor_dev_123",
+          recipientUserId: updated.vendor_id || "",
           recipientType: "vendor",
-          recipientEmail: "vendor@digishop.pk",
+          recipientEmail: (updated as any).vendor_email || "",
           title: `Order #${updated.orderNumber} Status: ${nextStatus.toUpperCase()}`,
           message: eventMessage,
           order: updated,
@@ -1540,13 +1606,13 @@ export class OrdersBackendService {
     const order = await this.getOrderById(orderId);
     if (!order) throw new Error("Order not found");
 
-    const refundUUID = crypto.randomUUID();
+    const refundUUID = safeUUID();
     const nowISO = new Date().toISOString();
 
     const refundRecord: OrderRefund = {
       id: refundUUID,
       order_id: order.id,
-      store_id: order.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: order.store_id || "",
       customer_id: order.customer_id || undefined,
       amount: refundData.amount,
       currency: "PKR",
@@ -1569,9 +1635,9 @@ export class OrdersBackendService {
 
     // Audit event
     const event: OrderEvent = {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       order_id: order.id,
-      store_id: order.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: order.store_id || "",
       event_type: "REFUND_ISSUED",
       actor_type: "vendor",
       actor_id: refundData.vendorId || order.vendor_id,
@@ -1624,13 +1690,13 @@ export class OrdersBackendService {
     const order = await this.getOrderById(orderId);
     if (!order) throw new Error("Order not found");
 
-    const returnUUID = crypto.randomUUID();
+    const returnUUID = safeUUID();
     const nowISO = new Date().toISOString();
 
     const returnRecord: OrderReturn = {
       id: returnUUID,
       order_id: order.id,
-      store_id: order.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: order.store_id || "",
       customer_id: customerId,
       status: "requested",
       reason: returnData.reason,
@@ -1643,9 +1709,9 @@ export class OrdersBackendService {
     order.return_status = "requested";
 
     const event: OrderEvent = {
-      id: crypto.randomUUID(),
+      id: safeUUID(),
       order_id: order.id,
-      store_id: order.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: order.store_id || "",
       event_type: "RETURN_REQUESTED",
       actor_type: "customer",
       actor_id: customerId,
@@ -1675,8 +1741,8 @@ export class OrdersBackendService {
     const order = await this.getOrderById(orderId);
     if (!order) throw new Error("Order not found");
 
-    const complaintUUID = crypto.randomUUID();
-    const messageUUID = crypto.randomUUID();
+    const complaintUUID = safeUUID();
+    const messageUUID = safeUUID();
     const nowISO = new Date().toISOString();
 
     const initialMessage: ComplaintMessage = {
@@ -1692,7 +1758,7 @@ export class OrdersBackendService {
     const complaintRecord: OrderComplaint = {
       id: complaintUUID,
       order_id: order.id,
-      store_id: order.store_id || "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      store_id: order.store_id || "",
       customer_id: customerId,
       subject: complaintData.subject,
       status: "open",
@@ -1794,6 +1860,49 @@ export class OrdersBackendService {
    * Reset store helper for test isolation
    */
   static resetStore() {
-    ordersStore = [...INITIAL_ORDERS];
+    ordersStore = [
+      {
+        id: "ord-1001",
+        order_number: "ord-1001",
+        orderNumber: "#ORD-1001",
+        vendor_id: "vendor_dev_123",
+        store_id: "store_dev_123",
+        customerName: "Test Customer",
+        customerEmail: "customer@example.com",
+        customerPhone: "+15550001122",
+        totalAmount: 290.0,
+        subtotal: 290.0,
+        discount_total: 0,
+        shipping_total: 0,
+        tax_total: 0,
+        grand_total: 290.0,
+        currency: "USD",
+        order_status: "processing",
+        paymentStatus: "paid",
+        deliveryStatus: "processing",
+        escrowStatus: "held_in_escrow",
+        paymentMethod: "cod",
+        deliveryMethod: "standard",
+        carrier: "Trax Express",
+        trackingNumber: "TRX-TEST-001",
+        shippingAddress: "Karachi, Pakistan",
+        createdAt: new Date().toISOString(),
+        items: [
+          {
+            id: "item-101",
+            name: "Test Leather Bag",
+            price: 290.0,
+            quantity: 1,
+            unit_price: 290.0,
+            line_total: 290.0,
+          } as any,
+        ],
+        events: [],
+        timeline: [],
+        returns: [],
+        refunds: [],
+        complaints: [],
+      } as any,
+    ];
   }
 }

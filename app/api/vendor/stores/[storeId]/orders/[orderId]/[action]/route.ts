@@ -55,13 +55,13 @@ export async function POST(
       );
     }
 
-    // Fetch current order
+    // Fetch current order belonging to this vendor
     const { data: order, error: orderError } = await db
       .from("orders")
-      .select("id, order_status, store_id, vendor_id")
+      .select("id, order_status, vendor_id, customer_id")
       .eq("id", orderId)
-      .eq("store_id", storeId)
-      .single();
+      .eq("vendor_id", ctx.vendor.id)
+      .maybeSingle();
 
     if (orderError || !order) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });

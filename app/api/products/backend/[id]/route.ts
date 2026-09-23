@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { ProductsBackendService } from "@/services/products-backend-service";
+import { getVendorContext } from "@/lib/auth/session";
+
+async function resolveVendorId(request: NextRequest): Promise<string | null> {
+  let vendor_id = request.headers.get("x-vendor-id");
+  if (!vendor_id || vendor_id === "vendor_dev_123") {
+    try {
+      const ctx = await getVendorContext();
+      if (ctx?.vendor?.id) {
+        vendor_id = ctx.vendor.id;
+      }
+    } catch {}
+  }
+  if (!vendor_id || vendor_id === "vendor_dev_123") return null;
+  return vendor_id;
+}
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +24,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const vendor_id = request.headers.get("x-vendor-id") || "vendor_dev_123";
+    const vendor_id = await resolveVendorId(request);
+    if (!vendor_id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
     const product = await ProductsBackendService.getProductById(id, vendor_id);
     if (!product) {
@@ -38,7 +59,13 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const vendor_id = request.headers.get("x-vendor-id") || "vendor_dev_123";
+    const vendor_id = await resolveVendorId(request);
+    if (!vendor_id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
     const body = await request.json();
 
     const updated = await ProductsBackendService.updateProduct(id, body, vendor_id);
@@ -72,7 +99,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const vendor_id = request.headers.get("x-vendor-id") || "vendor_dev_123";
+    const vendor_id = await resolveVendorId(request);
+    if (!vendor_id) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
     const deleted = await ProductsBackendService.deleteProduct(id, vendor_id);
     if (!deleted) {

@@ -2,14 +2,23 @@ import "@testing-library/jest-dom";
 import { TextEncoder, TextDecoder } from "util";
 import { ReadableStream } from "stream/web";
 
+import crypto from "crypto";
+
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 global.ReadableStream = ReadableStream;
+
+if (typeof global.crypto === "undefined" || !global.crypto.randomUUID) {
+  global.crypto = crypto;
+}
 
 if (typeof window !== "undefined") {
   window.TextEncoder = TextEncoder;
   window.TextDecoder = TextDecoder;
   window.ReadableStream = ReadableStream;
+  if (!window.crypto || !window.crypto.randomUUID) {
+    window.crypto = crypto;
+  }
 }
 
 // Polyfill Request and Response for Next.js route handler tests in Jest JSDOM environment

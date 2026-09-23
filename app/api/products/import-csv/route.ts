@@ -3,13 +3,27 @@ import type { NextRequest } from "next/server";
 
 import { ProductsBackendService } from "@/services/products-backend-service";
 import { parseAndValidateProductCSV } from "@/utils/csv-product-parser";
+import { getVendorContext } from "@/lib/auth/session";
 
 export async function POST(request: NextRequest) {
   const startTime = performance.now();
   try {
     const { searchParams } = new URL(request.url);
     const dryRun = searchParams.get("dryRun") === "true";
-    const vendor_id = request.headers.get("x-vendor-id") || "vendor_dev_123";
+    const isTest = process.env.NODE_ENV === "test";
+    let vendor_id = request.headers.get("x-vendor-id") || (isTest ? "vendor_dev_123" : "");
+    if (!vendor_id || (!isTest && vendor_id === "vendor_dev_123")) {
+      try {
+        const ctx = await getVendorContext();
+        if (ctx?.vendor?.id) {
+          vendor_id = ctx.vendor.id;
+        }
+      } catch {}
+    }
+
+    if (!vendor_id || (!isTest && vendor_id === "vendor_dev_123")) {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
 
     let csvText = "";
 

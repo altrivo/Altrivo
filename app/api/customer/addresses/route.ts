@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       customerId,
-      storeId = "753ea49c-abae-4dd3-9107-1dc8fcd6b221",
+      storeId,
       label = "Home",
       full_name,
       phone,

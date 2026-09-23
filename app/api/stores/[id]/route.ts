@@ -19,7 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Store not found' }, { status: 404 });
     }
 
-    if (user && store.vendor_id && store.vendor_id !== user.id && store.vendor_id !== "vendor_dev_123") {
+    if (user && store.vendor_id && store.vendor_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -42,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: 'Store not found' }, { status: 404 });
     }
 
-    if (user && store.vendor_id && store.vendor_id !== user.id && store.vendor_id !== "vendor_dev_123" && process.env.NODE_ENV === "production") {
+    if (user && store.vendor_id && store.vendor_id !== user.id && process.env.NODE_ENV === "production") {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -93,7 +93,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       } catch {}
     }
 
-    if (authedVendorId && store.vendor_id && store.vendor_id !== authedVendorId && store.vendor_id !== "vendor_dev_123") {
+    if (authedVendorId && store.vendor_id && store.vendor_id !== authedVendorId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

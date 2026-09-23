@@ -5,9 +5,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get("customerId");
-    const storeId = searchParams.get("store_id") || "753ea49c-abae-4dd3-9107-1dc8fcd6b221";
+    const storeId = searchParams.get("store_id");
 
-    if (!customerId) {
+    if (!customerId || !storeId) {
       return NextResponse.json({ success: false, customer: null });
     }
 

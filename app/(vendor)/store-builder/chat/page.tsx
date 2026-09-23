@@ -13,6 +13,7 @@ import {
   Send, 
   Loader2 
 } from "lucide-react";
+import { useVendorStore } from "@/context/VendorStoreContext";
 
 interface Message {
   id: string;
@@ -30,8 +31,12 @@ interface Version {
 }
 
 function StoreBuilderChatContent() {
+  const { activeStore, stores } = useVendorStore();
   const searchParams = useSearchParams();
-  const storeId = searchParams.get("storeId") || "default-store";
+  const queryStoreId = searchParams.get("storeId");
+  const storeId = queryStoreId || activeStore?.id || "default-store";
+  const currentStore = stores.find((s) => s.id === storeId || s.slug === storeId) || activeStore;
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // State
@@ -47,10 +52,20 @@ function StoreBuilderChatContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [versions, setVersions] = useState<Version[]>([]);
   const [storeData, setStoreData] = useState({
-    name: "My Store",
-    status: "published",
-    slug: "chronocraft-luxury"
+    name: currentStore?.name || "My Store",
+    status: (currentStore as any)?.status || "published",
+    slug: currentStore?.slug || "store"
   });
+
+  useEffect(() => {
+    if (currentStore) {
+      setStoreData({
+        name: currentStore.name || "My Store",
+        status: (currentStore as any).status || "published",
+        slug: currentStore.slug || "store"
+      });
+    }
+  }, [currentStore]);
 
   // Load versions
   useEffect(() => {

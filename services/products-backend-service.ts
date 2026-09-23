@@ -111,9 +111,18 @@ export class ProductsBackendService {
     offset: number;
   }> {
     const startTime = performance.now();
-    const vendorId = filter.vendor_id || "vendor_dev_123";
+    const vendorId = filter.vendor_id || (process.env.NODE_ENV === "test" ? "vendor_dev_123" : "");
     const limit = filter.limit || 20;
     const offset = filter.offset || 0;
+
+    if (!vendorId) {
+      return {
+        data: [],
+        total: 0,
+        limit,
+        offset,
+      };
+    }
 
     // Direct Supabase query for real vendors
     if (supabaseAdmin && UUID_REGEX.test(vendorId)) {
@@ -153,7 +162,15 @@ export class ProductsBackendService {
         }
 
         const { data: dbData, error: dbErr } = await q;
-        if (!dbErr && dbData && dbData.length > 0) {
+        if (!dbErr && dbData) {
+          if (dbData.length === 0) {
+            return {
+              data: [],
+              total: 0,
+              limit,
+              offset,
+            };
+          }
           let mapped: ProductRecord[] = dbData.map((row: any) => ({
             id: row.id,
             vendor_id: row.vendor_id,

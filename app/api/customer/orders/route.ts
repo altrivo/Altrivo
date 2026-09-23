@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
             id: d.id,
             order_number: d.order_number || `#ORD-${d.id.slice(0, 4).toUpperCase()}`,
             orderNumber: d.order_number || `#ORD-${d.id.slice(0, 4).toUpperCase()}`,
-            store_id: d.store_id,
+            store_id: d.store_id || storeId,
             vendor_id: d.vendor_id,
             customer_id: d.customer_id,
             customerName: d.customer_name || "Valued Customer",

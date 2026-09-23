@@ -1,5 +1,5 @@
-import { OrdersBackendService, orderEvents } from "../services/orders-backend-service";
-import { OrderStatus } from "../types/orders";
+import { OrdersBackendService, orderEvents } from "@/services/orders-backend-service";
+import { OrderStatus } from "@/types/orders";
 
 describe("Orders State Machine & Backend Service", () => {
   beforeEach(() => {

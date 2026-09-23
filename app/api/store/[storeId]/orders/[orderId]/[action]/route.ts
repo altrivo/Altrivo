@@ -50,16 +50,40 @@ async function handleGetTracking(storeId: string, orderId: string) {
     const db = supabaseAdmin;
     if (!db) return NextResponse.json({ success: false, error: "Database unavailable" }, { status: 500 });
 
-    // Verify the order belongs to this customer in this store
+    // Verify the order exists and belongs to this store
     const { data: order } = await db
       .from("orders")
-      .select("id, order_status, delivery_status, customer_id")
+      .select("id, order_status, delivery_status, customer_id, vendor_id")
       .eq("id", orderId)
-      .eq("store_id", storeId)
-      .single();
+      .maybeSingle();
 
     if (!order) {
       return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
+    }
+
+    // Verify order belongs to this store
+    let matchesStore = false;
+    if (order.customer_id) {
+      const { data: sc } = await db
+        .from("store_customers")
+        .select("id")
+        .eq("id", order.customer_id)
+        .eq("store_id", storeId)
+        .maybeSingle();
+      if (sc) matchesStore = true;
+    }
+    if (!matchesStore && order.vendor_id) {
+      const { data: storeRow } = await db
+        .from("stores")
+        .select("id, vendor_id")
+        .eq("id", storeId)
+        .maybeSingle();
+      if (storeRow && storeRow.vendor_id === order.vendor_id) {
+        matchesStore = true;
+      }
+    }
+    if (!matchesStore) {
+      return NextResponse.json({ success: false, error: "Order not found for this store" }, { status: 404 });
     }
 
     // If authenticated, verify customer ownership
