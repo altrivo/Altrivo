@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OrdersBackendService } from "@/services/orders-backend-service";
 import { NotificationService } from "@/services/notification-service";
+import { getVendorContext } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get("searchQuery") || "";
     const storeId = searchParams.get("storeId") || undefined;
-    const vendorId = searchParams.get("vendorId") || undefined;
+    let vendorId = searchParams.get("vendorId") || undefined;
     const customerId = searchParams.get("customerId") || undefined;
     const customerEmail = searchParams.get("customerEmail") || undefined;
     const orderStatus = searchParams.get("orderStatus") || searchParams.get("status") || "all";
@@ -18,6 +19,19 @@ export async function GET(request: NextRequest) {
     const dateRange = searchParams.get("dateRange") || "all";
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
+
+    // CRITICAL: If vendorId not provided in query params, resolve from authenticated session.
+    // This prevents the "all" vendor bypass where any unauthenticated call would see all orders.
+    if (!vendorId) {
+      try {
+        const vendorCtx = await getVendorContext();
+        if (vendorCtx?.vendor?.id) {
+          vendorId = vendorCtx.vendor.id;
+        }
+      } catch {
+        // If session resolution fails, we still pass undefined \u2014 service will return empty safely
+      }
+    }
 
     const result = await OrdersBackendService.getOrders(vendorId || "all", {
       storeId,
@@ -47,6 +61,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 
 export async function POST(request: NextRequest) {
   try {

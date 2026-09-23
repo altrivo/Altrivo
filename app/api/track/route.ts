@@ -124,16 +124,29 @@ export async function POST(req: NextRequest) {
           }
 
           if (isValidUUID) {
-            // 1. Record Page View
-            await supabaseAdmin.from("page_views").insert({
-              vendor_id: vId,
-              session_id: eventRecord.sessionId,
-              page: eventRecord.page,
-              city: eventRecord.city,
-              country: eventRecord.country,
-              device: eventRecord.device,
-              referrer: eventRecord.referrer,
-            });
+            // Resolve confirmed store ID (use the resolved one from store lookup above)
+            const resolvedStoreId = eventRecord.storeId
+              ? String(eventRecord.storeId)
+              : null;
+
+            // CRITICAL: Only persist page_views when store_id is known
+            // This ensures every page view row is correctly attributed to exactly one store
+            if (resolvedStoreId) {
+              await supabaseAdmin.from("page_views").insert({
+                vendor_id: vId,
+                store_id: resolvedStoreId,
+                session_id: eventRecord.sessionId,
+                page: eventRecord.page,
+                city: eventRecord.city,
+                country: eventRecord.country,
+                device: eventRecord.device,
+                referrer: eventRecord.referrer,
+              });
+            } else {
+              // No store context — skip inserting to avoid polluting analytics
+              console.warn("[Track API] Skipping page_view insert: no store_id resolved for event:", eventRecord.id);
+            }
+
 
             // 2. Record or Update Session duration
             const nowIso = new Date().toISOString();

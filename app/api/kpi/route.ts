@@ -59,110 +59,63 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Resolve target store UUID and slug if provided
-    let targetStoreId = storeId || "";
-    let targetStoreSlug = storeSlug || "";
 
-    if (supabaseAdmin && (targetStoreId || targetStoreSlug)) {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
-      if (targetStoreId && !isUUID) {
-        try {
-          const { data: sRow } = await supabaseAdmin
-            .from("stores")
-            .select("id, slug")
-            .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
-            .limit(1)
-            .maybeSingle();
-          if (sRow?.id) {
-            targetStoreId = sRow.id;
-            if (sRow.slug && !targetStoreSlug) targetStoreSlug = sRow.slug;
-          }
-        } catch {}
-      } else if (!targetStoreId && targetStoreSlug) {
-        try {
-          const { data: sRow } = await supabaseAdmin
-            .from("stores")
-            .select("id, slug")
-            .eq("slug", targetStoreSlug)
-            .limit(1)
-            .maybeSingle();
-          if (sRow?.id) {
-            targetStoreId = sRow.id;
-          }
-        } catch {}
-      }
-    }
-
-    // 4. Fetch real orders specifically for THIS vendor from Supabase
+    // 4. Fetch real orders specifically for THIS vendor AND store from Supabase
+    // CRITICAL: Both vendor_id and store_id must be filtered at DB level — never mix across stores
     let vendorOrders: any[] = [];
+    // Declare outside supabaseAdmin block so they're accessible in page_views section below
+    let targetStoreId = storeId || "";
+    const targetStoreSlug = storeSlug || "";
+
     if (supabaseAdmin) {
       let query = supabaseAdmin
         .from("orders")
-        .select("id, total, delivery_status, payment_status, created_at, customer_id")
+        .select("id, total, delivery_status, payment_status, created_at, customer_id, store_id")
         .eq("vendor_id", vendorId);
 
-      const { data: orders, error } = await query;
+      // Resolve target store UUID first (before running the query)
+      if (supabaseAdmin && (targetStoreId || targetStoreSlug)) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
+        if (targetStoreId && !isUUID) {
+          try {
+            const { data: sRow } = await supabaseAdmin
+              .from("stores")
+              .select("id, slug")
+              .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
+              .limit(1)
+              .maybeSingle();
+            if (sRow?.id) targetStoreId = sRow.id;
+          } catch {}
+        } else if (!targetStoreId && targetStoreSlug) {
+          try {
+            const { data: sRow } = await supabaseAdmin
+              .from("stores")
+              .select("id")
+              .eq("slug", targetStoreSlug)
+              .limit(1)
+              .maybeSingle();
+            if (sRow?.id) targetStoreId = sRow.id;
+          } catch {}
+        }
+      }
 
+      // CRITICAL: Filter by store_id at DB level when store context is known
+      if (targetStoreId) {
+        query = query.eq("store_id", targetStoreId);
+      } else if (!storeId && !storeSlug) {
+        // No store context provided at all — return 0 KPIs safely
+        return NextResponse.json({
+          success: true,
+          range,
+          updatedAt: new Date().toISOString(),
+          data: getZeroMetrics(dates),
+        });
+      }
+
+      const { data: orders, error } = await query;
       if (!error && orders) {
         vendorOrders = orders;
       }
-    }
-
-    // 5. Filter strictly by active store if storeId or storeSlug is provided
-    if ((targetStoreId || targetStoreSlug) && vendorOrders.length > 0) {
-      let validCustIds = new Set<string>();
-      let validOrderIds = new Set<string>();
-
-      if (supabaseAdmin && targetStoreId) {
-        try {
-          const [custRes, eventRes, payRes] = await Promise.all([
-            supabaseAdmin.from("store_customers").select("id").eq("store_id", targetStoreId),
-            supabaseAdmin.from("order_events").select("order_id").eq("store_id", targetStoreId),
-            supabaseAdmin.from("payments").select("order_id").eq("store_id", targetStoreId),
-          ]);
-
-          validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
-          validOrderIds = new Set([
-            ...(eventRes?.data || []).map((e: any) => e.order_id),
-            ...(payRes?.data || []).map((p: any) => p.order_id),
-          ]);
-        } catch (fErr) {
-          console.warn("[KPI] Store filter query notice:", fErr);
-        }
-      }
-
-      // Also check local orders metadata for store attribution
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const metaPath = path.join(process.cwd(), ".data", "orders_metadata.json");
-        if (fs.existsSync(metaPath)) {
-          const metaMap = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
-          Object.entries(metaMap).forEach(([orderId, val]: [string, any]) => {
-            const sid = (val?.store_id || val?.storeId || "").toLowerCase();
-            if (
-              (targetStoreId && sid === targetStoreId.toLowerCase()) ||
-              (targetStoreSlug && sid === targetStoreSlug.toLowerCase()) ||
-              (storeId && sid === storeId.toLowerCase())
-            ) {
-              validOrderIds.add(orderId);
-            }
-          });
-        }
-      } catch {}
-
-      vendorOrders = vendorOrders.filter((o: any) => {
-        if (o.store_id && (
-          (targetStoreId && o.store_id === targetStoreId) ||
-          (targetStoreSlug && o.store_id === targetStoreSlug) ||
-          (storeId && o.store_id === storeId)
-        )) {
-          return true;
-        }
-        if (o.customer_id && validCustIds.has(o.customer_id)) return true;
-        if (validOrderIds.has(o.id)) return true;
-        return false;
-      });
     }
 
     // If store has 0 orders, return clean 0 KPIs
@@ -174,6 +127,7 @@ export async function GET(request: Request) {
         data: getZeroMetrics(dates),
       });
     }
+
 
     // Otherwise, compute real metrics for this specific store
     const totalSales = vendorOrders.reduce(
@@ -192,7 +146,10 @@ export async function GET(request: Request) {
           .select("id, timestamp, page")
           .eq("vendor_id", vendorId);
 
-        if (targetStoreSlug) {
+        // CRITICAL: Filter by store_id to only count views for THIS store
+        if (targetStoreId) {
+          pvQuery = pvQuery.eq("store_id", targetStoreId);
+        } else if (targetStoreSlug) {
           pvQuery = pvQuery.ilike("page", `%${targetStoreSlug}%`);
         }
 

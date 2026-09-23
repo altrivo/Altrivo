@@ -501,16 +501,26 @@ export async function GET(request: Request) {
   const windowMs = days * 86400000;
 
   // ── 3. Load tracking events (Supabase + Local fallback) ─────────────────
+  // CRITICAL: Always filter by both vendor_id AND store_id to prevent cross-store data leakage
   let windowEvents: any[] = [];
   if (supabaseAdmin && (vendorId || store?.vendor_id)) {
     try {
       const vId = vendorId || store?.vendor_id;
-      const { data: pvs } = await supabaseAdmin
+      let pvQuery = supabaseAdmin
         .from("page_views")
         .select("*")
         .eq("vendor_id", vId)
         .gte("timestamp", new Date(now - windowMs).toISOString())
         .order("timestamp", { ascending: false });
+
+      // Strictly scope to the active store — never mix page views across stores
+      if (store?.id) {
+        pvQuery = pvQuery.eq("store_id", store.id);
+      } else if (targetStoreId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId)) {
+        pvQuery = pvQuery.eq("store_id", targetStoreId);
+      }
+
+      const { data: pvs } = await pvQuery;
 
       if (pvs && pvs.length > 0) {
         windowEvents = pvs.map((p) => ({
@@ -522,7 +532,7 @@ export async function GET(request: Request) {
           device: p.device,
           referrer: p.referrer,
           timestamp: p.timestamp,
-          storeId: store?.id,
+          storeId: store?.id || p.store_id,
         }));
       }
     } catch (pvErr) {
@@ -554,41 +564,26 @@ export async function GET(request: Request) {
   }
 
   // ── 4. Load real orders from Supabase ───────────────────────────────────
+  // CRITICAL: Filter by store_id DIRECTLY at query level — never show cross-store orders
   let realOrders: any[] = [];
   if (supabaseAdmin && (vendorId || store?.vendor_id)) {
     try {
       const vId = vendorId || store?.vendor_id;
-      let validCustIds = new Set<string>();
-      let validOrderIds = new Set<string>();
+      const activeStoreId = store?.id || (targetStoreId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId) ? targetStoreId : null);
 
-      if (store?.id) {
-        const [custRes, eventRes, payRes] = await Promise.all([
-          supabaseAdmin.from("store_customers").select("id").eq("store_id", store.id),
-          supabaseAdmin.from("order_events").select("order_id").eq("store_id", store.id),
-          supabaseAdmin.from("payments").select("order_id").eq("store_id", store.id),
-        ]);
-        validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
-        validOrderIds = new Set([
-          ...(eventRes?.data || []).map((e: any) => e.order_id),
-          ...(payRes?.data || []).map((p: any) => p.order_id),
-        ]);
-      }
+      // If no store context at all, return empty — never show all-vendor orders
+      if (!activeStoreId) {
+        realOrders = [];
+      } else {
+        // Primary filter: store_id column directly — this is the ground truth
+        const { data: dbOrders, error: dbOrdersErr } = await supabaseAdmin
+          .from("orders")
+          .select("*, order_items(*)")
+          .eq("vendor_id", vId)
+          .eq("store_id", activeStoreId)
+          .order("created_at", { ascending: false });
 
-      const { data: dbOrders, error: dbOrdersErr } = await supabaseAdmin
-        .from("orders")
-        .select("*, order_items(*)")
-        .eq("vendor_id", vId)
-        .order("created_at", { ascending: false });
-
-      if (!dbOrdersErr && dbOrders && dbOrders.length > 0) {
-        if (store?.id) {
-          realOrders = dbOrders.filter((o: any) => {
-            if (o.customer_id && validCustIds.has(o.customer_id)) return true;
-            if (validOrderIds.has(o.id)) return true;
-            if (validCustIds.size === 0 && validOrderIds.size === 0) return true;
-            return false;
-          });
-        } else {
+        if (!dbOrdersErr && dbOrders) {
           realOrders = dbOrders;
         }
       }

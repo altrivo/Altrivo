@@ -127,12 +127,15 @@ export default function OrdersPage() {
   };
 
 
-  // Initial load and auto-polling every 3 seconds
+  // Initial load and auto-polling every 5 seconds (scoped to active store)
   useEffect(() => {
+    // Reset orders when switching stores — prevent showing previous store's orders
+    setOrders([]);
     fetchOrders();
-    const interval = setInterval(fetchOrders, 3000);
+    const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
-  }, [activeStoreId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStoreId, activeStore?.slug]);
 
   // Multi-tab instant sync via BroadcastChannel & storage events
   useEffect(() => {

@@ -3,16 +3,30 @@ import type { NextRequest } from "next/server";
 
 import { ProductsBackendService } from "@/services/products-backend-service";
 import type { BackendProductStatus } from "@/types/backend-product";
+import { getVendorContext } from "@/lib/auth/session";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id") || "vendor_dev_123";
     const status = (searchParams.get("status") as BackendProductStatus) || undefined;
     const category_id = searchParams.get("category_id") || undefined;
     const search = searchParams.get("search") || undefined;
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+    // Resolve vendor_id: query param > session auth > reject — never use mock ID
+    let vendor_id = searchParams.get("vendor_id") || request.headers.get("x-vendor-id");
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      const ctx = await getVendorContext();
+      if (ctx?.vendor?.id) {
+        vendor_id = ctx.vendor.id;
+      }
+    }
+
+    // CRITICAL: If no authenticated vendor, return empty — never use mock ID
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      return NextResponse.json({ success: true, products: [], total: 0, performance: { queryTimeMs: 0, status: "EMPTY" } });
+    }
 
     const startTime = performance.now();
     const result = await ProductsBackendService.getProducts({
@@ -48,7 +62,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const vendor_id = request.headers.get("x-vendor-id") || body.vendor_id || "vendor_dev_123";
+
+    // Resolve vendor_id: header > body > session — never use mock ID
+    let vendor_id = request.headers.get("x-vendor-id") || body.vendor_id;
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      const ctx = await getVendorContext();
+      if (ctx?.vendor?.id) {
+        vendor_id = ctx.vendor.id;
+      }
+    }
+
+    if (!vendor_id || vendor_id === "vendor_dev_123") {
+      return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
+    }
 
     if (!body.title || typeof body.price !== "number") {
       return NextResponse.json(

@@ -61,110 +61,64 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Fetch real orders specifically for THIS vendor from Supabase
+    // 3. Resolve target store UUID first, then fetch orders with direct store_id filter
+    // CRITICAL: Filter at DB level — never fetch all-vendor orders and post-filter
     let vendorOrders: any[] = [];
     if (supabaseAdmin) {
+      let targetStoreId = storeId || "";
+      const targetStoreSlug = storeSlug || "";
+
+      // Resolve non-UUID store identifier to actual UUID
+      if (targetStoreId || targetStoreSlug) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
+        if (targetStoreId && !isUUID) {
+          try {
+            const { data: sRow } = await supabaseAdmin
+              .from("stores")
+              .select("id, slug")
+              .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
+              .limit(1)
+              .maybeSingle();
+            if (sRow?.id) targetStoreId = sRow.id;
+          } catch {}
+        } else if (!targetStoreId && targetStoreSlug) {
+          try {
+            const { data: sRow } = await supabaseAdmin
+              .from("stores")
+              .select("id")
+              .eq("slug", targetStoreSlug)
+              .limit(1)
+              .maybeSingle();
+            if (sRow?.id) targetStoreId = sRow.id;
+          } catch {}
+        }
+      }
+
       let query = supabaseAdmin
         .from("orders")
         .select("*, order_items(*)")
-        .eq("vendor_id", vendorId);
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false });
 
-      const { data: orders, error } = await query.order("created_at", { ascending: false });
+      // CRITICAL: Always scope to specific store at DB level
+      if (targetStoreId) {
+        query = query.eq("store_id", targetStoreId);
+      } else {
+        // No store context — return empty for safety (new vendor has no data)
+        return NextResponse.json({
+          success: true,
+          page,
+          limit,
+          totalOrders: 0,
+          totalPages: 1,
+          orders: [],
+        });
+      }
 
+      const { data: orders, error } = await query;
       if (!error && orders) {
         vendorOrders = orders;
       }
-    }
-
-    // 4. Resolve target store UUID and slug if provided
-    let targetStoreId = storeId || "";
-    let targetStoreSlug = storeSlug || "";
-
-    if (supabaseAdmin && (targetStoreId || targetStoreSlug)) {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetStoreId);
-      if (targetStoreId && !isUUID) {
-        try {
-          const { data: sRow } = await supabaseAdmin
-            .from("stores")
-            .select("id, slug")
-            .or(`slug.ilike.${targetStoreId},name.ilike.${targetStoreId}`)
-            .limit(1)
-            .maybeSingle();
-          if (sRow?.id) {
-            targetStoreId = sRow.id;
-            if (sRow.slug && !targetStoreSlug) targetStoreSlug = sRow.slug;
-          }
-        } catch {}
-      } else if (!targetStoreId && targetStoreSlug) {
-        try {
-          const { data: sRow } = await supabaseAdmin
-            .from("stores")
-            .select("id, slug")
-            .eq("slug", targetStoreSlug)
-            .limit(1)
-            .maybeSingle();
-          if (sRow?.id) {
-            targetStoreId = sRow.id;
-          }
-        } catch {}
-      }
-    }
-
-    // 5. Filter strictly by storeId or storeSlug if provided
-    if ((targetStoreId || targetStoreSlug) && vendorOrders.length > 0) {
-      let validCustIds = new Set<string>();
-      let validOrderIds = new Set<string>();
-
-      if (supabaseAdmin && targetStoreId) {
-        try {
-          const [custRes, eventRes, payRes] = await Promise.all([
-            supabaseAdmin.from("store_customers").select("id").eq("store_id", targetStoreId),
-            supabaseAdmin.from("order_events").select("order_id").eq("store_id", targetStoreId),
-            supabaseAdmin.from("payments").select("order_id").eq("store_id", targetStoreId),
-          ]);
-
-          validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
-          validOrderIds = new Set([
-            ...(eventRes?.data || []).map((e: any) => e.order_id),
-            ...(payRes?.data || []).map((p: any) => p.order_id),
-          ]);
-        } catch (fErr) {
-          console.warn("[RecentOrders] Store filter error:", fErr);
-        }
-      }
-
-      // Also check local orders metadata for store attribution
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const metaPath = path.join(process.cwd(), ".data", "orders_metadata.json");
-        if (fs.existsSync(metaPath)) {
-          const metaMap = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
-          Object.entries(metaMap).forEach(([orderId, val]: [string, any]) => {
-            const sid = (val?.store_id || val?.storeId || "").toLowerCase();
-            if (
-              (targetStoreId && sid === targetStoreId.toLowerCase()) ||
-              (targetStoreSlug && sid === targetStoreSlug.toLowerCase()) ||
-              (storeId && sid === storeId.toLowerCase())
-            ) {
-              validOrderIds.add(orderId);
-            }
-          });
-        }
-      } catch {}
-
-      vendorOrders = vendorOrders.filter((o: any) => {
-        if (o.store_id && (
-          (targetStoreId && o.store_id === targetStoreId) ||
-          (targetStoreSlug && o.store_id === targetStoreSlug) ||
-          (storeId && o.store_id === storeId)
-        )) {
-          return true;
-        }
-        if (o.customer_id && validCustIds.has(o.customer_id)) return true;
-        if (validOrderIds.has(o.id)) return true;
-        return false;
-      });
     }
 
     // New vendor with 0 orders gets empty array
@@ -178,6 +132,7 @@ export async function GET(request: Request) {
         orders: [],
       });
     }
+
 
     const formattedOrders: OrderItem[] = vendorOrders.map((o: any) => {
       const orderDate = new Date(o.created_at || Date.now());

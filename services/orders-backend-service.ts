@@ -148,8 +148,6 @@ export class OrdersBackendService {
   ): Promise<{ orders: Order[]; totalCount: number; analytics: any }> {
     let combinedOrders: Order[] = [];
     let realStoreId = filters?.storeId;
-    let validCustIds = new Set<string>();
-    let validOrderIds = new Set<string>();
 
     // Query Supabase for real orders
     if (supabaseAdmin) {
@@ -165,21 +163,6 @@ export class OrdersBackendService {
               .maybeSingle();
             if (sRow) realStoreId = sRow.id;
           }
-
-          if (realStoreId) {
-            try {
-              const [custRes, eventRes, payRes] = await Promise.all([
-                supabaseAdmin.from("store_customers").select("id").eq("store_id", realStoreId),
-                supabaseAdmin.from("order_events").select("order_id").eq("store_id", realStoreId),
-                supabaseAdmin.from("payments").select("order_id").eq("store_id", realStoreId),
-              ]);
-              validCustIds = new Set((custRes?.data || []).map((c: any) => c.id));
-              validOrderIds = new Set([
-                ...(eventRes?.data || []).map((e: any) => e.order_id),
-                ...(payRes?.data || []).map((p: any) => p.order_id),
-              ]);
-            } catch {}
-          }
         }
 
         let query = supabaseAdmin
@@ -187,8 +170,20 @@ export class OrdersBackendService {
           .select("*, order_items(*), shipments(*)")
           .order("created_at", { ascending: false });
 
+        // CRITICAL: Always filter by vendor_id when provided
         if (vendorId && vendorId !== "all" && vendorId !== "vendor_dev_123") {
           query = query.eq("vendor_id", vendorId);
+        }
+
+        // CRITICAL: Always filter by store_id at DB level — never mix orders across stores
+        if (realStoreId) {
+          query = query.eq("store_id", realStoreId);
+        } else if (vendorId && vendorId !== "all" && vendorId !== "vendor_dev_123") {
+          // No store specified but vendor is known — still safe (vendor-scoped only)
+          // This is acceptable only for vendor-level aggregate views
+        } else {
+          // Neither vendor nor store is known — return empty for safety
+          return { orders: [], totalCount: 0, analytics: this.calculateAnalytics([]) };
         }
 
         const { data: dbOrders, error } = await query;
@@ -256,7 +251,7 @@ export class OrdersBackendService {
                 id: dbo.id,
                 order_number: displayOrderNumber,
                 orderNumber: displayOrderNumber,
-                store_id: dbo.store_id || meta.store_id || meta.storeId || (realStoreId && (validOrderIds.has(dbo.id) || (dbo.customer_id && validCustIds.has(dbo.customer_id))) ? realStoreId : "unknown_store"),
+                store_id: dbo.store_id || meta.store_id || meta.storeId || realStoreId || "unknown_store",
                 vendor_id: dbo.vendor_id || vendorId,
                 customer_id: dbo.customer_id,
                 customerId: dbo.customer_id,
@@ -381,15 +376,16 @@ export class OrdersBackendService {
       });
     }
 
-    // Filter strictly by storeId if provided
+    // CRITICAL: Secondary store-level guard — DB already filtered but enforce here too as safety net
+    // This catches any orders that leaked through (e.g. in-memory fallback store without store_id)
     if (realStoreId || filters?.storeId) {
-      const targetStoreId = realStoreId || filters?.storeId;
+      const targetStoreIdFilter = realStoreId || filters?.storeId;
       filtered = filtered.filter(
         (o) =>
-          o.store_id === targetStoreId ||
-          (o as any).storeId === targetStoreId ||
-          (filters?.storeId && (o.store_id === filters.storeId || (o as any).storeId === filters.storeId)) ||
-          (targetStoreId && (validOrderIds.has(o.id) || (o.customer_id && validCustIds.has(o.customer_id))))
+          o.store_id === targetStoreIdFilter ||
+          (o as any).storeId === targetStoreIdFilter
+        // NOTE: Removed the validCustIds/validOrderIds fallback — it was causing cross-store data leakage
+        // If an order doesn't have the correct store_id, it should NOT be shown
       );
     }
 
