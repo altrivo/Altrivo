@@ -145,7 +145,7 @@ export default function VendorSignupPage() {
             htmlFor="vendor-name"
             className="block text-xs font-semibold text-heading uppercase tracking-wider"
           >
-            Vendor / Business Name
+            Name
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle">
@@ -160,7 +160,7 @@ export default function VendorSignupPage() {
                 setErrors((prev) => ({ ...prev, name: undefined }));
                 setDuplicateError("");
               }}
-              placeholder="e.g. Usman Ali or Ali Traders"
+              placeholder="Your name"
               className={`w-full h-input pl-10 pr-4 rounded-xl border bg-input text-sm text-heading placeholder:text-subtle transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 ${
                 errors.name
                   ? "border-error-500 focus:border-error-500 focus:ring-error-500/20"
