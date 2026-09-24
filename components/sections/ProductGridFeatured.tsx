@@ -58,8 +58,9 @@ export default function ProductGridFeatured({
           ))}
         </div>
       ) : (
-        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
-          <p className="text-sm text-slate-400">No products available in this collection.</p>
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 space-y-1.5">
+          <p className="text-sm font-semibold text-slate-700">No products added yet</p>
+          <p className="text-xs text-slate-400 max-w-sm">Products added to this store will appear here.</p>
         </div>
       )}
     </section>

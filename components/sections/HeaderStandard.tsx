@@ -102,7 +102,7 @@ export default function HeaderStandard({
   const primaryLinks: NavLink[] = [
     { name: "Home", href: baseRoute || "/", pageKey: "home" },
     { name: "About", href: `${baseRoute}/about`, pageKey: "about" },
-    { name: "Products", href: `${baseRoute}#products`, pageKey: "products" },
+    { name: "Products", href: `${baseRoute}/products`, pageKey: "products" },
     { name: "Contact", href: `${baseRoute}/contact`, pageKey: "contact" },
   ];
 

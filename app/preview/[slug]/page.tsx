@@ -48,8 +48,12 @@ export default async function StorePreviewPage({ params }: PreviewPageProps) {
 
   const dynamicSchema = convertConfigToDynamicSchema(config);
   const activeTab = (tab || "home").toLowerCase();
-  const validTabs = ["home", "about", "shop", "contact"];
-  const resolvedTab = validTabs.includes(activeTab) ? (activeTab as "home" | "about" | "shop" | "contact") : "home";
+  const validTabs = ["home", "about", "shop", "products", "contact"];
+  const resolvedTab = (activeTab === "shop" || activeTab === "products")
+    ? "products"
+    : validTabs.includes(activeTab)
+    ? (activeTab as "home" | "about" | "shop" | "products" | "contact")
+    : "home";
 
   return (
     <div className="relative min-h-screen">

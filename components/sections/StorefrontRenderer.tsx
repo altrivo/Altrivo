@@ -191,7 +191,7 @@ export interface StorefrontRendererProps {
   isEditorMode?: boolean;
   activeSectionId?: string | null;
   deviceMode?: "desktop" | "tablet" | "mobile";
-  activePage?: "home" | "about" | "shop" | "contact";
+  activePage?: "home" | "about" | "shop" | "products" | "contact";
   onNavigatePage?: (page: string) => void;
   onSelectSection?: (sectionId: string) => void;
   onMoveSection?: (sectionId: string, direction: "up" | "down") => void;
@@ -232,13 +232,13 @@ export default function StorefrontRenderer({
     }
   }, [activePageProp]);
 
-  // Synchronize with URL hash on live storefront (e.g. /store/[slug]#about)
+  // Synchronize with URL hash on live storefront (e.g. /store/[slug]#about or #products)
   React.useEffect(() => {
     const handleHashCheck = () => {
       if (typeof window !== "undefined") {
         const h = window.location.hash.replace("#", "").toLowerCase();
-        if (["home", "about", "shop", "contact"].includes(h)) {
-          setInternalPage(h);
+        if (["home", "about", "shop", "products", "contact"].includes(h)) {
+          setInternalPage(h === "shop" ? "products" : h);
         }
       }
     };
@@ -324,13 +324,13 @@ export default function StorefrontRenderer({
             />
           )}
 
-          {/* SHOP PAGE */}
-          {currentPage === "shop" && (
+          {/* PRODUCTS / SHOP PAGE */}
+          {(currentPage === "products" || currentPage === "shop") && (
             <ShopPageView
               storeName={config["storeName"] || "Artisanal Store"}
               products={catalogProducts}
               categories={config.categories || categories}
-              config={config.pages?.shop}
+              config={config.pages?.shop || (config.pages as any)?.products}
               storeSlug={storeIdentifier}
               isEditorMode={isEditorMode}
               activeSectionId={activeSectionId}
