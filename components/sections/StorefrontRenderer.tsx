@@ -475,9 +475,6 @@ export default function StorefrontRenderer({
 
         {/* Global Cart Drawer, Checkout, Auth & Tracking Modals */}
         <StorefrontGlobalModals storeName={config["storeName"] || "Artisanal Store"} />
-
-        {/* Global Promotional Welcome Offer Modal */}
-        {!isEditorMode && <StorefrontOfferModal />}
       </div>
     </CartProvider>
   );
