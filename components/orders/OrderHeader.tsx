@@ -159,7 +159,7 @@ export function OrderHeader({
                 {realtimeCount}
               </p>
               {realtimeCount > 0 && (
-                <span className="inline-flex items-center rounded-full bg-accent-100 px-2 py-0.5 text-xs font-extrabold text-accent-800 animate-pulse border border-accent-200">
+                <span className="inline-flex items-center rounded-full bg-accent-100 px-2 py-0.5 text-xs font-extrabold text-accent-800 border border-accent-200">
                   UNSEEN
                 </span>
               )}

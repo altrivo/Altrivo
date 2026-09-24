@@ -133,7 +133,7 @@ export function PlanCards({ currentPlanId, billingCycle, onSelectPlan }: Props) 
               {/* Card Badges */}
               <div className="flex items-center justify-between mb-4">
                 {isCurrent ? (
-                  <span className="px-3 py-1 rounded-full bg-primary-500 text-on-primary text-xs font-extrabold shadow-sm animate-pulse">
+                  <span className="px-3 py-1 rounded-full bg-primary-500 text-on-primary text-xs font-extrabold shadow-sm">
                     ★ Current Plan
                   </span>
                 ) : plan.badge ? (

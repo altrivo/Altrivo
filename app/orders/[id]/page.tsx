@@ -256,7 +256,7 @@ export default function OrderDetailPage() {
                       isCompleted
                         ? "bg-success-500 border-success-600 text-on-primary shadow-sm"
                         : isCurrent
-                        ? "bg-primary-500 border-primary-600 text-on-primary animate-pulse"
+                        ? "bg-primary-500 border-primary-600 text-on-primary ring-2 ring-primary-500/30"
                         : "bg-neutral-100 border-neutral-300 text-heading"
                     }`}
                   >

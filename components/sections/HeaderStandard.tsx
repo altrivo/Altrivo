@@ -340,7 +340,7 @@ export default function HeaderStandard({
               <div className="relative">
                 <ShoppingBag className="w-4 h-4 text-slate-800 group-hover:text-[#694873] transition-colors" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#694873] text-white font-extrabold text-[9px] flex items-center justify-center shadow-md animate-pulse">
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#694873] text-white font-extrabold text-[9px] flex items-center justify-center shadow-md">
                     {itemCount}
                   </span>
                 )}

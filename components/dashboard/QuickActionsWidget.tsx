@@ -109,7 +109,7 @@ export function QuickActionsWidget() {
                   <div className="font-bold text-xs truncate flex items-center gap-2">
                     <span>{action.title}</span>
                     {action.badge && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-success-800 animate-pulse border border-white/40">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-success-800 border border-white/40">
                         {action.badge}
                       </span>
                     )}

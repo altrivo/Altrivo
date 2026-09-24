@@ -154,7 +154,7 @@ export function StorefrontHeader({ config }: StorefrontHeaderProps) {
             <ShoppingCart className="w-5 h-5 text-accent-700" />
             <span className="hidden sm:inline">Cart</span>
             {cartCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-extrabold px-1 shadow-sm animate-pulse">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600 text-white text-[10px] font-extrabold px-1 shadow-sm">
                 {cartCount}
               </span>
             )}
