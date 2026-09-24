@@ -30,6 +30,12 @@ function LoginForm() {
       setEmailOrPhone(prefilledEmail);
       setSuccessBanner("Account registered successfully! Please enter your password to sign in.");
     }
+    // Clean stale store references when landing on login
+    try {
+      localStorage.removeItem("active_store_id");
+      localStorage.removeItem("artrivo_store_aliases");
+      document.cookie = "active_store_id=; path=/; max-age=0";
+    } catch {}
   }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -54,6 +60,16 @@ function LoginForm() {
     setLoading(true);
 
     try {
+      // 0. Explicitly clear previous client session and stale store state
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {}
+      try {
+        localStorage.removeItem("active_store_id");
+        localStorage.removeItem("artrivo_store_aliases");
+        document.cookie = "active_store_id=; path=/; max-age=0";
+      } catch {}
+
       // 1. Verify vendor credentials and registration in database via backend
       const loginRes = await fetch("/api/auth/vendor/login", {
         method: "POST",
@@ -74,15 +90,26 @@ function LoginForm() {
         return;
       }
 
-      // 2. Establish client-side Supabase session using the target email
-      const targetEmail = loginData.targetEmail || emailOrPhone.trim();
-      const { error: sbAuthError } = await supabase.auth.signInWithPassword({
-        email: targetEmail,
-        password,
-      });
-
-      if (sbAuthError) {
-        console.warn("[Client Supabase Auth] Warning:", sbAuthError);
+      // 2. Establish client-side Supabase session with authoritative tokens or sign-in
+      if (loginData.session?.access_token && loginData.session?.refresh_token) {
+        try {
+          await supabase.auth.setSession({
+            access_token: loginData.session.access_token,
+            refresh_token: loginData.session.refresh_token,
+          });
+        } catch (setErr) {
+          console.warn("[Client Supabase Auth] setSession warning:", setErr);
+        }
+      } else {
+        const targetEmail = loginData.targetEmail || emailOrPhone.trim();
+        try {
+          await supabase.auth.signInWithPassword({
+            email: targetEmail,
+            password,
+          });
+        } catch (sbAuthError) {
+          console.warn("[Client Supabase Auth] Warning:", sbAuthError);
+        }
       }
 
       // 3. Store active vendor identifier in localStorage as fast cache
@@ -91,12 +118,15 @@ function LoginForm() {
           localStorage.setItem("active_vendor_id", loginData.vendor.id);
           localStorage.setItem("active_vendor_name", loginData.vendor.name || "");
           localStorage.setItem("active_vendor_email", loginData.vendor.email || "");
+          // Clean previous active store so new account doesn't inherit old stores
+          localStorage.removeItem("active_store_id");
+          localStorage.removeItem("artrivo_store_aliases");
+          document.cookie = "active_store_id=; path=/; max-age=0";
         }
       } catch {}
 
-      // 4. Redirect to Dashboard
-      router.push("/dashboard");
-      router.refresh();
+      // 4. Full redirect to Dashboard to ensure all server components, cookies, and context reload clean
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setGlobalError(err.message || "Failed to log in. Please try again.");
       setLoading(false);

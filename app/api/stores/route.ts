@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { getVendorStores, createStore, generateUniqueSlug } from '@/lib/store/store-service';
 import { createSnapshot } from '@/lib/store/version-manager';
 
 export async function GET(req: Request) {
   try {
-    const stores = await getVendorStores();
+    const cookieStore = await cookies();
+    const activeVendorId = cookieStore.get('active_vendor_id')?.value;
+    const stores = await getVendorStores(activeVendorId);
     return NextResponse.json({ stores });
   } catch (error: any) {
     console.error('Error fetching stores:', error);
@@ -15,13 +18,15 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-
     const body = await req.json();
     const { name, slug, niche, description, layout_config } = body;
 
     if (!name || !layout_config) {
       return NextResponse.json({ error: 'Missing required fields: name, layout_config' }, { status: 400 });
     }
+
+    const cookieStore = await cookies();
+    const activeVendorId = cookieStore.get('active_vendor_id')?.value;
 
     const finalSlug = slug || await generateUniqueSlug(name);
 
@@ -31,7 +36,7 @@ export async function POST(req: Request) {
       niche,
       description,
       layout_config
-    });
+    }, activeVendorId);
 
     await createSnapshot(store.id, 'ai_generate', 'Initial store creation');
 

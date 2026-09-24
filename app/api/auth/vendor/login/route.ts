@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
@@ -134,6 +135,20 @@ export async function POST(request: Request) {
       };
     }
 
+    // Sync server-side SSR session with the newly logged in user
+    try {
+      const serverSupabase = await createClient();
+      await serverSupabase.auth.signOut();
+      if (authData.session?.access_token && authData.session?.refresh_token) {
+        await serverSupabase.auth.setSession({
+          access_token: authData.session.access_token,
+          refresh_token: authData.session.refresh_token,
+        });
+      }
+    } catch (ssrErr) {
+      console.warn("[Vendor Login] Server SSR session sync:", ssrErr);
+    }
+
     const response = NextResponse.json({
       success: true,
       message: "Login successful!",
@@ -155,6 +170,14 @@ export async function POST(request: Request) {
     response.cookies.set("active_vendor_id", vendorRecord.id, {
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
+      sameSite: "lax",
+      httpOnly: false,
+    });
+
+    // Clear any stale active_store_id from a previous vendor session
+    response.cookies.set("active_store_id", "", {
+      path: "/",
+      maxAge: 0,
       sameSite: "lax",
       httpOnly: false,
     });

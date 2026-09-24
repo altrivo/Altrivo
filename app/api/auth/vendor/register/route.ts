@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { EmailService } from "@/services/email-service";
 
 export async function POST(request: Request) {
@@ -255,6 +256,12 @@ export async function POST(request: Request) {
       console.error("[Vendor Register] Error dispatching welcome email:", welcomeErr);
     }
 
+    // Purge any stale server SSR session from a previous account
+    try {
+      const serverSupabase = await createClient();
+      await serverSupabase.auth.signOut();
+    } catch {}
+
     const response = NextResponse.json(
       {
         success: true,
@@ -272,6 +279,14 @@ export async function POST(request: Request) {
     response.cookies.set("active_vendor_id", userId, {
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
+      sameSite: "lax",
+      httpOnly: false,
+    });
+
+    // Clear any stale active_store_id from a previous vendor
+    response.cookies.set("active_store_id", "", {
+      path: "/",
+      maxAge: 0,
       sameSite: "lax",
       httpOnly: false,
     });

@@ -38,7 +38,10 @@ const VendorStoreContext = createContext<VendorStoreContextType | undefined>(und
 // Read saved store ID from localStorage synchronously before any render
 function getPersistedStoreId(): string | null {
   try {
-    return typeof window !== "undefined" ? localStorage.getItem("active_store_id") : null;
+    if (typeof window === "undefined") return null;
+    const vendorId = localStorage.getItem("active_vendor_id");
+    if (!vendorId) return null;
+    return localStorage.getItem("active_store_id");
   } catch {
     return null;
   }

@@ -10,27 +10,32 @@ export async function GET() {
     let authName: string | null = null;
     let authPhone: string | null = null;
 
-    // 1. Try Supabase SSR session
+    const cookieStore = await cookies();
+    const activeVendorId = cookieStore.get("active_vendor_id")?.value;
+
+    let ssrUser: any = null;
     try {
       const supabase = await createClient();
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user?.id) {
-        userId = userData.user.id;
-        authEmail = userData.user.email || null;
-        authName = userData.user.user_metadata?.name || null;
-        authPhone = userData.user.user_metadata?.phone || null;
+        ssrUser = userData.user;
       }
     } catch {}
 
-    // 2. Fallback to active_vendor_id cookie
-    if (!userId) {
-      try {
-        const cookieStore = await cookies();
-        const activeVendorId = cookieStore.get("active_vendor_id")?.value;
-        if (activeVendorId) {
-          userId = activeVendorId;
-        }
-      } catch {}
+    // Priority 1: active_vendor_id cookie explicitly set by vendor login/registration
+    if (activeVendorId) {
+      userId = activeVendorId;
+      if (ssrUser && ssrUser.id === activeVendorId) {
+        authEmail = ssrUser.email || null;
+        authName = ssrUser.user_metadata?.name || null;
+        authPhone = ssrUser.user_metadata?.phone || null;
+      }
+    } else if (ssrUser?.id) {
+      // Priority 2: Fallback to SSR session user
+      userId = ssrUser.id;
+      authEmail = ssrUser.email || null;
+      authName = ssrUser.user_metadata?.name || null;
+      authPhone = ssrUser.user_metadata?.phone || null;
     }
 
     if (!userId || !supabaseAdmin) {

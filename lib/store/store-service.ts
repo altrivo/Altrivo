@@ -311,21 +311,21 @@ export async function getVendorStores(explicitVendorId?: string): Promise<StoreR
 
     if (!targetVendorId) {
       try {
-        const supabase = await createClient();
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.id) {
-          targetVendorId = userData.user.id;
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const cookieVendor = cookieStore.get("active_vendor_id")?.value;
+        if (cookieVendor) {
+          targetVendorId = cookieVendor;
         }
       } catch {}
     }
 
     if (!targetVendorId) {
       try {
-        const { cookies } = await import("next/headers");
-        const cookieStore = await cookies();
-        const cookieVendor = cookieStore.get("active_vendor_id")?.value;
-        if (cookieVendor) {
-          targetVendorId = cookieVendor;
+        const supabase = await createClient();
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          targetVendorId = userData.user.id;
         }
       } catch {}
     }
@@ -468,16 +468,6 @@ export async function getStoreByDomain(domain: string): Promise<StoreRow | null>
 export async function createStore(input: CreateStoreInput, explicitVendorId?: string): Promise<StoreRow> {
   let effectiveVendorId = explicitVendorId;
 
-  if (!effectiveVendorId) {
-    try {
-      const supabase = await createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.id) {
-        effectiveVendorId = userData.user.id;
-      }
-    } catch {}
-  }
-
   if (!effectiveVendorId || !UUID_REGEX.test(effectiveVendorId)) {
     try {
       const { cookies } = await import("next/headers");
@@ -485,6 +475,16 @@ export async function createStore(input: CreateStoreInput, explicitVendorId?: st
       const cookieVendor = cookieStore.get("active_vendor_id")?.value;
       if (cookieVendor && UUID_REGEX.test(cookieVendor)) {
         effectiveVendorId = cookieVendor;
+      }
+    } catch {}
+  }
+
+  if (!effectiveVendorId || !UUID_REGEX.test(effectiveVendorId)) {
+    try {
+      const supabase = await createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id && UUID_REGEX.test(userData.user.id)) {
+        effectiveVendorId = userData.user.id;
       }
     } catch {}
   }

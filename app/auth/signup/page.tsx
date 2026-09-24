@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { createClient } from "@/lib/supabase/client";
 import { User, Phone, Mail, CheckCircle2, AlertCircle, ArrowRight, Store, Loader2, ShieldCheck } from "lucide-react";
 
 export default function VendorSignupPage() {
@@ -24,6 +25,24 @@ export default function VendorSignupPage() {
   const [duplicateError, setDuplicateError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Clear any existing vendor session or stale store ID when visiting the signup page
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      supabase.auth.signOut({ scope: "local" }).catch(() => {});
+    } catch {}
+    try {
+      localStorage.removeItem("active_vendor_id");
+      localStorage.removeItem("active_vendor_name");
+      localStorage.removeItem("active_vendor_email");
+      localStorage.removeItem("active_store_id");
+      localStorage.removeItem("artrivo_store_aliases");
+      localStorage.removeItem("digishop_stores");
+      document.cookie = "active_vendor_id=; path=/; max-age=0";
+      document.cookie = "active_store_id=; path=/; max-age=0";
+    } catch {}
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,6 +88,13 @@ export default function VendorSignupPage() {
     setLoading(true);
 
     try {
+      // Clear any remaining store reference
+      try {
+        localStorage.removeItem("active_store_id");
+        localStorage.removeItem("artrivo_store_aliases");
+        document.cookie = "active_store_id=; path=/; max-age=0";
+      } catch {}
+
       const response = await fetch("/api/auth/vendor/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,10 +125,14 @@ export default function VendorSignupPage() {
           localStorage.setItem("active_vendor_id", data.vendor.id);
           localStorage.setItem("active_vendor_name", data.vendor.name || "");
           localStorage.setItem("active_vendor_email", data.vendor.email || "");
+          // Brand new vendor: guaranteed no previous store ID
+          localStorage.removeItem("active_store_id");
+          localStorage.removeItem("artrivo_store_aliases");
+          document.cookie = "active_store_id=; path=/; max-age=0";
         }
       } catch {}
 
-      // Direct, immediate navigation to login without annoying temporary popup screen
+      // Direct, immediate navigation to login
       router.push(`/auth/login?email=${encodeURIComponent(cleanEmail)}`);
     } catch (err: any) {
       setDuplicateError(err.message || "Failed to register. Please try again.");
