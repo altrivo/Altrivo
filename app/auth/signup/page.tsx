@@ -145,7 +145,7 @@ export default function VendorSignupPage() {
             htmlFor="vendor-name"
             className="block text-xs font-semibold text-heading uppercase tracking-wider"
           >
-            Name
+            Full Name
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle">
