@@ -18,7 +18,6 @@ import {
   Tag,
 } from "lucide-react";
 import { useCart } from "./CartContext";
-import { mockProducts } from "@/lib/mock-products";
 import ProductCard from "./ProductCard";
 
 export interface ProductDetailModalProps {
@@ -33,7 +32,7 @@ export default function ProductDetailModal({
   product,
   isOpen,
   onClose,
-  allProducts = mockProducts,
+  allProducts = [],
   onSelectProduct,
 }: ProductDetailModalProps) {
   const { addToCart, setIsCheckoutOpen } = useCart();
@@ -129,8 +128,8 @@ export default function ProductDetailModal({
   };
 
   // Get 8 related / recommended products for the 2 rows
-  const relatedProducts = (allProducts || mockProducts)
-    .filter((p) => p.id !== product.id)
+  const relatedProducts = (allProducts || [])
+    .filter((p) => p && p.id !== product.id)
     .slice(0, 8);
 
   return (

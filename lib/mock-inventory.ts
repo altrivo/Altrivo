@@ -1,4 +1,5 @@
 import type { InventoryItem } from "@/types/inventory";
+import { mockProducts } from "./mock-products";
 
 import {
   getStoredProducts,
@@ -11,7 +12,13 @@ import {
 const INVENTORY_STORAGE_KEY = "artrivo_vendor_inventory";
 
 export function generateMockInventory(customProducts?: any[], storeId?: string): InventoryItem[] {
-  const products = customProducts || (typeof window !== "undefined" ? getStoredProducts(storeId) : []);
+  if (!storeId && (!customProducts || customProducts.length === 0)) {
+    return [];
+  }
+  const products = customProducts || (typeof window !== "undefined" && storeId ? getStoredProducts(storeId) : []);
+  if (!products || products.length === 0) {
+    return [];
+  }
   const items: InventoryItem[] = [];
 
   products.slice(0, 200).forEach((product) => {
@@ -77,18 +84,19 @@ export function generateMockInventory(customProducts?: any[], storeId?: string):
 }
 
 export function getStoredInventory(storeId?: string): InventoryItem[] {
-  if (typeof window === "undefined") {
-    return generateMockInventory(undefined, storeId);
+  if (typeof window === "undefined" || !storeId) {
+    return [];
   }
 
   const generated = generateMockInventory(undefined, storeId);
-  safeLocalStorageSet(INVENTORY_STORAGE_KEY, JSON.stringify(generated));
+  safeLocalStorageSet(`${INVENTORY_STORAGE_KEY}_${storeId}`, JSON.stringify(generated));
   return generated;
 }
 
-export function saveStoredInventory(items: InventoryItem[]): void {
+export function saveStoredInventory(items: InventoryItem[], storeId?: string): void {
   if (typeof window === "undefined") return;
-  safeLocalStorageSet(INVENTORY_STORAGE_KEY, JSON.stringify(items));
+  const key = storeId ? `${INVENTORY_STORAGE_KEY}_${storeId}` : INVENTORY_STORAGE_KEY;
+  safeLocalStorageSet(key, JSON.stringify(items));
 }
 
-export const initialInventoryData: InventoryItem[] = generateMockInventory();
+export const initialInventoryData: InventoryItem[] = generateMockInventory(mockProducts, "demo_store");

@@ -30,10 +30,12 @@ function LoginForm() {
       setEmailOrPhone(prefilledEmail);
       setSuccessBanner("Account registered successfully! Please enter your password to sign in.");
     }
-    // Clean stale store references when landing on login
+    // Clean stale store and product references when landing on login
     try {
       localStorage.removeItem("active_store_id");
       localStorage.removeItem("artrivo_store_aliases");
+      localStorage.removeItem("artrivo_vendor_products");
+      localStorage.removeItem("artrivo_vendor_inventory");
       document.cookie = "active_store_id=; path=/; max-age=0";
     } catch {}
   }, [searchParams]);
@@ -67,6 +69,8 @@ function LoginForm() {
       try {
         localStorage.removeItem("active_store_id");
         localStorage.removeItem("artrivo_store_aliases");
+        localStorage.removeItem("artrivo_vendor_products");
+        localStorage.removeItem("artrivo_vendor_inventory");
         document.cookie = "active_store_id=; path=/; max-age=0";
       } catch {}
 
@@ -118,9 +122,11 @@ function LoginForm() {
           localStorage.setItem("active_vendor_id", loginData.vendor.id);
           localStorage.setItem("active_vendor_name", loginData.vendor.name || "");
           localStorage.setItem("active_vendor_email", loginData.vendor.email || "");
-          // Clean previous active store so new account doesn't inherit old stores
+          // Clean previous active store and cached products so new account doesn't inherit old products
           localStorage.removeItem("active_store_id");
           localStorage.removeItem("artrivo_store_aliases");
+          localStorage.removeItem("artrivo_vendor_products");
+          localStorage.removeItem("artrivo_vendor_inventory");
           document.cookie = "active_store_id=; path=/; max-age=0";
         }
       } catch {}

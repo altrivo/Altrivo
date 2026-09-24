@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import Link from "next/link";
 
 import { BulkActionsBar } from "@/components/inventory/BulkActionsBar";
 import { BulkEditModal } from "@/components/inventory/BulkEditModal";
@@ -20,7 +21,7 @@ interface NotificationBanner {
 }
 
 export default function InventoryPage() {
-  const { activeStoreId, activeStore } = useVendorStore();
+  const { activeStoreId, activeStore, hasStore, stores, isLoading } = useVendorStore();
   const effectiveStoreId = activeStoreId || activeStore?.id || undefined;
 
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -31,9 +32,18 @@ export default function InventoryPage() {
 
   // Sync state with stored inventory on mount and database updates
   useEffect(() => {
+    if (!effectiveStoreId || (!isLoading && (!hasStore || stores.length === 0))) {
+      setItems([]);
+      return;
+    }
+
     setItems(getStoredInventory(effectiveStoreId));
 
     const syncInventory = () => {
+      if (!effectiveStoreId || (!isLoading && (!hasStore || stores.length === 0))) {
+        setItems([]);
+        return;
+      }
       setItems(getStoredInventory(effectiveStoreId));
     };
 
@@ -87,7 +97,7 @@ export default function InventoryPage() {
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, syncInventory);
       window.removeEventListener("storage", syncInventory);
     };
-  }, [effectiveStoreId, activeStore?.slug, activeStore?.id]);
+  }, [effectiveStoreId, activeStore?.slug, activeStore?.id, hasStore, stores.length, isLoading]);
 
   // Modals state
   const [csvImportOpen, setCsvImportOpen] = useState(false);
@@ -447,10 +457,10 @@ export default function InventoryPage() {
               Total Items &amp; Variants
             </div>
             <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-white font-mono">
-              {totalCount.toLocaleString()}
+              {(!hasStore || stores.length === 0 ? 0 : totalCount).toLocaleString()}
             </div>
             <div className="mt-1 text-xs text-slate-400">
-              Showing {filteredItems.length.toLocaleString()} matching filters
+              Showing {(!hasStore || stores.length === 0 ? 0 : filteredItems.length).toLocaleString()} matching filters
             </div>
           </div>
 
@@ -571,14 +581,29 @@ export default function InventoryPage() {
           onBulkDelete={handleBulkDelete}
         />
 
-        {/* Dense Spreadsheet Table */}
-        <InventoryTable
-          initialItems={filteredItems}
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onToggleSelectAll={handleToggleSelectAllOnPage}
-          onItemsChange={(updated) => setItems(updated)}
-        />
+        {/* Dense Spreadsheet Table or Empty Store Banner */}
+        {!isLoading && (!hasStore || stores.length === 0) ? (
+          <div className="p-12 text-center rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-white dark:bg-slate-900 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No store created yet</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-5">
+              You must generate a storefront before managing products and inventory. Create your storefront to start tracking stock.
+            </p>
+            <Link
+              href="/store-builder"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+            >
+              Generate Your Store
+            </Link>
+          </div>
+        ) : (
+          <InventoryTable
+            initialItems={filteredItems}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAllOnPage}
+            onItemsChange={(updated) => setItems(updated)}
+          />
+        )}
       </div>
 
       {/* CSV Import Modal */}

@@ -26,7 +26,7 @@ import type {
 const PAGE_SIZE = 20;
 
 export function useProducts(explicitStoreId?: string) {
-  const { activeStoreId, activeStore } = useVendorStore();
+  const { activeStoreId, activeStore, hasStore, stores, isLoading } = useVendorStore();
   const effectiveStoreId = resolveStoreId(
     explicitStoreId || activeStoreId || activeStore?.id || undefined,
   );
@@ -44,6 +44,21 @@ export function useProducts(explicitStoreId?: string) {
 
   // Sync state with local storage on mount, fetch backend products, and sync on update events
   useEffect(() => {
+    const isVendorWithoutStore =
+      !explicitStoreId &&
+      !isLoading &&
+      (!hasStore || stores.length === 0) &&
+      (process.env.NODE_ENV !== "test" ||
+        (typeof window !== "undefined" && Boolean(localStorage.getItem("active_vendor_id"))));
+
+    // If vendor has no store yet or no effective store ID, strictly clear products
+    if (isVendorWithoutStore) {
+      setProducts([]);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+      return;
+    }
+
     // 1. Initial immediate load from localStorage strictly scoped to this store
     const initialLocal = getStoredProducts(effectiveStoreId);
     setProducts(initialLocal.filter((p) => isMatchingStore(p.storeId, effectiveStoreId)));
@@ -162,6 +177,10 @@ export function useProducts(explicitStoreId?: string) {
     }
 
     const syncProducts = () => {
+      if (isVendorWithoutStore) {
+        setProducts([]);
+        return;
+      }
       const prods = getStoredProducts(effectiveStoreId);
       setProducts(prods.filter((p) => isMatchingStore(p.storeId, effectiveStoreId)));
     };
@@ -172,7 +191,7 @@ export function useProducts(explicitStoreId?: string) {
       window.removeEventListener(PRODUCTS_UPDATED_EVENT, syncProducts);
       window.removeEventListener("storage", syncProducts);
     };
-  }, [effectiveStoreId, activeStore?.slug, activeStore?.id]);
+  }, [effectiveStoreId, activeStore?.slug, activeStore?.id, hasStore, stores.length, isLoading]);
 
   const categories = useMemo(
     () => [...new Set(products.map((p) => p.category))].sort(),

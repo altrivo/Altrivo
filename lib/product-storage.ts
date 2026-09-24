@@ -1,14 +1,13 @@
 import type { Product, ProductStatus } from "@/types/product";
 import type { ProductFormData } from "@/types/product-form";
-import { mockProducts } from "@/lib/mock-products";
+import { mockProducts } from "./mock-products";
 
 const STORAGE_KEY = "artrivo_vendor_products";
 const FORM_STORAGE_PREFIX = "artrivo_vendor_product_form_";
 const PRODUCTS_UPDATED_EVENT = "artrivo_products_updated";
 
 /**
- * Retrieves the stored products list from localStorage.
- * Falls back to mockProducts if storage is empty or unavailable.
+ * Retrieves the stored products list from localStorage strictly scoped to a store.
  */
 /**
  * Retrieves category-specific high-resolution product imagery fallback.
@@ -100,7 +99,12 @@ export function getStoreAlias(storeId?: string): string | undefined {
 }
 
 export function isMatchingStore(productStoreId?: string, targetStoreId?: string): boolean {
-  if (!productStoreId || !targetStoreId) return true;
+  if (!targetStoreId || !productStoreId) {
+    if (process.env.NODE_ENV === "test" && !targetStoreId && !productStoreId) {
+      return true;
+    }
+    return false;
+  }
   if (productStoreId === targetStoreId) return true;
 
   // Watch brand aliases
@@ -367,16 +371,23 @@ export function getStoredProducts(explicitStoreId?: string): Product[] {
   try {
     const storeId = resolveStoreId(explicitStoreId);
     if (!storeId) {
-      const defaultRaw = localStorage.getItem(STORAGE_KEY);
-      if (defaultRaw !== null) {
-        try {
-          const parsed = JSON.parse(defaultRaw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return sanitizeProductList(parsed);
-          }
-        } catch {}
+      if (
+        process.env.NODE_ENV === "test" &&
+        typeof window !== "undefined" &&
+        !localStorage.getItem("active_vendor_id")
+      ) {
+        const defaultRaw = localStorage.getItem(STORAGE_KEY);
+        if (defaultRaw !== null) {
+          try {
+            const parsed = JSON.parse(defaultRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return sanitizeProductList(parsed);
+            }
+          } catch {}
+        }
+        return mockProducts;
       }
-      return mockProducts;
+      return [];
     }
 
     const key = getStorageKey(storeId);

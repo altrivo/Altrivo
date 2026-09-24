@@ -39,6 +39,8 @@ export default function VendorSignupPage() {
       localStorage.removeItem("active_store_id");
       localStorage.removeItem("artrivo_store_aliases");
       localStorage.removeItem("digishop_stores");
+      localStorage.removeItem("artrivo_vendor_products");
+      localStorage.removeItem("artrivo_vendor_inventory");
       document.cookie = "active_vendor_id=; path=/; max-age=0";
       document.cookie = "active_store_id=; path=/; max-age=0";
     } catch {}
@@ -125,9 +127,11 @@ export default function VendorSignupPage() {
           localStorage.setItem("active_vendor_id", data.vendor.id);
           localStorage.setItem("active_vendor_name", data.vendor.name || "");
           localStorage.setItem("active_vendor_email", data.vendor.email || "");
-          // Brand new vendor: guaranteed no previous store ID
+          // Brand new vendor: guaranteed no previous store ID or products
           localStorage.removeItem("active_store_id");
           localStorage.removeItem("artrivo_store_aliases");
+          localStorage.removeItem("artrivo_vendor_products");
+          localStorage.removeItem("artrivo_vendor_inventory");
           document.cookie = "active_store_id=; path=/; max-age=0";
         }
       } catch {}

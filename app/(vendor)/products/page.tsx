@@ -171,7 +171,7 @@ function formatCurrency(amount: number | null | undefined) {
 
 export default function ProductsPage() {
   const router = useRouter();
-  const { stores, activeStore, activeStoreId, setActiveStoreId } = useVendorStore();
+  const { stores, activeStore, activeStoreId, setActiveStoreId, hasStore, isLoading } = useVendorStore();
 
   const {
     filters,
@@ -305,7 +305,7 @@ export default function ProductsPage() {
                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
                 suppressHydrationWarning
               >
-                {totalProductsCount.toLocaleString()} total
+                {(!hasStore || stores.length === 0 ? 0 : totalProductsCount).toLocaleString()} total
               </span>
             </div>
             <p className="mt-1 text-sm text-body">
@@ -340,24 +340,16 @@ export default function ProductsPage() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => router.push("/products/new")}
+              onClick={() => {
+                if (!hasStore || stores.length === 0) {
+                  router.push("/store-builder");
+                } else {
+                  router.push("/products/new");
+                }
+              }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="mr-1.5"
-                aria-hidden="true"
-              >
-                <path
-                  d="M8 3v10M3 8h10"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Add Product
+              <Plus className="w-4 h-4 mr-1.5" />
+              {!hasStore || stores.length === 0 ? "Generate Store" : "Add Product"}
             </Button>
           </div>
         </div>
@@ -510,17 +502,21 @@ export default function ProductsPage() {
           )}
 
           {/* Table */}
-          {filteredCount === 0 ? (
+          {filteredCount === 0 || !hasStore || stores.length === 0 ? (
             <div className="p-12 text-center">
               <EmptyState
                 title={
                   hasActiveFilters
                     ? "No products found"
+                    : !hasStore || stores.length === 0
+                    ? "No store created yet"
                     : `No products in "${activeStore?.name || "this store"}" yet`
                 }
                 description={
                   hasActiveFilters
                     ? "Try adjusting your search or filters to find what you're looking for."
+                    : !hasStore || stores.length === 0
+                    ? "You must generate your store before managing products. Create your storefront to start adding products."
                     : `This store catalog is currently empty. Add products specifically for ${activeStore?.name || "this store"}.`
                 }
                 icon={
@@ -566,6 +562,15 @@ export default function ProductsPage() {
                 {hasActiveFilters ? (
                   <Button variant="ghost" size="sm" onClick={resetFilters}>
                     Reset all filters
+                  </Button>
+                ) : !hasStore || stores.length === 0 ? (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => router.push("/store-builder")}
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    Generate Your Store
                   </Button>
                 ) : (
                   <Button
