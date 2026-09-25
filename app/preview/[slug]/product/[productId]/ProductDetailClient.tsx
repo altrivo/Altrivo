@@ -169,20 +169,28 @@ export default function ProductDetailClient({
 
           {/* Thumbnails Row */}
           {galleryImages.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-1">
-              {galleryImages.map((img: string, idx: number) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImgIdx(idx)}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                    activeImgIdx === idx
-                      ? "border-[#694873] ring-2 ring-purple-500/30 scale-105"
-                      : "border-slate-200 opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
+            <div className="flex items-center gap-3 overflow-x-auto py-2 px-1 scrollbar-none">
+              {galleryImages.map((img: string, idx: number) => {
+                const isActive = activeImgIdx === idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveImgIdx(idx)}
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-150 flex-shrink-0 cursor-pointer p-0.5 bg-white ${
+                      isActive
+                        ? "border-purple-600 ring-2 ring-purple-600/30 shadow-md opacity-100"
+                        : "border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-300"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>

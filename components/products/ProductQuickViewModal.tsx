@@ -234,16 +234,16 @@ export function ProductQuickViewModal({
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                <div className="flex items-center gap-2.5 overflow-x-auto py-1.5 px-0.5 scrollbar-none">
                   {imageList.map((url, idx) => {
                     const isActive = idx === activeImageIndex;
                     return (
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`relative h-16 w-16 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all ${
+                        className={`relative h-16 w-16 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all p-0.5 bg-white ${
                           isActive
-                            ? "border-primary-500 ring-2 ring-primary-500/20 scale-105 shadow-md"
+                            ? "border-primary-500 ring-2 ring-primary-500/25 shadow-md opacity-100"
                             : "border-default opacity-70 hover:opacity-100 hover:border-primary-300"
                         }`}
                       >
