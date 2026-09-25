@@ -95,13 +95,76 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     );
   }
 
-  // 2. If not found in store products, try mockProducts as fallback
+  // 1c. If not found or if images are missing, query direct Supabase database
+  if (!product || !product.images || product.images.length <= 1) {
+    try {
+      const { supabaseAdmin } = await import("@/lib/supabase");
+      const { toValidUUID } = await import("@/lib/product-db-sync");
+      if (supabaseAdmin) {
+        const prodUUID = toValidUUID(productId);
+        const { data: dbRow } = await supabaseAdmin
+          .from("products")
+          .select(`
+            id,
+            name,
+            title,
+            description,
+            category,
+            price,
+            compare_price,
+            image_url,
+            images,
+            status,
+            tags,
+            product_media (
+              url,
+              sort_order,
+              type
+            )
+          `)
+          .eq("id", prodUUID)
+          .single();
+
+        if (dbRow) {
+          const mediaRows = Array.isArray(dbRow.product_media)
+            ? [...dbRow.product_media].sort((a: any, b: any) => (a.sort_order ?? 99) - (b.sort_order ?? 99))
+            : [];
+          const mediaUrls = mediaRows.filter((m: any) => m.type === "image" && m.url).map((m: any) => m.url);
+          const rowImages = Array.isArray(dbRow.images) ? dbRow.images.filter(Boolean) : [];
+          const combined = Array.from(new Set([...(product?.images || []), ...rowImages, ...mediaUrls]));
+          if (dbRow.image_url && !combined.includes(dbRow.image_url)) {
+            combined.unshift(dbRow.image_url);
+          }
+
+          if (!product) {
+            product = {
+              id: dbRow.id,
+              name: dbRow.title || dbRow.name || "Product",
+              price: dbRow.price,
+              compareAtPrice: dbRow.compare_price,
+              description: dbRow.description,
+              category: dbRow.category,
+              thumbnail: dbRow.image_url,
+              image: dbRow.image_url,
+              images: combined,
+            };
+          } else if (combined.length > (product.images?.length || 0)) {
+            product.images = combined;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[ProductDetail] Direct DB lookup note:", e);
+    }
+  }
+
+  // 2. If not found in store products or DB, try mockProducts as fallback
   if (!product) {
     product = mockProducts.find(
       (p) =>
         p.id.toLowerCase() === normalizedId ||
         p.sku.toLowerCase() === normalizedId ||
-        p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedId
+        (p.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") === normalizedId
     );
   }
 
@@ -122,13 +185,18 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           : parseFloat(String(product.compareAtPrice).replace(/[^0-9.]/g, "")) || 0)
       : undefined,
     thumbnail: product.thumbnail || product.image || product.images?.[0] || "",
-    images: product.images && product.images.length > 0
-      ? product.images
-      : product.thumbnail
-      ? [product.thumbnail]
-      : product.image
-      ? [product.image]
-      : [],
+    images: (() => {
+      // Normalize: handles both plain string[] and ProductImage object[] {id, url, isPrimary}
+      const raw = product.images;
+      if (Array.isArray(raw) && raw.length > 0) {
+        const urls: string[] = raw
+          .map((img: any) => (typeof img === "string" ? img : img?.url))
+          .filter((u: any): u is string => typeof u === "string" && u.length > 0);
+        if (urls.length > 0) return urls;
+      }
+      const fallback = product.thumbnail || product.image || "";
+      return fallback ? [fallback] : [];
+    })(),
     category: product.category || product.tag || "Catalog",
     description: product.description || product.summary || "",
   };

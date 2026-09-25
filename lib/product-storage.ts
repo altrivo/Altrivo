@@ -200,6 +200,7 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
 
     // Resolve user-uploaded form imagery if stored in local form state
     let userFormImg: string | undefined = undefined;
+    let userFormImages: string[] = [];
     if (typeof window !== "undefined" && p.id) {
       try {
         const rawForm = localStorage.getItem(`${FORM_STORAGE_PREFIX}${p.id}`);
@@ -209,6 +210,11 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
           const first = parsedForm.images?.[0]?.url;
           if (isValidImageUrl(primary)) userFormImg = primary;
           else if (isValidImageUrl(first)) userFormImg = first;
+          if (Array.isArray(parsedForm.images)) {
+            userFormImages = parsedForm.images
+              .map((img: any) => (typeof img === "string" ? img : img?.url))
+              .filter((u: any): u is string => typeof u === "string" && isValidImageUrl(u));
+          }
         }
       } catch {}
     }
@@ -222,14 +228,19 @@ function sanitizeProductList(parsed: any[], targetStoreId?: string): Product[] {
       getCategoryDefaultImage(p.category, p.name);
 
     const cleanThumbnail = candidateImg;
-    const cleanImages =
-      Array.isArray(p.images) && p.images.length > 0
-        ? p.images.filter((img: string) => isValidImageUrl(img))
-        : [cleanThumbnail];
-
-    if (cleanThumbnail && !cleanImages.includes(cleanThumbnail)) {
-      cleanImages.unshift(cleanThumbnail);
+    const rawRecordImages = Array.isArray(p.images)
+      ? p.images
+          .map((img: any) => (typeof img === "string" ? img : img?.url))
+          .filter((u: any): u is string => typeof u === "string" && isValidImageUrl(u))
+      : [];
+    const combinedGallery: string[] = [];
+    for (const u of [...userFormImages, ...rawRecordImages]) {
+      if (u && !combinedGallery.includes(u)) combinedGallery.push(u);
     }
+    if (cleanThumbnail && !combinedGallery.includes(cleanThumbnail)) {
+      combinedGallery.unshift(cleanThumbnail);
+    }
+    const cleanImages = combinedGallery.length > 0 ? combinedGallery : (cleanThumbnail ? [cleanThumbnail] : []);
 
     // Fix flat non-unique SKUs like "WATCH"
     let cleanSku = p.sku;
@@ -301,6 +312,7 @@ export function toStorefrontProduct(p: any): any {
       : "");
 
   let userFormImg: string | undefined = undefined;
+  let userFormImages: string[] = [];
   if (typeof window !== "undefined" && p.id) {
     try {
       const rawForm = localStorage.getItem(`artrivo_vendor_product_form_${p.id}`);
@@ -310,6 +322,11 @@ export function toStorefrontProduct(p: any): any {
         const first = parsedForm.images?.[0]?.url;
         if (isValidImageUrl(primary)) userFormImg = primary;
         else if (isValidImageUrl(first)) userFormImg = first;
+        if (Array.isArray(parsedForm.images)) {
+          userFormImages = parsedForm.images
+            .map((img: any) => (typeof img === "string" ? img : img?.url))
+            .filter((u: any): u is string => typeof u === "string" && isValidImageUrl(u));
+        }
       }
     } catch {}
   }
@@ -320,6 +337,23 @@ export function toStorefrontProduct(p: any): any {
     (isValidImageUrl(p.image) && p.image) ||
     (Array.isArray(p.images) && p.images.find((img: string) => isValidImageUrl(img))) ||
     getCategoryDefaultImage(p.category, p.name);
+
+  // Collect all gallery images from form state, record images, and fallback to resolvedImage
+  const recordImages: string[] = Array.isArray(p.images)
+    ? p.images
+        .map((img: any) => (typeof img === "string" ? img : img?.url))
+        .filter((u: any): u is string => typeof u === "string" && isValidImageUrl(u))
+    : [];
+  const storefrontGallery: string[] = [];
+  for (const u of [...userFormImages, ...recordImages]) {
+    if (u && !storefrontGallery.includes(u)) {
+      storefrontGallery.push(u);
+    }
+  }
+  if (resolvedImage && !storefrontGallery.includes(resolvedImage)) {
+    storefrontGallery.unshift(resolvedImage);
+  }
+  const cleanImages = storefrontGallery.length > 0 ? storefrontGallery : (resolvedImage ? [resolvedImage] : []);
 
   const resolveProductDate = (item: any) => {
     if (item.updatedAt && !isNaN(new Date(item.updatedAt).getTime())) return new Date(item.updatedAt).toISOString();
@@ -351,6 +385,7 @@ export function toStorefrontProduct(p: any): any {
     status: p.status === "draft" ? "draft" : p.status === "out-of-stock" ? "out-of-stock" : "published",
     image: resolvedImage,
     thumbnail: resolvedImage,
+    images: cleanImages,
     tag: p.category || p.tag || "Clothing",
     category: p.category || p.tag || "Clothing",
     inStock: p.status === "draft" ? false : p.stock !== undefined ? Number(p.stock) > 0 : (p.inStock ?? true),

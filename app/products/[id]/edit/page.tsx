@@ -13,7 +13,49 @@ export default function EditProductPage() {
 
   useEffect(() => {
     const stored = getStoredProductFormData(id);
-    setInitialData(stored || { id, title: `Product ${id}` });
+    if (stored) {
+      setInitialData(stored);
+    }
+
+    // Also fetch from DB to ensure gallery images from product_media/products.images are loaded
+    fetch(`/api/products/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data.product) {
+          const p = data.product;
+          const dbImages: string[] = Array.isArray(p.images) && p.images.length > 0
+            ? p.images
+            : p.image_url ? [p.image_url] : [];
+
+          const mappedImages = dbImages.map((url, idx) => ({
+            id: `img_${idx}_${Date.now()}`,
+            url,
+            isPrimary: idx === 0,
+          }));
+
+          setInitialData((prev) => {
+            const base: Partial<ProductFormData> = stored || prev || { id, title: p.title || p.name || `Product ${id}` };
+            const currentImgCount = base.images?.length || 0;
+            return {
+              ...base,
+              id,
+              title: base.title || p.title || p.name,
+              price: base.price || p.price,
+              description: base.description || p.description,
+              category: base.category || p.category,
+              // Use DB images if they have more photos or base has no images
+              images: mappedImages.length > currentImgCount ? mappedImages : (base.images?.length ? base.images : mappedImages),
+            };
+          });
+        } else if (!stored) {
+          setInitialData({ id, title: `Product ${id}` });
+        }
+      })
+      .catch(() => {
+        if (!stored) {
+          setInitialData({ id, title: `Product ${id}` });
+        }
+      });
   }, [id]);
 
   if (!initialData) {

@@ -78,7 +78,24 @@ export async function createOrUpdateProductInDatabase(
   const price = parsePrice(productData.price);
   const comparePrice = parsePrice(productData.comparePrice || productData.compareAtPrice || productData.compare_price || 0);
   const cost = parsePrice(productData.cost || productData.costPerItem || 0);
-  const imageUrl = productData.image || productData.thumbnail || productData.image_url || (Array.isArray(productData.images) ? productData.images[0] : null);
+  // Extract cover image URL — handles both string URLs and ProductImage objects {id, url, isPrimary}
+  const resolveImageUrl = (images: any): string | null => {
+    if (!images) return null;
+    if (Array.isArray(images) && images.length > 0) {
+      const primary = images.find((img: any) => img?.isPrimary === true);
+      const first = images[0];
+      const candidate = primary || first;
+      if (typeof candidate === "string") return candidate;
+      if (candidate && typeof candidate === "object" && candidate.url) return candidate.url;
+    }
+    return null;
+  };
+  const imageUrl =
+    (typeof productData.image === "string" && productData.image) ||
+    (typeof productData.thumbnail === "string" && productData.thumbnail) ||
+    (typeof productData.image_url === "string" && productData.image_url) ||
+    resolveImageUrl(productData.images) ||
+    null;
   const status = productData.status === "draft" ? "draft" : productData.status === "archived" ? "archived" : "published";
   const nowISO = new Date().toISOString();
 
@@ -87,6 +104,29 @@ export async function createOrUpdateProductInDatabase(
   if (effectiveStoreId && !rawTags.includes(`store:${effectiveStoreId}`)) {
     rawTags.push(`store:${effectiveStoreId}`);
   }
+
+  // ── Collect and normalize all gallery images ────────────────────────────
+  const allImageObjects: { url: string; isPrimary?: boolean }[] = [];
+  if (Array.isArray(productData.images) && productData.images.length > 0) {
+    for (const img of productData.images) {
+      if (typeof img === "string" && img) {
+        allImageObjects.push({ url: img, isPrimary: false });
+      } else if (img && typeof img === "object" && img.url) {
+        allImageObjects.push({ url: img.url, isPrimary: img.isPrimary === true });
+      }
+    }
+  }
+  // Ensure the cover image is always present in allImageObjects
+  if (imageUrl && !allImageObjects.some((i) => i.url === imageUrl)) {
+    allImageObjects.unshift({ url: imageUrl, isPrimary: true });
+  }
+
+  // Clean string array of image URLs
+  const cleanImageUrls: string[] = allImageObjects.length > 0
+    ? allImageObjects.map((i) => i.url).filter(Boolean)
+    : Array.isArray(productData.images)
+      ? productData.images.map((i: any) => (typeof i === "string" ? i : i?.url)).filter(Boolean)
+      : imageUrl ? [imageUrl] : [];
 
   const productPayload = {
     id: prodId,
@@ -99,6 +139,7 @@ export async function createOrUpdateProductInDatabase(
     compare_price: comparePrice,
     cost: cost,
     image_url: imageUrl,
+    images: cleanImageUrls,
     tags: rawTags,
     status: status,
     updated_at: nowISO,
@@ -112,6 +153,40 @@ export async function createOrUpdateProductInDatabase(
     console.error(`[product-db-sync] Failed to upsert product ${prodId}:`, prodErr.message);
     return { success: false, error: prodErr.message };
   }
+
+  // ── Save all gallery images into product_media table ──────────────────────
+  if (allImageObjects.length > 0) {
+    // Delete old media rows for this product first, then re-insert fresh set
+    await supabaseAdmin.from("product_media").delete().eq("product_id", prodId);
+
+    // Resolve a valid store UUID for the product_media FK
+    let mediaStoreId: string | undefined = undefined;
+    if (effectiveStoreId && UUID_REGEX.test(effectiveStoreId)) {
+      mediaStoreId = effectiveStoreId;
+    } else if (effectiveStoreId) {
+      try {
+        const { data: storeRow } = await supabaseAdmin
+          .from("stores")
+          .select("id")
+          .eq("slug", effectiveStoreId)
+          .single();
+        if (storeRow?.id) mediaStoreId = storeRow.id;
+      } catch {}
+    }
+
+    const mediaRows = allImageObjects.map((img, idx) => ({
+      product_id: prodId,
+      ...(mediaStoreId ? { store_id: mediaStoreId } : {}),
+      type: "image" as const,
+      url: img.url,
+      alt_text: productData.title || productData.name || "Product image",
+      sort_order: img.isPrimary ? 0 : idx + 1,
+      created_at: nowISO,
+    }));
+
+    await supabaseAdmin.from("product_media").insert(mediaRows);
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // Handle variants
   const variants = Array.isArray(productData.variants) && productData.variants.length > 0
@@ -164,7 +239,7 @@ export async function createOrUpdateProductInDatabase(
       status: status,
       image: imageUrl,
       thumbnail: imageUrl,
-      images: Array.isArray(productData.images) && productData.images.length > 0 ? productData.images : [imageUrl],
+      images: cleanImageUrls.length > 0 ? cleanImageUrls : [imageUrl],
       storeId: effectiveStoreId,
       updatedAt: nowISO,
     }).catch((e) => console.warn("[product-db-sync] Background store config sync note:", e));
@@ -182,7 +257,11 @@ export async function createOrUpdateProductInDatabase(
     status: status as any,
     thumbnail: imageUrl || "",
     image: imageUrl || "",
-    images: Array.isArray(productData.images) && productData.images.length > 0 ? productData.images : [imageUrl || ""],
+    images: allImageObjects.length > 0
+      ? allImageObjects.map((i) => i.url).filter(Boolean)
+      : Array.isArray(productData.images) && productData.images.length > 0
+        ? productData.images.map((i: any) => typeof i === "string" ? i : i?.url).filter(Boolean)
+        : [imageUrl || ""],
     createdAt: productData.createdAt || nowISO,
     updatedAt: nowISO,
     description: description,
@@ -348,6 +427,7 @@ export async function fetchProductsFromDatabase(options?: {
       compare_price,
       cost,
       image_url,
+      images,
       tags,
       status,
       created_at,
@@ -359,6 +439,11 @@ export async function fetchProductsFromDatabase(options?: {
         stock,
         enabled,
         image_url
+      ),
+      product_media (
+        url,
+        sort_order,
+        type
       )
     `)
     .order("created_at", { ascending: false });
@@ -385,6 +470,29 @@ export async function fetchProductsFromDatabase(options?: {
     const price = typeof row.price === "number" ? row.price : primaryVar?.price || 0;
     const thumbnail = row.image_url || primaryVar?.image_url || null;
 
+    // Build gallery images from row.images and product_media (sorted by sort_order), falling back to cover image
+    const rowImages: string[] = Array.isArray(row.images)
+      ? row.images.filter((img: any) => typeof img === "string" && img.length > 0)
+      : [];
+    const mediaRows: any[] = Array.isArray(row.product_media)
+      ? [...row.product_media].sort((a: any, b: any) => (a.sort_order ?? 99) - (b.sort_order ?? 99))
+      : [];
+    const galleryImages: string[] = mediaRows
+      .filter((m: any) => m.type === "image" && m.url)
+      .map((m: any) => m.url as string);
+
+    const combinedImages: string[] = [];
+    for (const url of [...rowImages, ...galleryImages]) {
+      if (url && !combinedImages.includes(url)) {
+        combinedImages.push(url);
+      }
+    }
+    // Always ensure the cover image is included
+    if (thumbnail && !combinedImages.includes(thumbnail)) {
+      combinedImages.unshift(thumbnail);
+    }
+    const images = combinedImages.length > 0 ? combinedImages : (thumbnail ? [thumbnail] : []);
+
     // Extract storeId if present in tags: store:<storeId>
     let associatedStoreId = "";
     if (Array.isArray(row.tags)) {
@@ -408,7 +516,7 @@ export async function fetchProductsFromDatabase(options?: {
       image: thumbnail,
       createdAt: row.created_at || new Date().toISOString(),
       updatedAt: row.updated_at || new Date().toISOString(),
-      images: thumbnail ? [thumbnail] : [],
+      images,
       variantsCount: variants.length,
       description: row.description || "",
       tags: row.tags || [],

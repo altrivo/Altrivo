@@ -31,6 +31,7 @@ export async function GET(
         compare_price,
         cost,
         image_url,
+        images,
         tags,
         status,
         created_at,
@@ -42,6 +43,11 @@ export async function GET(
           stock,
           enabled,
           image_url
+        ),
+        product_media (
+          url,
+          sort_order,
+          type
         )
       `)
       .eq("id", prodId)
@@ -51,7 +57,34 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, product });
+    const rowImages: string[] = Array.isArray(product.images)
+      ? product.images.filter((img: any) => typeof img === "string" && img.length > 0)
+      : [];
+    const mediaRows: any[] = Array.isArray(product.product_media)
+      ? [...product.product_media].sort((a: any, b: any) => (a.sort_order ?? 99) - (b.sort_order ?? 99))
+      : [];
+    const galleryImages: string[] = mediaRows
+      .filter((m: any) => m.type === "image" && m.url)
+      .map((m: any) => m.url as string);
+
+    const combinedImages: string[] = [];
+    for (const url of [...rowImages, ...galleryImages]) {
+      if (url && !combinedImages.includes(url)) {
+        combinedImages.push(url);
+      }
+    }
+    if (product.image_url && !combinedImages.includes(product.image_url)) {
+      combinedImages.unshift(product.image_url);
+    }
+    const finalImages = combinedImages.length > 0 ? combinedImages : (product.image_url ? [product.image_url] : []);
+
+    return NextResponse.json({
+      success: true,
+      product: {
+        ...product,
+        images: finalImages,
+      },
+    });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : "Internal Server Error";
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
